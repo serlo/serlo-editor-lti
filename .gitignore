@@ -1,3 +1,6 @@
+# .env - Should not be added because it contains private keys used for encryption
+.env
+
 # Logs
 logs
 *.log
@@ -23,6 +26,7 @@ dist-ssr
 *.sln
 *.sw?
 
+# Yarn
 .pnp.*
 .yarn/*
 !.yarn/patches

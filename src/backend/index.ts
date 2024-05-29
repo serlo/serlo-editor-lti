@@ -6,7 +6,18 @@ import * as jwt from "jsonwebtoken";
 
 const __dirname = import.meta.dirname;
 
-const ltiKey = process.env.LTI_KEY ?? "";
+const ltiKey = process.env.LTI_KEY;
+if (!ltiKey) {
+  throw new Error(
+    "Missing LTI_KEY. Please ensure there is an .env file and it contains a LTI_KEY."
+  );
+}
+const mongodbConnectionUri = process.env.MONGODB_CONNECTION_URI;
+if (!mongodbConnectionUri) {
+  throw new Error(
+    "Missing MONGODB_CONNECTION_URI. Please ensure there is an .env file and it contains a MONGODB_CONNECTION_URI."
+  );
+}
 
 export const LtiCustomType = t.type({
   editor_mode: t.string, // "read" | "write"
@@ -17,7 +28,7 @@ export const LtiCustomType = t.type({
 ltijs.setup(
   ltiKey,
   {
-    url: "mongodb://localhost:27017/",
+    url: mongodbConnectionUri,
   },
   {
     appUrl: "/lti-success",
@@ -29,19 +40,40 @@ ltijs.setup(
   }
 );
 
-// Serlo editor
+// Opens Serlo editor
 ltijs.app.get("/app", async (_, res) => {
   return res.sendFile(path.join(__dirname, "../../dist/index.html"));
 });
 
 // Endpoint to save content
-ltijs.app.get("/mutate", async (_, res) => {
-  console.log("Request to mutate content");
+ltijs.app.put("/mutate", async (req, res) => {
+  const accessToken = req.body.accessToken;
+  if (typeof accessToken !== "string") {
+    return res.send("Missing or invalid access token");
+  }
 
-  // TODO: Check if access token grants permission to mutate entity. If so, query database.
+  // @ts-expect-error For some reason I need `default` here
+  const decodedAccessToken = jwt.default.verify(accessToken, ltiKey);
 
-  return res.send("Mutated content");
+  if (decodedAccessToken.accessRight !== "write") {
+    return res.send("Access token grants no right to modify content");
+  }
+
+  // TODO: Modify entity with decodedAccessToken.entityId in database
+
+  console.log(
+    `Entity ${
+      decodedAccessToken.entityId
+    } modified in database. New state:\n${JSON.stringify(req.body.editorState)}`
+  );
+
+  return res.send("Success");
 });
+
+// ltijs.app.get("/entity/:id", (req, res) => {
+//   const entityId = req.params.id;
+//   res.send(req.params);
+// });
 
 // Successful LTI launch
 ltijs.onConnect((_, __, res) => {
@@ -66,9 +98,49 @@ ltijs.onConnect((_, __, res) => {
 }, {});
 
 // Successful LTI deep linking launch
-ltijs.onDeepLinking(() => {
-  // TODO
-  // return lti.redirect(res, "/deeplink", { newResource: true });
+ltijs.onDeepLinking((_, __, res) => {
+  // TODO: create new entity in database and get its ID
+  const entityId = 123456;
+
+  // Generate access token (authorizing write access) and send to client
+  // TODO: Maybe use registered jwt names
+  // @ts-expect-error For some reason I need `default` here
+  const accessToken = jwt.default.sign(
+    { entityId, accessRight: "write" },
+    ltiKey // Reuse the symmetric HS256 key used by ltijs to sign ltik and database entries
+  );
+
+  return ltijs.redirect(res, `/app?accessToken=${accessToken}`, {
+    isNewResource: true, // TODO: What does this do?
+  });
+});
+
+ltijs.app.post("/finish-deeplink", async (req, res) => {
+  const accessToken = req.body.accessToken;
+  if (typeof accessToken !== "string") {
+    return res.send("Missing or invalid access token");
+  }
+
+  // @ts-expect-error For some reason I need `default` here
+  const decodedAccessToken = jwt.default.verify(accessToken, ltiKey);
+
+  // This might need to change depending on what type the platform accepts
+  const items = [
+    {
+      type: "ltiResourceLink",
+      url: `http://localhost:3000/entity/${decodedAccessToken.entityId}`,
+      title: `Serlo Editor Content ${decodedAccessToken.entityId}`,
+    },
+  ];
+
+  // Creates the deep linking request form
+  const form = await ltijs.DeepLinking.createDeepLinkingForm(
+    res.locals.token,
+    items,
+    { message: "Deep linking success" }
+  );
+
+  return res.send(form);
 });
 
 // Setup function

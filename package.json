@@ -5,7 +5,9 @@
   "scripts": {
     "build": "tsc && vite build",
     "start": "node --loader=ts-node/esm src/backend/index.ts",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "start:mongodb": "sudo systemctl start mongod",
+    "helper:resolve-mongodb-issue": "sudo rm -rf /tmp/mongodb-27017.sock"
   },
   "author": "Serlo Education e.V.",
   "license": "MIT",
