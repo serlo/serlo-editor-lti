@@ -6,10 +6,10 @@ import * as jwt from "jsonwebtoken";
 
 const __dirname = import.meta.dirname;
 
-const ltiKey = process.env.LTI_KEY;
-if (!ltiKey) {
+const ltijsKey = process.env.LTIJS_KEY;
+if (!ltijsKey) {
   throw new Error(
-    "Missing LTI_KEY. Please ensure there is an .env file and it contains a LTI_KEY."
+    "Missing LTIJS_KEY. Please ensure there is an .env file and it contains a LTIJS_KEY."
   );
 }
 const mongodbConnectionUri = process.env.MONGODB_CONNECTION_URI;
@@ -20,13 +20,13 @@ if (!mongodbConnectionUri) {
 }
 
 export const LtiCustomType = t.type({
-  editor_mode: t.string, // "read" | "write"
+  editor_mode: t.union([t.literal("read"), t.literal("write")]),
   entity_id: t.string,
 });
 
 // Setup
 ltijs.setup(
-  ltiKey,
+  ltijsKey,
   {
     url: mongodbConnectionUri,
   },
@@ -53,7 +53,7 @@ ltijs.app.put("/mutate", async (req, res) => {
   }
 
   // @ts-expect-error For some reason I need `default` here
-  const decodedAccessToken = jwt.default.verify(accessToken, ltiKey);
+  const decodedAccessToken = jwt.default.verify(accessToken, ltijsKey);
 
   if (decodedAccessToken.accessRight !== "write") {
     return res.send("Access token grants no right to modify content");
@@ -77,21 +77,20 @@ ltijs.app.put("/mutate", async (req, res) => {
 
 // Successful LTI launch
 ltijs.onConnect((_, __, res) => {
+  // This might need to change depending on what type the platform sends us
   const custom: unknown = res.locals.context?.custom;
   if (!LtiCustomType.is(custom)) {
     return res.send("Error");
   }
   const editorMode = custom.editor_mode;
   const entityId = custom.entity_id;
-  // res.redirect(302, "/");
-  // return res.send("User connected!");
 
-  // Generate access token (authorizing write access) and send to client
+  // Generate access token and send to client
   // TODO: Maybe use registered jwt names
   // @ts-expect-error For some reason I need `default` here
   const accessToken = jwt.default.sign(
     { entityId, accessRight: editorMode },
-    ltiKey
+    ltijsKey
   );
 
   return ltijs.redirect(res, `/app?accessToken=${accessToken}`);
@@ -107,11 +106,11 @@ ltijs.onDeepLinking((_, __, res) => {
   // @ts-expect-error For some reason I need `default` here
   const accessToken = jwt.default.sign(
     { entityId, accessRight: "write" },
-    ltiKey // Reuse the symmetric HS256 key used by ltijs to sign ltik and database entries
+    ltijsKey // Reuse the symmetric HS256 key used by ltijs to sign ltik and database entries
   );
 
-  return ltijs.redirect(res, `/app?accessToken=${accessToken}`, {
-    isNewResource: true, // TODO: What does this do?
+  return ltijs.redirect(res, `/app?accessToken=${accessToken}?deeplink=true`, {
+    isNewResource: true, // Tell ltijs that this is a new resource so it can update some stuff in the database
   });
 });
 
@@ -122,7 +121,7 @@ ltijs.app.post("/finish-deeplink", async (req, res) => {
   }
 
   // @ts-expect-error For some reason I need `default` here
-  const decodedAccessToken = jwt.default.verify(accessToken, ltiKey);
+  const decodedAccessToken = jwt.default.verify(accessToken, ltijsKey);
 
   // This might need to change depending on what type the platform accepts
   const items = [

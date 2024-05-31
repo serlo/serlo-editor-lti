@@ -6,6 +6,7 @@ function App() {
   const [editorState, setEditorState] = useState<string | undefined>(undefined);
   const [savePending, setSavePending] = useState<boolean>(false);
 
+  // Save content if there are unsaved changed
   useEffect(() => {
     if (!savePending) return;
 
@@ -38,18 +39,25 @@ function App() {
   const ltik = urlParams.get("ltik");
   if (!accessToken || !ltik) return <p>Access token or ltik was missing!</p>;
 
+  const isDeeplink = urlParams.get("deeplink");
+
   return (
     <>
       <div style={{ marginBottom: "3rem" }}>
         {savePending || !editorState ? (
+          // Show close button but disable it
           <button disabled>Close</button>
-        ) : (
+        ) : isDeeplink ? (
+          // Enable close button
           <form method="post" action="http://localhost:3000/finish-deeplink">
             <input type="hidden" name="accessToken" value={accessToken} />
             <input type="hidden" name="ltik" value={ltik} />
             <input type="hidden" name="editorState" value={editorState} />
             <button type="submit">Close</button>
           </form>
+        ) : (
+          // TODO: Maybe close window/tab
+          <button>Close</button>
         )}
       </div>
       <SerloEditor

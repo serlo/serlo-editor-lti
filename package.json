@@ -7,7 +7,9 @@
     "start": "node --loader=ts-node/esm src/backend/index.ts",
     "lint": "tsc --noEmit",
     "start:mongodb": "sudo systemctl start mongod",
-    "helper:resolve-mongodb-issue": "sudo rm -rf /tmp/mongodb-27017.sock"
+    "stop:mongodb": "sudo systemctl stop mongod",
+    "helper:resolve-mongodb-issue": "sudo rm -rf /tmp/mongodb-27017.sock",
+    "helper:clear-mongodb": "mongosh --eval 'use test; db.dropDatabase();'"
   },
   "author": "Serlo Education e.V.",
   "license": "MIT",
