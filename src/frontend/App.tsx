@@ -1,21 +1,21 @@
-import { SerloEditor } from "@serlo/editor";
-import { useEffect, useState } from "react";
+import { SerloEditor } from '@serlo/editor'
+import { useEffect, useState } from 'react'
 
 function App() {
   // TODO: Make editorState always contain valid value
-  const [editorState, setEditorState] = useState<string | undefined>(undefined);
-  const [savePending, setSavePending] = useState<boolean>(false);
+  const [editorState, setEditorState] = useState<string | undefined>(undefined)
+  const [savePending, setSavePending] = useState<boolean>(false)
 
   // Save content if there are unsaved changed
   useEffect(() => {
-    if (!savePending) return;
+    if (!savePending) return
 
-    setTimeout(saveContent, 3000);
+    setTimeout(saveContent, 3000)
     function saveContent() {
-      fetch("/mutate", {
-        method: "PUT",
+      fetch('/mutate', {
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json;charset=utf-8",
+          'Content-Type': 'application/json;charset=utf-8',
           Authorization: `Bearer ${ltik}`,
         },
         body: JSON.stringify({
@@ -24,26 +24,26 @@ function App() {
         }),
       }).then((res) => {
         if (res.status === 200) {
-          setSavePending(false);
+          setSavePending(false)
         } else {
           // TODO: Handle failure
         }
-      });
+      })
     }
-  }, [savePending]);
+  }, [savePending])
 
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
+  const queryString = window.location.search
+  const urlParams = new URLSearchParams(queryString)
 
-  const accessToken = urlParams.get("accessToken");
-  const ltik = urlParams.get("ltik");
-  if (!accessToken || !ltik) return <p>Access token or ltik was missing!</p>;
+  const accessToken = urlParams.get('accessToken')
+  const ltik = urlParams.get('ltik')
+  if (!accessToken || !ltik) return <p>Access token or ltik was missing!</p>
 
-  const isDeeplink = urlParams.get("deeplink");
+  const isDeeplink = urlParams.get('deeplink')
 
   return (
     <>
-      <div style={{ marginBottom: "3rem" }}>
+      <div style={{ marginBottom: '3rem' }}>
         {savePending || !editorState ? (
           // Show close button but disable it
           <button disabled>Close</button>
@@ -62,19 +62,19 @@ function App() {
       </div>
       <SerloEditor
         onChange={({ changed, getDocument }) => {
-          if (!changed) return;
-          const newState = getDocument();
-          if (!newState) return;
-          setEditorState(JSON.stringify(newState));
-          setSavePending(true);
+          if (!changed) return
+          const newState = getDocument()
+          if (!newState) return
+          setEditorState(JSON.stringify(newState))
+          setSavePending(true)
         }}
       >
         {(editor) => {
-          return <>{editor.element}</>;
+          return <>{editor.element}</>
         }}
       </SerloEditor>
     </>
-  );
+  )
 }
 
-export default App;
+export default App
