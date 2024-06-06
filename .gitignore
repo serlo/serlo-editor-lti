@@ -26,11 +26,8 @@ dist-ssr
 *.sln
 *.sw?
 
-# Yarn
-.pnp.*
+# Yarn (https://github.com/yarnpkg/berry/issues/454#issuecomment-530312089)
 .yarn/*
-!.yarn/patches
-!.yarn/plugins
 !.yarn/releases
-!.yarn/sdks
-!.yarn/versions
+!.yarn/plugins
+.pnp.*
