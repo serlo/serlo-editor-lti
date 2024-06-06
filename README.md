@@ -3,11 +3,14 @@ Status: Early prototype
 
 # Setup
 
-1. Install mongodb and make sure it is running
-2. `yarn build` to build the frontend
-3. `yarn start` to start the express server
-4. Go to https://saltire.lti.app/platform, navigate to "Advanced options" and upload file `saltire-platform.config`
-5. Click "Connect"
+1. Copy `.env-template` to `.env` and update the LTIKEY
+
+# Open the editor via LTI
+
+1. `yarn build` to build the frontend
+2. `yarn start` to start the express server together with mongodb
+3. Go to https://saltire.lti.app/platform, navigate to "Advanced options" and upload file `saltire-platform.config`
+4. Click "Connect"
 
 The editor should open in a new tab.
 

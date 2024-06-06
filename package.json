@@ -4,12 +4,12 @@
   "type": "module",
   "scripts": {
     "build": "tsc && vite build",
-    "start": "node --loader=ts-node/esm src/backend/index.ts",
     "lint": "tsc --noEmit",
-    "start:mongodb": "sudo systemctl start mongod",
-    "stop:mongodb": "sudo systemctl stop mongod",
-    "helper:resolve-mongodb-issue": "sudo rm -rf /tmp/mongodb-27017.sock",
-    "helper:clear-mongodb": "mongosh --eval 'use test; db.dropDatabase();'"
+    "start": "run-s start:containers start:server",
+    "start:server": "node --loader=ts-node/esm src/backend/index.ts",
+    "start:containers": "docker compose up -d",
+    "stop:containers": "docker compose down",
+    "mongo:clear-database": "docker compose exec mongo mongosh --eval 'use test; db.dropDatabase();'"
   },
   "author": "Serlo Education e.V.",
   "license": "MIT",
@@ -38,6 +38,7 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "npm-run-all": "^4.1.5",
     "vite": "^5.2.0"
   },
   "engines": {
