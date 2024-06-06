@@ -1,6 +1,6 @@
 import { Provider as ltijs } from 'ltijs'
 import 'dotenv/config'
-import path from 'node:path'
+import path from 'path'
 import * as t from 'io-ts'
 import * as jwt from 'jsonwebtoken'
 
