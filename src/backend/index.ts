@@ -5,19 +5,7 @@ import * as t from 'io-ts'
 import * as jwt from 'jsonwebtoken'
 
 const __dirname = import.meta.dirname
-
-const ltijsKey = process.env.LTIJS_KEY
-if (!ltijsKey) {
-  throw new Error(
-    'Missing LTIJS_KEY. Please ensure there is an .env file and it contains a LTIJS_KEY.',
-  )
-}
-const mongodbConnectionUri = process.env.MONGODB_CONNECTION_URI
-if (!mongodbConnectionUri) {
-  throw new Error(
-    'Missing MONGODB_CONNECTION_URI. Please ensure there is an .env file and it contains a MONGODB_CONNECTION_URI.',
-  )
-}
+const ltijsKey = readEnvVariable('LTIJS_KEY')
 
 export const LtiCustomType = t.type({
   editor_mode: t.union([t.literal('read'), t.literal('write')]),
@@ -27,9 +15,7 @@ export const LtiCustomType = t.type({
 // Setup
 ltijs.setup(
   ltijsKey,
-  {
-    url: mongodbConnectionUri,
-  },
+  { url: readEnvVariable('MONGODB_CONNECTION_URI') },
   {
     appUrl: '/lti-success',
     staticPath: path.join(__dirname, './../../dist'), // Path to static files
@@ -164,3 +150,13 @@ const setup = async () => {
 }
 
 setup()
+
+function readEnvVariable(name: string): string {
+  const value = process.env[name]
+  if (!value) {
+    throw new Error(
+      `Missing ${name}. Please ensure there is an .env file and it contains a ${name}.`,
+    )
+  }
+  return value
+}
