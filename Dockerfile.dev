@@ -1,0 +1,12 @@
+# TODO: app in development mode!!
+
+FROM node:20.13
+WORKDIR /app
+
+COPY . .
+
+# TODO: install neovim
+RUN yarn --immutable --immutable-cache --silent
+RUN yarn build
+
+ENTRYPOINT ["yarn", "start:dev"]
