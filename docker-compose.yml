@@ -1,7 +1,7 @@
 services:
   mysql:
     image: mysql:8
-    platform: linux/x86_64
-    pull_policy: always
     ports:
       - '3306:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
