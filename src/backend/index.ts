@@ -27,7 +27,8 @@ ltijs.setup(
   },
 )
 
-ltijs.whitelist({ route: '/index.js', method: 'get' })
+// Compiles `src/frontend/index.tsx` on the fly with esbuild to a bundled
+// JavaScript file.
 ltijs.app.get('/index.js', async (_, res) => {
   res.setHeader('Content-Type', 'application/javascript')
 
@@ -35,16 +36,16 @@ ltijs.app.get('/index.js', async (_, res) => {
     const result = await esbuild.build({
       entryPoints: [path.join(__dirname, '..', 'frontend', 'index.tsx')],
       bundle: true,
-      minify: false,
-      keepNames: true,
-      sourcemap: true,
       format: 'esm',
       platform: 'browser',
       write: false,
+      minify: true,
       treeShaking: true,
       define: {
         'process.env.NEXT_PUBLIC_ENV': '"development"',
         'process.env.__NEXT_STRICT_NEXT_HEAD': 'false',
+        'process.env.__NEXT_ROUTER_BASEPATH': 'false',
+        'process.env.__NEXT_SCROLL_RESTORATION': 'false',
       },
     })
 
@@ -55,6 +56,9 @@ ltijs.app.get('/index.js', async (_, res) => {
     res.status(500).send('Error bundling TypeScript')
   }
 })
+// In order to not forwarding the accessToken to it, we disable LTI
+// autentication for `/index.js`
+ltijs.whitelist({ route: '/index.js', method: 'get' })
 
 // Endpoint to save content
 ltijs.app.put('/mutate', async (req, res) => {
