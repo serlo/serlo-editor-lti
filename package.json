@@ -9,7 +9,7 @@
     "start:mysql": "docker compose up -d",
     "stop:mysql": "docker compose down",
     "mysql": "docker compose exec mysql mysql --user=root --password=secret itslearning",
-    "mysql:dump": "docker compose exec -T mysql mysqldump --user=root --password=secret --databases itslearning > mysql-init.sql",
+    "mysql:dump": "docker compose exec -T mysql mysqldump --user=root --password=secret --databases itslearning > docker-entrypoint-initdb.d/001-init.sql",
     "start:mongodb": "sudo systemctl start mongod",
     "stop:mongodb": "sudo systemctl stop mongod",
     "helper:resolve-mongodb-issue": "sudo rm -rf /tmp/mongodb-27017.sock",
