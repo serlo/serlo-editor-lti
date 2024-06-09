@@ -3,7 +3,6 @@
 FROM node:20.13-alpine
 WORKDIR /app
 
-COPY .yarn .yarn
 COPY tsconfig.json tsconfig.node.json \
     vite.config.ts index.html \
     package.json yarn.lock ./
