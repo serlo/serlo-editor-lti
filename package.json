@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc && vite build",
-    "docker:run": "docker run -p 3000:3000 -d --env-file .env-template --add-host=host.docker.internal:host-gateway local-build",
+    "docker:run": "docker run -p 3000:3000 -d --env-file .env-template --add-host=host.docker.internal:host-gateway",
     "start": "node --loader=ts-node/esm src/backend/index.ts",
     "start:dev": "nodemon --watch src --ext ts,tsx -exec 'node --loader=ts-node/esm src/backend/index.ts' --delay 3",
     "lint": "tsc --noEmit",

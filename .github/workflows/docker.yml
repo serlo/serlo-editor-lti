@@ -28,7 +28,7 @@ jobs:
           tags: local-build:${{ matrix.imagetag }}
       - uses: serlo/configure-repositories/actions/setup-node@main
       - name: Run the ${{ matrix.imagetag }} docker image
-        run: yarn docker:run
+        run: yarn docker:run local-build:${{ matrix.imagetag }}
       # TODO
       # - name: Test the docker container ${{ matrix.imagetag }}
       #   run: yarn test:docker
