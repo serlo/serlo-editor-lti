@@ -6,13 +6,15 @@ function App() {
   const [editorState, setEditorState] = useState<string | undefined>(undefined);
   const [savePending, setSavePending] = useState<boolean>(false);
 
+  // TODO: Fetch content json from database. Send along access token to authenticate request.
+
   // Save content if there are unsaved changed
   useEffect(() => {
     if (!savePending) return;
 
-    setTimeout(saveContent, 3000);
+    setTimeout(saveContent, 1000);
     function saveContent() {
-      fetch("/mutate", {
+      fetch("/entity", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json;charset=utf-8",

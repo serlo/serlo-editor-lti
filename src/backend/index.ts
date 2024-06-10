@@ -21,7 +21,6 @@ if (!mongodbConnectionUri) {
 
 export const LtiCustomType = t.type({
   editor_mode: t.union([t.literal("read"), t.literal("write")]),
-  entity_id: t.string,
 });
 
 // Setup
@@ -31,6 +30,7 @@ ltijs.setup(
     url: mongodbConnectionUri,
   },
   {
+    // TODO: Maybe rename? Is there a convention in the LTI world?
     appUrl: "/lti-success",
     staticPath: path.join(__dirname, "./../../dist"), // Path to static files
     cookies: {
@@ -45,8 +45,39 @@ ltijs.app.get("/app", async (_, res) => {
   return res.sendFile(path.join(__dirname, "../../dist/index.html"));
 });
 
+// Endpoint to get content
+ltijs.app.get("/entity", (req, res) => {
+  const accessToken = req.body.accessToken;
+  if (typeof accessToken !== "string") {
+    return res.send("Missing or invalid access token");
+  }
+
+  // @ts-expect-error For some reason I need `default` here
+  const decodedAccessToken = jwt.default.verify(accessToken, ltijsKey);
+
+  // TODO: Get json from database with decodedAccessToken.entityId
+  const json = {
+    plugin: "rows",
+    state: [
+      {
+        plugin: "text",
+        state: [
+          {
+            type: "p",
+            children: {
+              text: "Test content",
+            },
+          },
+        ],
+      },
+    ],
+  };
+
+  res.json(json);
+});
+
 // Endpoint to save content
-ltijs.app.put("/mutate", async (req, res) => {
+ltijs.app.put("/entity", async (req, res) => {
   const accessToken = req.body.accessToken;
   if (typeof accessToken !== "string") {
     return res.send("Missing or invalid access token");
@@ -70,27 +101,27 @@ ltijs.app.put("/mutate", async (req, res) => {
   return res.send("Success");
 });
 
-// ltijs.app.get("/entity/:id", (req, res) => {
-//   const entityId = req.params.id;
-//   res.send(req.params);
-// });
-
 // Successful LTI launch
-ltijs.onConnect((_, __, res) => {
+ltijs.onConnect((_, req, res) => {
+  // Using search query params is suggested by ltijs, see: https://github.com/Cvmcosta/ltijs/issues/100#issuecomment-832284300
+  const entityId = req.query.entityId;
+
+  if (!entityId)
+    return res.send('Search query parameter "entityId" was missing!');
+
   // This might need to change depending on what type the platform sends us
   const custom: unknown = res.locals.context?.custom;
   if (!LtiCustomType.is(custom)) {
-    return res.send("Error");
+    return res.send("Custom claim malformed!");
   }
   const editorMode = custom.editor_mode;
-  const entityId = custom.entity_id;
 
   // Generate access token and send to client
   // TODO: Maybe use registered jwt names
   // @ts-expect-error For some reason I need `default` here
   const accessToken = jwt.default.sign(
     { entityId, accessRight: editorMode },
-    ltijsKey
+    ltijsKey // Reuse the symmetric HS256 key used by ltijs to sign ltik and database entries
   );
 
   return ltijs.redirect(res, `/app?accessToken=${accessToken}`);
@@ -109,7 +140,11 @@ ltijs.onDeepLinking((_, __, res) => {
     ltijsKey // Reuse the symmetric HS256 key used by ltijs to sign ltik and database entries
   );
 
-  return ltijs.redirect(res, `/app?accessToken=${accessToken}?deeplink=true`, {
+  const searchParams = new URLSearchParams();
+  searchParams.append("accessToken", accessToken);
+  searchParams.append("deeplink", "true");
+
+  return ltijs.redirect(res, `/app?${searchParams}`, {
     isNewResource: true, // Tell ltijs that this is a new resource so it can update some stuff in the database
   });
 });
@@ -123,11 +158,14 @@ ltijs.app.post("/finish-deeplink", async (req, res) => {
   // @ts-expect-error For some reason I need `default` here
   const decodedAccessToken = jwt.default.verify(accessToken, ltijsKey);
 
+  const url = new URL("http://localhost:3000");
+  url.searchParams.append("entityId", decodedAccessToken.entityId);
+
   // This might need to change depending on what type the platform accepts
   const items = [
     {
       type: "ltiResourceLink",
-      url: `http://localhost:3000/entity/${decodedAccessToken.entityId}`,
+      url: `http://localhost:3000/lti-success?entityId=${decodedAccessToken.entityId}`,
       title: `Serlo Editor Content ${decodedAccessToken.entityId}`,
     },
   ];
@@ -161,6 +199,17 @@ const setup = async () => {
       key: "https://saltire.lti.app/platform/jwks/sc24671cd70c6e45554e6c405a2f5d966",
     },
   });
+  // await ltijs.registerPlatform({
+  //   url: "http://localhost",
+  //   name: "Moodle",
+  //   clientId: "xQrV6j9I3ls6kaN",
+  //   authenticationEndpoint: "http://localhost/mod/lti/auth.php",
+  //   accesstokenEndpoint: "http://localhost/mod/lti/token.php",
+  //   authConfig: {
+  //     method: "JWK_SET",
+  //     key: "http://localhost/mod/lti/certs.php",
+  //   },
+  // });
 };
 
 setup();

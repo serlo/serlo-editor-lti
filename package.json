@@ -11,7 +11,7 @@
     "start:mongodb": "sudo systemctl start mongod",
     "stop:mongodb": "sudo systemctl stop mongod",
     "helper:resolve-mongodb-issue": "sudo rm -rf /tmp/mongodb-27017.sock",
-    "helper:clear-mongodb": "mongosh --eval 'use test; db.dropDatabase();'"
+    "helper:clear-mongodb": "mongosh --eval 'use test; db.dropDatabase(); db.dropAllUsers();'"
   },
   "author": "Serlo Education e.V.",
   "dependencies": {
