@@ -1,7 +1,9 @@
 {
   "name": "serlo-editor-lti-tool",
+  "private": true,
   "version": "0.0.1",
   "type": "module",
+  "license": "Apache-2.0",
   "scripts": {
     "build": "tsc && vite build",
     "docker:run": "docker run -p 3000:3000 -d --env-file .env-template --add-host=host.docker.internal:host-gateway",
@@ -17,7 +19,6 @@
     "helper:clear-mongodb": "mongosh --eval 'use test; db.dropDatabase();'"
   },
   "author": "Serlo Education e.V.",
-  "license": "MIT",
   "dependencies": {
     "@serlo/editor": "0.7.2",
     "dotenv": "^16.0.3",
@@ -46,7 +47,5 @@
     "nodemon": "^3.1.3",
     "vite": "^5.2.0"
   },
-  "engines": {
-    "node": "20.13.1"
-  }
+  "packageManager": "yarn@4.2.2"
 }
