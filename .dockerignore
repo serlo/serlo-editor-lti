@@ -1,4 +1,4 @@
-# .env - Should not be added because it contains private keys used for encryption
+# .env - Should not be added because it contains private keys used for encryption. Instead, provide env variables to the docker container. 
 .env
 
 # Logs
@@ -10,11 +10,6 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -25,12 +20,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Yarn
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
