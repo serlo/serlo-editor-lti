@@ -1,7 +1,9 @@
 {
   "name": "serlo-editor-lti-tool",
+  "private": true,
   "version": "0.0.1",
   "type": "module",
+  "license": "Apache-2.0",
   "scripts": {
     "build": "tsc && vite build",
     "start": "node --loader=ts-node/esm src/backend/index.ts",
@@ -12,7 +14,6 @@
     "helper:clear-mongodb": "mongosh --eval 'use test; db.dropDatabase();'"
   },
   "author": "Serlo Education e.V.",
-  "license": "MIT",
   "dependencies": {
     "@serlo/editor": "0.7.2",
     "dotenv": "^16.0.3",
@@ -39,9 +40,6 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
     "vite": "^5.2.0"
-  },
-  "engines": {
-    "node": "20.13.1"
   },
   "packageManager": "yarn@4.2.2"
 }
