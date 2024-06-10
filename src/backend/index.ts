@@ -30,8 +30,10 @@ ltijs.setup(
     url: mongodbConnectionUri,
   },
   {
-    // TODO: Maybe rename? Is there a convention in the LTI world?
-    appUrl: "/lti-success",
+    appUrl: "/lti/launch",
+    loginUrl: "/lti/login",
+    keysetUrl: "/lti/keys",
+    dynRegRoute: "/lti/register",
     staticPath: path.join(__dirname, "./../../dist"), // Path to static files
     cookies: {
       secure: false, // Set secure to true if the testing platform is in a different domain and https is being used
@@ -166,7 +168,7 @@ ltijs.app.post("/finish-deeplink", async (req, res) => {
   const items = [
     {
       type: "ltiResourceLink",
-      url: `http://localhost:3000/lti-success?entityId=${decodedAccessToken.entityId}`,
+      url: `http://localhost:3000/lti/launch?entityId=${decodedAccessToken.entityId}`,
       title: `Serlo Editor Content ${decodedAccessToken.entityId}`,
       text: "Placeholder description",
       // icon:
