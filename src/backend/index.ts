@@ -162,11 +162,24 @@ ltijs.app.post("/finish-deeplink", async (req, res) => {
   url.searchParams.append("entityId", decodedAccessToken.entityId);
 
   // This might need to change depending on what type the platform accepts
+  // https://www.imsglobal.org/spec/lti-dl/v2p0#lti-resource-link
   const items = [
     {
       type: "ltiResourceLink",
       url: `http://localhost:3000/lti-success?entityId=${decodedAccessToken.entityId}`,
       title: `Serlo Editor Content ${decodedAccessToken.entityId}`,
+      text: "Placeholder description",
+      // icon:
+      // thumbnail:
+      // window:
+      iframe: {
+        width: 400,
+        height: 300,
+      },
+      // custom:
+      // lineItem:
+      // available:
+      // submission:
     },
   ];
 
