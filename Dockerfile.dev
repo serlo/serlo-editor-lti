@@ -4,7 +4,7 @@ WORKDIR /app
 # maybe easier to git clone the repo
 COPY . .
 
-RUN apt update && apt install neovim -y
+RUN apt update && apt install neovim nano -y
 RUN yarn --immutable --immutable-cache --silent
 RUN yarn build
 
