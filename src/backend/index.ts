@@ -1,23 +1,23 @@
 import { Provider as ltijs } from "ltijs";
 import "dotenv/config";
-import path from "node:path";
+import path from "path";
 import * as t from "io-ts";
 import * as jwt from "jsonwebtoken";
 
 const __dirname = import.meta.dirname;
 
-const ltijsKey = process.env.LTIJS_KEY;
-if (!ltijsKey) {
-  throw new Error(
-    "Missing LTIJS_KEY. Please ensure there is an .env file and it contains a LTIJS_KEY."
-  );
-}
-const mongodbConnectionUri = process.env.MONGODB_CONNECTION_URI;
-if (!mongodbConnectionUri) {
-  throw new Error(
-    "Missing MONGODB_CONNECTION_URI. Please ensure there is an .env file and it contains a MONGODB_CONNECTION_URI."
-  );
-}
+const ltijsKey = readEnvVariable("LTIJS_KEY");
+const mongodbConnectionUri = readEnvVariable("MONGODB_CONNECTION_URI");
+const ltiPlatform = {
+  url: readEnvVariable("LTI_PLATFORM_URL"),
+  name: readEnvVariable("LTI_PLATFORM_NAME"),
+  clientId: readEnvVariable("LTI_PLATFORM_CLIENT_ID"),
+  authenticationEndpoint: readEnvVariable(
+    "LTI_PLATFORM_AUTHENTICATION_ENDPOINT"
+  ),
+  accessTokenEndpoint: readEnvVariable("LTI_PLATFORM_ACCESS_TOKEN_ENDPOINT"),
+  keysetEndpoint: readEnvVariable("LTI_PLATFORM_KEYSET_ENDPOINT"),
+};
 
 export const LtiCustomType = t.type({
   editor_mode: t.union([t.literal("read"), t.literal("write")]),
@@ -33,6 +33,7 @@ ltijs.setup(
     appUrl: "/lti/launch",
     loginUrl: "/lti/login",
     keysetUrl: "/lti/keys",
+    // @ts-expect-error @types/ltijs is missing this
     dynRegRoute: "/lti/register",
     staticPath: path.join(__dirname, "./../../dist"), // Path to static files
     cookies: {
@@ -203,15 +204,14 @@ const setup = async () => {
    * Register platform
    */
   await ltijs.registerPlatform({
-    url: "https://saltire.lti.app/platform",
-    name: "saltire.lti.app",
-    clientId: "saltire.lti.app",
-    authenticationEndpoint: "https://saltire.lti.app/platform/auth",
-    accesstokenEndpoint:
-      "https://saltire.lti.app/platform/token/sc24671cd70c6e45554e6c405a2f5d966",
+    url: ltiPlatform.url,
+    name: ltiPlatform.name,
+    clientId: ltiPlatform.clientId,
+    authenticationEndpoint: ltiPlatform.authenticationEndpoint,
+    accesstokenEndpoint: ltiPlatform.accessTokenEndpoint,
     authConfig: {
       method: "JWK_SET",
-      key: "https://saltire.lti.app/platform/jwks/sc24671cd70c6e45554e6c405a2f5d966",
+      key: ltiPlatform.keysetEndpoint,
     },
   });
   // await ltijs.registerPlatform({
@@ -228,3 +228,13 @@ const setup = async () => {
 };
 
 setup();
+
+function readEnvVariable(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(
+      `Missing env variable ${name}. In local development, please copy '.env-template' to new file '.env' and change values if needed.`
+    );
+  }
+  return value;
+}
