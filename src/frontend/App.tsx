@@ -51,10 +51,7 @@ function App() {
           <button disabled>Close</button>
         ) : isDeeplink ? (
           // Enable close button
-          <form
-            method="post"
-            action="http://localhost:3000/lti/finish-deeplink"
-          >
+          <form method="post" action="/lti/finish-deeplink">
             <input type="hidden" name="accessToken" value={accessToken} />
             <input type="hidden" name="ltik" value={ltik} />
             <input type="hidden" name="editorState" value={editorState} />

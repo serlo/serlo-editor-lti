@@ -102,8 +102,9 @@ ltijs.app.put("/entity", async (req, res) => {
 
 // Successful LTI launch
 ltijs.onConnect((idToken, req, res) => {
+  // Get entityId from either search query params or lti custom claim
   // Using search query params is suggested by ltijs, see: https://github.com/Cvmcosta/ltijs/issues/100#issuecomment-832284300
-  const entityId = req.query.entityId;
+  const entityId = req.query.entityId ?? res.locals.context?.custom?.entityId;
 
   if (!entityId)
     return res.send('Search query parameter "entityId" was missing!');
@@ -197,6 +198,9 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
       // lineItem:
       // available:
       // submission:
+      custom: {
+        entityId: decodedAccessToken.entityId,
+      },
     },
   ];
 
@@ -218,9 +222,11 @@ const setup = async () => {
   // There might be already an entry in mongodb for this platform. On restart, we want to remove it and re-add it to prevent the issue `bad decrypt`. See: https://github.com/Cvmcosta/ltijs/issues/119#issuecomment-882898770
   ltijs.deletePlatform(ltiPlatform.url, ltiPlatform.clientId);
 
+  console.log(`Registered platform: ${ltiPlatform.name}`);
+
   // Register platform
   await ltijs.registerPlatform({
-    url: ltiPlatform.url,
+    url: ltiPlatform.url, // LTI iss
     name: ltiPlatform.name,
     clientId: ltiPlatform.clientId,
     authenticationEndpoint: ltiPlatform.authenticationEndpoint,
