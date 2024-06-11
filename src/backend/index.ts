@@ -1,7 +1,6 @@
 import { Provider as ltijs } from "ltijs";
 import "dotenv/config";
 import path from "path";
-import * as t from "io-ts";
 import * as jwt from "jsonwebtoken";
 
 // Requires Node.js 20.11 or higher
@@ -19,10 +18,6 @@ const ltiPlatform = {
   accessTokenEndpoint: readEnvVariable("LTI_PLATFORM_ACCESS_TOKEN_ENDPOINT"),
   keysetEndpoint: readEnvVariable("LTI_PLATFORM_KEYSET_ENDPOINT"),
 };
-
-export const LtiCustomType = t.type({
-  editor_mode: t.union([t.literal("read"), t.literal("write")]),
-});
 
 // Setup
 ltijs.setup(
@@ -106,19 +101,37 @@ ltijs.app.put("/entity", async (req, res) => {
 });
 
 // Successful LTI launch
-ltijs.onConnect((_, req, res) => {
+ltijs.onConnect((idToken, req, res) => {
   // Using search query params is suggested by ltijs, see: https://github.com/Cvmcosta/ltijs/issues/100#issuecomment-832284300
   const entityId = req.query.entityId;
 
   if (!entityId)
     return res.send('Search query parameter "entityId" was missing!');
 
-  // This might need to change depending on what type the platform sends us
-  const custom: unknown = res.locals.context?.custom;
-  if (!LtiCustomType.is(custom)) {
-    return res.send("Custom claim malformed!");
-  }
-  const editorMode = custom.editor_mode;
+  // https://www.imsglobal.org/spec/lti/v1p3#lis-vocabulary-for-context-roles
+  // Example roles claim from itslearning
+  // "https://purl.imsglobal.org/spec/lti/claim/roles":[
+  //   0:"http://purl.imsglobal.org/vocab/lis/v2/institution/person#Staff"
+  //   1:"http://purl.imsglobal.org/vocab/lis/v2/membership#Instructor"
+  // ]
+  const rolesWithWriteAccess = [
+    "membership#Administrator",
+    "membership#ContentDeveloper",
+    "membership#Instructor",
+    "membership#Mentor",
+    "membership#Manager",
+    "membership#Officer",
+  ];
+  const courseMembershipRole = idToken.roles.find((role) =>
+    role.includes("membership#")
+  );
+  const editorMode =
+    courseMembershipRole &&
+    rolesWithWriteAccess.some((roleWithWriteAccess) =>
+      courseMembershipRole.includes(roleWithWriteAccess)
+    )
+      ? "write"
+      : "read";
 
   // Generate access token and send to client
   // TODO: Maybe use registered jwt names

@@ -1,5 +1,6 @@
 import { SerloEditor } from "@serlo/editor";
 import { useEffect, useState } from "react";
+import * as jwt from "jsonwebtoken";
 
 function App() {
   // TODO: Make editorState always contain valid value
@@ -41,6 +42,8 @@ function App() {
   const ltik = urlParams.get("ltik");
   if (!accessToken || !ltik) return <p>Access token or ltik was missing!</p>;
 
+  const decodedAccessToken = jwt.decode(accessToken);
+
   const isDeeplink = urlParams.get("deeplink");
 
   return (
@@ -78,6 +81,11 @@ function App() {
           return <>{editor.element}</>;
         }}
       </SerloEditor>
+      <h2>Debug info</h2>
+      <h3>Access token:</h3>
+      <div>{JSON.stringify(decodedAccessToken)}</div>
+      <h3>ltik:</h3>
+      <div>{ltik}</div>
     </>
   );
 }
