@@ -4,6 +4,7 @@ import path from "path";
 import * as t from "io-ts";
 import * as jwt from "jsonwebtoken";
 
+// Requires Node.js 20.11 or higher
 const __dirname = import.meta.dirname;
 
 const ltijsKey = readEnvVariable("LTIJS_KEY");

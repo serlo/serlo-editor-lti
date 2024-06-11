@@ -6,8 +6,13 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc && vite build",
+    "docker:run": "docker run -p 3000:3000 -d --env-file .env-template --add-host=host.docker.internal:host-gateway",
     "start": "node --loader=ts-node/esm src/backend/index.ts",
+    "start:dev": "nodemon --watch src --ext ts,tsx -exec 'node --loader=ts-node/esm src/backend/index.ts' --delay 3",
     "lint": "tsc --noEmit",
+    "push-image": "yarn node --loader=ts-node/esm push-image.ts",
+    "push-image:dev": "yarn push-image dev",
+    "push-image:latest": "yarn push-image latest",
     "start:mongodb": "sudo systemctl start mongod",
     "stop:mongodb": "sudo systemctl stop mongod",
     "helper:resolve-mongodb-issue": "sudo rm -rf /tmp/mongodb-27017.sock",
@@ -39,6 +44,7 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "nodemon": "^3.1.3",
     "vite": "^5.2.0"
   },
   "packageManager": "yarn@4.2.2"
