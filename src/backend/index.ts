@@ -214,9 +214,11 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
 const setup = async () => {
   await ltijs.deploy();
 
-  /**
-   * Register platform
-   */
+  // Remove platform (if it exists)
+  // There might be already an entry in mongodb for this platform. On restart, we want to remove it and re-add it to prevent the issue `bad decrypt`. See: https://github.com/Cvmcosta/ltijs/issues/119#issuecomment-882898770
+  ltijs.deletePlatform(ltiPlatform.url, ltiPlatform.clientId);
+
+  // Register platform
   await ltijs.registerPlatform({
     url: ltiPlatform.url,
     name: ltiPlatform.name,
@@ -228,6 +230,7 @@ const setup = async () => {
       key: ltiPlatform.keysetEndpoint,
     },
   });
+  // Register Moodle as platform
   // await ltijs.registerPlatform({
   //   url: "http://localhost",
   //   name: "Moodle",
