@@ -153,7 +153,7 @@ ltijs.onDeepLinking((_, __, res) => {
   });
 });
 
-ltijs.app.post("/finish-deeplink", async (req, res) => {
+ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
   const accessToken = req.body.accessToken;
   if (typeof accessToken !== "string") {
     return res.send("Missing or invalid access token");
