@@ -123,7 +123,7 @@ ltijs.onConnect((idToken, req, res) => {
     "membership#Manager",
     "membership#Officer",
   ];
-  const courseMembershipRole = idToken.roles.find((role) =>
+  const courseMembershipRole = idToken.roles?.find((role) =>
     role.includes("membership#")
   );
   const editorMode =
@@ -181,8 +181,6 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
   );
   url.pathname = "/lti/launch";
   url.searchParams.append("entityId", decodedAccessToken.entityId);
-
-  console.log(url.href);
 
   // This might need to change depending on what type the platform accepts
   // https://www.imsglobal.org/spec/lti-dl/v2p0#lti-resource-link
