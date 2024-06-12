@@ -176,15 +176,20 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
   // @ts-expect-error For some reason I need `default` here
   const decodedAccessToken = jwt.default.verify(accessToken, ltijsKey);
 
-  const url = new URL("http://localhost:3000");
+  const url = new URL(
+    process.env["ORIGIN"] ?? "https://editor.serlo-staging.dev"
+  );
+  url.pathname = "/lti/launch";
   url.searchParams.append("entityId", decodedAccessToken.entityId);
+
+  console.log(url.href);
 
   // This might need to change depending on what type the platform accepts
   // https://www.imsglobal.org/spec/lti-dl/v2p0#lti-resource-link
   const items = [
     {
       type: "ltiResourceLink",
-      url: `http://localhost:3000/lti/launch?entityId=${decodedAccessToken.entityId}`,
+      url: url.href,
       title: `Serlo Editor Content ${decodedAccessToken.entityId}`,
       text: "Placeholder description",
       // icon:
