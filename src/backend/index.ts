@@ -33,8 +33,8 @@ ltijs.setup(
     dynRegRoute: "/lti/register",
     staticPath: path.join(__dirname, "./../../dist"), // Path to static files
     cookies: {
-      secure: false, // Set secure to true if the testing platform is in a different domain and https is being used
-      sameSite: "", // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
+      secure: process.env["ENVIRONMENT"] === "local" ? false : true, // Set secure to true if the testing platform is in a different domain and https is being used
+      sameSite: process.env["ENVIRONMENT"] === "local" ? "" : "None", // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
     },
   }
 );
@@ -177,7 +177,9 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
   const decodedAccessToken = jwt.default.verify(accessToken, ltijsKey);
 
   const url = new URL(
-    process.env["ORIGIN"] ?? "https://editor.serlo-staging.dev"
+    process.env["ENVIRONMENT"] === "local"
+      ? "http://localhost:3000"
+      : "https://editor.serlo-staging.dev"
   );
   url.pathname = "/lti/launch";
   url.searchParams.append("entityId", decodedAccessToken.entityId);
@@ -221,9 +223,15 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
 const setup = async () => {
   await ltijs.deploy();
 
-  // Remove platform (if it exists)
+  // Remove all platforms
   // There might be already an entry in mongodb for this platform. On restart, we want to remove it and re-add it to prevent the issue `bad decrypt`. See: https://github.com/Cvmcosta/ltijs/issues/119#issuecomment-882898770
-  ltijs.deletePlatform(ltiPlatform.url, ltiPlatform.clientId);
+  const platforms = await ltijs.getAllPlatforms();
+  if (platforms) {
+    for (const platform of platforms) {
+      // @ts-expect-error @types/ltijs is missing this
+      await platform.delete();
+    }
+  }
 
   console.log(`Registered platform: ${ltiPlatform.name}`);
 
