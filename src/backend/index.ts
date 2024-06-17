@@ -182,9 +182,9 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
       : "https://editor.serlo-staging.dev"
   );
   url.pathname = "/lti/launch";
-  url.searchParams.append("entityId", decodedAccessToken.entityId);
+  // Temporarily deactivated
+  // url.searchParams.append("entityId", decodedAccessToken.entityId);
 
-  // This might need to change depending on what type the platform accepts
   // https://www.imsglobal.org/spec/lti-dl/v2p0#lti-resource-link
   const items = [
     {
@@ -195,16 +195,20 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
       // icon:
       // thumbnail:
       // window:
-      iframe: {
-        width: 400,
-        height: 300,
+      // iframe: {
+      //   width: 400,
+      //   height: 300,
+      // },
+      custom: {
+        entityId: decodedAccessToken.entityId,
       },
-      // custom:
       // lineItem:
       // available:
       // submission:
-      custom: {
-        entityId: decodedAccessToken.entityId,
+
+      // Custom properties
+      presentation: {
+        documentTarget: "iframe",
       },
     },
   ];
