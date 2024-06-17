@@ -213,7 +213,7 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
   const form = await ltijs.DeepLinking.createDeepLinkingForm(
     res.locals.token,
     items,
-    { message: "Deep linking success" }
+    {}
   );
 
   return res.send(form);
@@ -239,7 +239,7 @@ const setup = async () => {
   await ltijs.registerPlatform({
     url: ltiPlatform.url, // LTI iss
     name: ltiPlatform.name,
-    clientId: ltiPlatform.clientId,
+    clientId: ltiPlatform.clientId, // The ID for this LTI tool on the LTI platform
     authenticationEndpoint: ltiPlatform.authenticationEndpoint,
     accesstokenEndpoint: ltiPlatform.accessTokenEndpoint,
     authConfig: {
