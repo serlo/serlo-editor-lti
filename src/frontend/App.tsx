@@ -1,9 +1,30 @@
 import { SerloEditor } from "@serlo/editor";
 import { useEffect, useState } from "react";
 
+const initialEditorState = {
+  plugin: "rows",
+  state: [
+    {
+      plugin: "text",
+      state: [
+        {
+          type: "p",
+          children: [
+            {
+              text: "",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 function App() {
   // TODO: Make editorState always contain valid value
-  const [editorState, setEditorState] = useState<string | undefined>(undefined);
+  const [editorState, setEditorState] = useState<string>(
+    JSON.stringify(initialEditorState)
+  );
   const [savePending, setSavePending] = useState<boolean>(false);
 
   // TODO: Fetch content json from database. Send along access token to authenticate request.
@@ -55,7 +76,16 @@ function App() {
             <input type="hidden" name="accessToken" value={accessToken} />
             <input type="hidden" name="ltik" value={ltik} />
             <input type="hidden" name="editorState" value={editorState} />
-            <button type="submit">Close</button>
+            <button
+              style={{
+                backgroundColor: "grey",
+                borderRadius: "5px",
+                padding: "5px",
+              }}
+              type="submit"
+            >
+              Close
+            </button>
           </form>
         ) : (
           // TODO: Maybe close window/tab

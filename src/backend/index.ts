@@ -1,4 +1,4 @@
-import { Provider as ltijs } from "ltijs";
+import { IdToken, Provider as ltijs } from "ltijs";
 import "dotenv/config";
 import path from "path";
 import * as jwt from "jsonwebtoken";
@@ -168,6 +168,8 @@ ltijs.onDeepLinking((_, __, res) => {
 });
 
 ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
+  const idToken = res.locals.token as IdToken | undefined;
+  if (!idToken) return res.send("Missing idToken");
   const accessToken = req.body.accessToken;
   if (typeof accessToken !== "string") {
     return res.send("Missing or invalid access token");
@@ -215,7 +217,7 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
 
   // Creates the deep linking request form
   const form = await ltijs.DeepLinking.createDeepLinkingForm(
-    res.locals.token,
+    idToken,
     items,
     {}
   );
@@ -251,18 +253,21 @@ const setup = async () => {
       key: ltiPlatform.keysetEndpoint,
     },
   });
+
+  console.log(`Registered platform: Moodle (localhost)`);
+
   // Register Moodle as platform
-  // await ltijs.registerPlatform({
-  //   url: "http://localhost",
-  //   name: "Moodle",
-  //   clientId: "xQrV6j9I3ls6kaN",
-  //   authenticationEndpoint: "http://localhost/mod/lti/auth.php",
-  //   accesstokenEndpoint: "http://localhost/mod/lti/token.php",
-  //   authConfig: {
-  //     method: "JWK_SET",
-  //     key: "http://localhost/mod/lti/certs.php",
-  //   },
-  // });
+  await ltijs.registerPlatform({
+    url: "http://localhost",
+    name: "Moodle",
+    clientId: "xQrV6j9I3ls6kaN",
+    authenticationEndpoint: "http://localhost/mod/lti/auth.php",
+    accesstokenEndpoint: "http://localhost/mod/lti/token.php",
+    authConfig: {
+      method: "JWK_SET",
+      key: "http://localhost/mod/lti/certs.php",
+    },
+  });
 };
 
 setup();
