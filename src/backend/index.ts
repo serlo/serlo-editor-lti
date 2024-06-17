@@ -209,9 +209,9 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
       // submission:
 
       // Custom properties
-      presentation: {
-        documentTarget: "iframe",
-      },
+      // presentation: {
+      //   documentTarget: "iframe",
+      // },
     },
   ];
 
