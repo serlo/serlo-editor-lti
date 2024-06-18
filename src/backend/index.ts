@@ -1,4 +1,4 @@
-import { Provider as ltijs } from "ltijs";
+import { IdToken, Provider as ltijs } from "ltijs";
 import "dotenv/config";
 import path from "path";
 import * as jwt from "jsonwebtoken";
@@ -38,8 +38,8 @@ ltijs.setup(
     dynRegRoute: "/lti/register",
     staticPath: path.join(__dirname, "./../../dist"), // Path to static files
     cookies: {
-      secure: false, // Set secure to true if the testing platform is in a different domain and https is being used
-      sameSite: "", // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
+      secure: process.env["ENVIRONMENT"] === "local" ? false : true, // Set secure to true if the testing platform is in a different domain and https is being used
+      sameSite: process.env["ENVIRONMENT"] === "local" ? "" : "None", // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
     },
   }
 );
@@ -173,6 +173,8 @@ ltijs.onDeepLinking((_, __, res) => {
 });
 
 ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
+  const idToken = res.locals.token as IdToken | undefined;
+  if (!idToken) return res.send("Missing idToken");
   const accessToken = req.body.accessToken;
   if (typeof accessToken !== "string") {
     return res.send("Missing or invalid access token");
@@ -182,12 +184,14 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
   const decodedAccessToken = jwt.default.verify(accessToken, ltijsKey);
 
   const url = new URL(
-    process.env["ORIGIN"] ?? "https://editor.serlo-staging.dev"
+    process.env["ENVIRONMENT"] === "local"
+      ? "http://localhost:3000"
+      : "https://editor.serlo-staging.dev"
   );
   url.pathname = "/lti/launch";
-  url.searchParams.append("entityId", decodedAccessToken.entityId);
+  // Temporarily deactivated
+  // url.searchParams.append("entityId", decodedAccessToken.entityId);
 
-  // This might need to change depending on what type the platform accepts
   // https://www.imsglobal.org/spec/lti-dl/v2p0#lti-resource-link
   const items = [
     {
@@ -198,25 +202,29 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
       // icon:
       // thumbnail:
       // window:
-      iframe: {
-        width: 400,
-        height: 300,
-      },
-      // custom:
-      // lineItem:
-      // available:
-      // submission:
+      // iframe: {
+      //   width: 400,
+      //   height: 300,
+      // },
       custom: {
         entityId: decodedAccessToken.entityId,
       },
+      // lineItem:
+      // available:
+      // submission:
+
+      // Custom properties
+      // presentation: {
+      //   documentTarget: "iframe",
+      // },
     },
   ];
 
   // Creates the deep linking request form
   const form = await ltijs.DeepLinking.createDeepLinkingForm(
-    res.locals.token,
+    idToken,
     items,
-    { message: "Deep linking success" }
+    {}
   );
 
   return res.send(form);
@@ -226,9 +234,15 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
 const setup = async () => {
   await ltijs.deploy();
 
-  // Remove platform (if it exists)
+  // Remove all platforms
   // There might be already an entry in mongodb for this platform. On restart, we want to remove it and re-add it to prevent the issue `bad decrypt`. See: https://github.com/Cvmcosta/ltijs/issues/119#issuecomment-882898770
-  ltijs.deletePlatform(ltiPlatform.url, ltiPlatform.clientId);
+  const platforms = await ltijs.getAllPlatforms();
+  if (platforms) {
+    for (const platform of platforms) {
+      // @ts-expect-error @types/ltijs is missing this
+      await platform.delete();
+    }
+  }
 
   console.log(`Registered platform: ${ltiPlatform.name}`);
 
@@ -236,7 +250,7 @@ const setup = async () => {
   await ltijs.registerPlatform({
     url: ltiPlatform.url, // LTI iss
     name: ltiPlatform.name,
-    clientId: ltiPlatform.clientId,
+    clientId: ltiPlatform.clientId, // The ID for this LTI tool on the LTI platform
     authenticationEndpoint: ltiPlatform.authenticationEndpoint,
     accesstokenEndpoint: ltiPlatform.accessTokenEndpoint,
     authConfig: {
@@ -244,18 +258,21 @@ const setup = async () => {
       key: ltiPlatform.keysetEndpoint,
     },
   });
+
+  console.log(`Registered platform: Moodle (localhost)`);
+
   // Register Moodle as platform
-  // await ltijs.registerPlatform({
-  //   url: "http://localhost",
-  //   name: "Moodle",
-  //   clientId: "xQrV6j9I3ls6kaN",
-  //   authenticationEndpoint: "http://localhost/mod/lti/auth.php",
-  //   accesstokenEndpoint: "http://localhost/mod/lti/token.php",
-  //   authConfig: {
-  //     method: "JWK_SET",
-  //     key: "http://localhost/mod/lti/certs.php",
-  //   },
-  // });
+  await ltijs.registerPlatform({
+    url: "http://localhost",
+    name: "Moodle",
+    clientId: "xQrV6j9I3ls6kaN",
+    authenticationEndpoint: "http://localhost/mod/lti/auth.php",
+    accesstokenEndpoint: "http://localhost/mod/lti/token.php",
+    authConfig: {
+      method: "JWK_SET",
+      key: "http://localhost/mod/lti/certs.php",
+    },
+  });
 };
 
 setup();
