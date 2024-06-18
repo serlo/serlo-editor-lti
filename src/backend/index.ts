@@ -19,17 +19,22 @@ const ltiPlatform = {
   keysetEndpoint: readEnvVariable("LTI_PLATFORM_KEYSET_ENDPOINT"),
 };
 
+console.log(mongodbConnectionUri);
+
 // Setup
 ltijs.setup(
   ltijsKey,
   {
     url: mongodbConnectionUri,
+    // @ts-expect-error @types/ltijs
+    connection: {
+      useNewUrlParser: true,
+    },
   },
   {
     appUrl: "/lti/launch",
     loginUrl: "/lti/login",
     keysetUrl: "/lti/keys",
-    // @ts-expect-error @types/ltijs is missing this
     dynRegRoute: "/lti/register",
     staticPath: path.join(__dirname, "./../../dist"), // Path to static files
     cookies: {

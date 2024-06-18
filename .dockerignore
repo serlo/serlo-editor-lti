@@ -1,22 +1,34 @@
-# .env - Should not be added because it contains private keys used for encryption. Instead, provide env variables to the docker container. 
-.env
+# Include any files or directories that you don't want to be copied to your
+# container here (e.g., local build artifacts, temporary files, etc.).
+#
+# For more help, visit the .dockerignore file reference guide at
+# https://docs.docker.com/go/build-context-dockerignore/
 
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# **/.classpath
+# **/.dockerignore
+# **/.env
+# **/.git
+# **/.gitignore
+# **/.project
+# **/.settings
+# **/.toolstarget
+# **/.vs
+# **/.vscode
+# **/.next
+# **/.cache
+# **/*.*proj.user
+# **/*.dbmdl
+# **/*.jfm
+# **/charts
+# **/docker-compose*
+# **/compose.y*ml
+# **/Dockerfile*
+# **/node_modules
+# **/npm-debug.log
+# **/obj
+# **/secrets.dev.yaml
+# **/values.dev.yaml
+# **/build
+# **/dist
+# LICENSE
+# README.md
