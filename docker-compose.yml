@@ -7,9 +7,9 @@ services:
       - mongo
     networks:
       - express-mongo
-    expose: 
+    expose:
       - 3000
-    ports: 
+    ports:
       - 3000:3000
   mongo:
     image: mongo:7.0.11

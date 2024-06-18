@@ -1,44 +1,44 @@
-import { SerloEditor } from "@serlo/editor";
-import { useEffect, useState } from "react";
+import { SerloEditor } from '@serlo/editor'
+import { useEffect, useState } from 'react'
 
 const initialEditorState = {
-  plugin: "rows",
+  plugin: 'rows',
   state: [
     {
-      plugin: "text",
+      plugin: 'text',
       state: [
         {
-          type: "p",
+          type: 'p',
           children: [
             {
-              text: "",
+              text: '',
             },
           ],
         },
       ],
     },
   ],
-};
+}
 
 function App() {
   // TODO: Make editorState always contain valid value
   const [editorState, setEditorState] = useState<string>(
     JSON.stringify(initialEditorState)
-  );
-  const [savePending, setSavePending] = useState<boolean>(false);
+  )
+  const [savePending, setSavePending] = useState<boolean>(false)
 
   // TODO: Fetch content json from database. Send along access token to authenticate request.
 
   // Save content if there are unsaved changed
   useEffect(() => {
-    if (!savePending) return;
+    if (!savePending) return
 
-    setTimeout(saveContent, 1000);
+    setTimeout(saveContent, 1000)
     function saveContent() {
-      fetch("/entity", {
-        method: "PUT",
+      fetch('/entity', {
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json;charset=utf-8",
+          'Content-Type': 'application/json;charset=utf-8',
           Authorization: `Bearer ${ltik}`,
         },
         body: JSON.stringify({
@@ -47,26 +47,26 @@ function App() {
         }),
       }).then((res) => {
         if (res.status === 200) {
-          setSavePending(false);
+          setSavePending(false)
         } else {
           // TODO: Handle failure
         }
-      });
+      })
     }
-  }, [savePending]);
+  }, [savePending])
 
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
+  const queryString = window.location.search
+  const urlParams = new URLSearchParams(queryString)
 
-  const accessToken = urlParams.get("accessToken");
-  const ltik = urlParams.get("ltik");
-  if (!accessToken || !ltik) return <p>Access token or ltik was missing!</p>;
+  const accessToken = urlParams.get('accessToken')
+  const ltik = urlParams.get('ltik')
+  if (!accessToken || !ltik) return <p>Access token or ltik was missing!</p>
 
-  const isDeeplink = urlParams.get("deeplink");
+  const isDeeplink = urlParams.get('deeplink')
 
   return (
     <>
-      <div style={{ marginBottom: "3rem" }}>
+      <div style={{ marginBottom: '3rem' }}>
         {savePending || !editorState ? (
           // Show close button but disable it
           <button disabled>Close</button>
@@ -78,9 +78,9 @@ function App() {
             <input type="hidden" name="editorState" value={editorState} />
             <button
               style={{
-                backgroundColor: "grey",
-                borderRadius: "5px",
-                padding: "5px",
+                backgroundColor: 'grey',
+                borderRadius: '5px',
+                padding: '5px',
               }}
               type="submit"
             >
@@ -94,15 +94,15 @@ function App() {
       </div>
       <SerloEditor
         onChange={({ changed, getDocument }) => {
-          if (!changed) return;
-          const newState = getDocument();
-          if (!newState) return;
-          setEditorState(JSON.stringify(newState));
-          setSavePending(true);
+          if (!changed) return
+          const newState = getDocument()
+          if (!newState) return
+          setEditorState(JSON.stringify(newState))
+          setSavePending(true)
         }}
       >
         {(editor) => {
-          return <>{editor.element}</>;
+          return <>{editor.element}</>
         }}
       </SerloEditor>
       <h2>Debug info</h2>
@@ -111,7 +111,7 @@ function App() {
       <h3>ltik:</h3>
       <div>{ltik}</div>
     </>
-  );
+  )
 }
 
-export default App;
+export default App
