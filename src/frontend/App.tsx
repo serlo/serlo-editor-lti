@@ -6,13 +6,15 @@ function App() {
   const [editorState, setEditorState] = useState<string | undefined>(undefined);
   const [savePending, setSavePending] = useState<boolean>(false);
 
+  // TODO: Fetch content json from database. Send along access token to authenticate request.
+
   // Save content if there are unsaved changed
   useEffect(() => {
     if (!savePending) return;
 
-    setTimeout(saveContent, 3000);
+    setTimeout(saveContent, 1000);
     function saveContent() {
-      fetch("/mutate", {
+      fetch("/entity", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json;charset=utf-8",
@@ -49,7 +51,7 @@ function App() {
           <button disabled>Close</button>
         ) : isDeeplink ? (
           // Enable close button
-          <form method="post" action="http://localhost:3000/finish-deeplink">
+          <form method="post" action="/lti/finish-deeplink">
             <input type="hidden" name="accessToken" value={accessToken} />
             <input type="hidden" name="ltik" value={ltik} />
             <input type="hidden" name="editorState" value={editorState} />
@@ -73,6 +75,11 @@ function App() {
           return <>{editor.element}</>;
         }}
       </SerloEditor>
+      <h2>Debug info</h2>
+      <h3>Access token:</h3>
+      <div>{accessToken}</div>
+      <h3>ltik:</h3>
+      <div>{ltik}</div>
     </>
   );
 }
