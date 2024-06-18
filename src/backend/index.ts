@@ -129,7 +129,8 @@ ltijs.onConnect((idToken, req, res) => {
     "membership#Manager",
     "membership#Officer",
   ];
-  const courseMembershipRole = idToken.roles?.find((role) =>
+  // @ts-expect-error @types/ltijs
+  const courseMembershipRole = idToken.platformContext.roles?.find((role) =>
     role.includes("membership#")
   );
   const editorMode =
@@ -208,6 +209,7 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
       //   height: 300,
       // },
       custom: {
+        // Important: Only use lowercase letters in key. When I used uppercase letters they were changed to lowercase letters in the LTI Resource Link launch.
         id: decodedAccessToken.entityId,
       },
       // lineItem:
