@@ -107,9 +107,10 @@ ltijs.app.put("/entity", async (req, res) => {
 
 // Successful LTI launch
 ltijs.onConnect((idToken, req, res) => {
-  // Get entityId from either search query params or lti custom claim
+  // Get entityId from lti custom claim or alternatively search query parameters
   // Using search query params is suggested by ltijs, see: https://github.com/Cvmcosta/ltijs/issues/100#issuecomment-832284300
-  const entityId = req.query.entityId ?? res.locals.context?.custom?.entityId;
+  // @ts-expect-error @types/ltijs
+  const entityId = idToken.platformContext.custom.id ?? req.query.id;
 
   if (!entityId)
     return res.send('Search query parameter "entityId" was missing!');
@@ -207,7 +208,7 @@ ltijs.app.post("/lti/finish-deeplink", async (req, res) => {
       //   height: 300,
       // },
       custom: {
-        entityId: decodedAccessToken.entityId,
+        id: decodedAccessToken.entityId,
       },
       // lineItem:
       // available:
@@ -256,21 +257,6 @@ const setup = async () => {
     authConfig: {
       method: "JWK_SET",
       key: ltiPlatform.keysetEndpoint,
-    },
-  });
-
-  console.log(`Registered platform: Moodle (localhost)`);
-
-  // Register Moodle as platform
-  await ltijs.registerPlatform({
-    url: "http://localhost",
-    name: "Moodle",
-    clientId: "xQrV6j9I3ls6kaN",
-    authenticationEndpoint: "http://localhost/mod/lti/auth.php",
-    accesstokenEndpoint: "http://localhost/mod/lti/token.php",
-    authConfig: {
-      method: "JWK_SET",
-      key: "http://localhost/mod/lti/certs.php",
     },
   });
 };
