@@ -1,14 +1,15 @@
-# TODO: when this repo build first the src code, change to only run dist folders
+# syntax=docker/dockerfile:1
 
-FROM node:20.13-alpine
-WORKDIR /app
+FROM node:20.14.0-alpine
 
-COPY tsconfig.json tsconfig.node.json \
-    vite.config.ts index.html \
-    package.json yarn.lock ./
-COPY src src
-RUN yarn --immutable --immutable-cache --silent
-RUN yarn build
+ENV NODE_ENV production
+
+WORKDIR /usr/src/app
+
+USER node
+
+COPY . .
 
 EXPOSE 3000
+
 ENTRYPOINT ["yarn", "start"]

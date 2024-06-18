@@ -1,11 +1,15 @@
 Serlo editor as LTI tool
 Status: Early prototype
 
-# Setup
+# Local dev setup
 
-1. Install mongodb and make sure it is running
+Requirements:
+
+- Docker & Docker Compose
+
+1. Create file `.env` and copy content from `.env-template`
 2. `yarn build` to build the frontend
-3. `yarn start` to start the express server
+3. `yarn dev` to start docker containers
 4. Go to https://saltire.lti.app/platform, navigate to "Advanced options" and upload file `saltire-platform.config`
 5. Click "Connect"
 

@@ -1,0 +1,21 @@
+# Shared network 'express-mongo' makes service 'mongo' available to service 'express'. You can connect using the service name in MONGODB_CONNECTION_URI like this: mongodb://[SERVICE_NAME]:27017/
+
+services:
+  express:
+    build: .
+    depends_on:
+      - mongo
+    networks:
+      - express-mongo
+    expose: 
+      - 3000
+    ports: 
+      - 3000:3000
+  mongo:
+    image: mongo:7.0.11
+    networks:
+      - express-mongo
+    expose:
+      - 27017
+networks:
+  express-mongo:
