@@ -7,14 +7,14 @@
   "type": "module",
   "scripts": {
     "build": "tsc && vite build",
-    "dev": "docker compose up",
+    "dev": "docker compose up --watch",
     "docker:run": "docker run -p 3000:3000 -d --env-file .env-template --add-host=host.docker.internal:host-gateway",
     "format": "prettier . --write",
     "lint": "tsc --noEmit",
     "push-image": "yarn node --loader=ts-node/esm push-image.ts",
     "push-image:dev": "yarn push-image dev",
     "push-image:latest": "yarn push-image latest",
-    "start": "node --loader=ts-node/esm src/backend/index.ts",
+    "start": "tsx --watch src/backend/index.ts",
     "start:dev": "nodemon --watch src --ext ts,tsx -exec 'node --loader=ts-node/esm src/backend/index.ts' --delay 3"
   },
   "dependencies": {
@@ -27,7 +27,7 @@
     "ltijs": "^5.9.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "ts-node": "^10.9.2",
+    "tsx": "4.15.6",
     "typescript": "^5.4.5"
   },
   "devDependencies": {

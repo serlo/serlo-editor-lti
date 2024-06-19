@@ -11,6 +11,16 @@ services:
       - 3000
     ports:
       - 3000:3000
+    develop:
+      watch:
+        # TODO: Sync would be faster but harder to setup. 
+        # - action: sync
+        #   path: ./src
+        #   target: /usr/src/app/src
+        #   ignore:
+        #     - node_modules/
+        - action: rebuild
+          path: .
   mongo:
     image: mongo:7.0.11
     networks:
