@@ -1,7 +1,7 @@
 import { IdToken, Provider as ltijs } from 'ltijs'
 import 'dotenv/config'
 import path from 'path'
-import * as jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
 
 // Requires Node.js 20.11 or higher
 const __dirname = import.meta.dirname
@@ -17,6 +17,11 @@ const ltiPlatform = {
   ),
   accessTokenEndpoint: readEnvVariable('LTI_PLATFORM_ACCESS_TOKEN_ENDPOINT'),
   keysetEndpoint: readEnvVariable('LTI_PLATFORM_KEYSET_ENDPOINT'),
+}
+
+interface AccesTokenType {
+  entityId: string
+  accessRight: 'read' | 'write'
 }
 
 // Setup
@@ -54,8 +59,7 @@ ltijs.app.get('/entity', (req, res) => {
     return res.send('Missing or invalid access token')
   }
 
-  // @ts-expect-error For some reason I need `default` here
-  const decodedAccessToken = jwt.default.verify(accessToken, ltijsKey)
+  // const decodedAccessToken = jwt.verify(accessToken, ltijsKey)
 
   // TODO: Get json from database with decodedAccessToken.entityId
   const json = {
@@ -85,8 +89,7 @@ ltijs.app.put('/entity', async (req, res) => {
     return res.send('Missing or invalid access token')
   }
 
-  // @ts-expect-error For some reason I need `default` here
-  const decodedAccessToken = jwt.default.verify(accessToken, ltijsKey)
+  const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccesTokenType
 
   if (decodedAccessToken.accessRight !== 'write') {
     return res.send('Access token grants no right to modify content')
@@ -141,8 +144,7 @@ ltijs.onConnect((idToken, req, res) => {
 
   // Generate access token and send to client
   // TODO: Maybe use registered jwt names
-  // @ts-expect-error For some reason I need `default` here
-  const accessToken = jwt.default.sign(
+  const accessToken = jwt.sign(
     { entityId, accessRight: editorMode },
     ltijsKey // Reuse the symmetric HS256 key used by ltijs to sign ltik and database entries
   )
@@ -157,8 +159,7 @@ ltijs.onDeepLinking((_, __, res) => {
 
   // Generate access token (authorizing write access) and send to client
   // TODO: Maybe use registered jwt names
-  // @ts-expect-error For some reason I need `default` here
-  const accessToken = jwt.default.sign(
+  const accessToken = jwt.sign(
     { entityId, accessRight: 'write' },
     ltijsKey // Reuse the symmetric HS256 key used by ltijs to sign ltik and database entries
   )
@@ -180,8 +181,7 @@ ltijs.app.post('/lti/finish-deeplink', async (req, res) => {
     return res.send('Missing or invalid access token')
   }
 
-  // @ts-expect-error For some reason I need `default` here
-  const decodedAccessToken = jwt.default.verify(accessToken, ltijsKey)
+  const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccesTokenType
 
   const url = new URL(
     process.env['ENVIRONMENT'] === 'local'
