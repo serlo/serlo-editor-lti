@@ -19,7 +19,7 @@ const ltiPlatform = {
   keysetEndpoint: readEnvVariable('LTI_PLATFORM_KEYSET_ENDPOINT'),
 }
 
-interface AccesTokenType {
+export interface AccesTokenType {
   entityId: string
   accessRight: 'read' | 'write'
 }

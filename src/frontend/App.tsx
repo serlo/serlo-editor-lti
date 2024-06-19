@@ -1,5 +1,7 @@
-import { SerloEditor } from '@serlo/editor'
+import { SerloEditor, SerloRenderer } from '@serlo/editor'
 import { useEffect, useState } from 'react'
+import type { AccesTokenType } from '../backend'
+import { jwtDecode } from 'jwt-decode'
 
 const initialEditorState = {
   plugin: 'rows',
@@ -11,7 +13,7 @@ const initialEditorState = {
           type: 'p',
           children: [
             {
-              text: '',
+              text: 'Empty',
             },
           ],
         },
@@ -26,7 +28,6 @@ function App() {
     JSON.stringify(initialEditorState)
   )
   const [savePending, setSavePending] = useState<boolean>(false)
-
   // TODO: Fetch content json from database. Send along access token to authenticate request.
 
   // Save content if there are unsaved changed
@@ -62,6 +63,9 @@ function App() {
   const ltik = urlParams.get('ltik')
   if (!accessToken || !ltik) return <p>Access token or ltik was missing!</p>
 
+  const decodedAccessToken = jwtDecode(accessToken) as AccesTokenType
+  const mode: 'read' | 'write' = decodedAccessToken.accessRight
+
   const isDeeplink = urlParams.get('deeplink')
 
   return (
@@ -92,19 +96,24 @@ function App() {
           <button>Close</button>
         )}
       </div>
-      <SerloEditor
-        onChange={({ changed, getDocument }) => {
-          if (!changed) return
-          const newState = getDocument()
-          if (!newState) return
-          setEditorState(JSON.stringify(newState))
-          setSavePending(true)
-        }}
-      >
-        {(editor) => {
-          return <>{editor.element}</>
-        }}
-      </SerloEditor>
+      {mode === 'write' ? (
+        <SerloEditor
+          initialState={initialEditorState}
+          onChange={({ changed, getDocument }) => {
+            if (!changed) return
+            const newState = getDocument()
+            if (!newState) return
+            setEditorState(JSON.stringify(newState))
+            setSavePending(true)
+          }}
+        >
+          {(editor) => {
+            return <>{editor.element}</>
+          }}
+        </SerloEditor>
+      ) : (
+        <SerloRenderer document={initialEditorState} />
+      )}
       <h2>Debug info</h2>
       <h3>Access token:</h3>
       <div>{accessToken}</div>

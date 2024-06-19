@@ -24,6 +24,7 @@
     "fp-ts": "2.16.6",
     "io-ts": "^2.2.21",
     "jsonwebtoken": "9.0.2",
+    "jwt-decode": "4.0.0",
     "ltijs": "^5.9.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
