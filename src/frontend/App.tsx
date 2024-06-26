@@ -92,8 +92,7 @@ function App() {
             </button>
           </form>
         ) : (
-          // TODO: Maybe close window/tab
-          <button>Close</button>
+          <></>
         )}
       </div>
       {mode === 'write' ? (
@@ -114,11 +113,11 @@ function App() {
       ) : (
         <SerloRenderer document={initialEditorState} />
       )}
-      <h2>Debug info</h2>
+      {/* <h2>Debug info</h2>
       <h3>Access token:</h3>
       <div>{accessToken}</div>
       <h3>ltik:</h3>
-      <div>{ltik}</div>
+      <div>{ltik}</div> */}
     </>
   )
 }

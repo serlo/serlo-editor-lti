@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc && vite build",
-    "dev": "docker compose up --watch",
+    "dev": "docker compose up --watch --build",
     "docker:run": "docker run -p 3000:3000 -d --env-file .env-template --add-host=host.docker.internal:host-gateway",
     "format": "prettier . --write",
     "lint": "tsc --noEmit",
