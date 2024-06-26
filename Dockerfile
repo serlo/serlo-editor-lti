@@ -6,9 +6,11 @@ ENV NODE_ENV production
 
 WORKDIR /usr/src/app
 
-USER node
-
 COPY . .
+
+RUN yarn install
+
+USER node
 
 EXPOSE 3000
 
