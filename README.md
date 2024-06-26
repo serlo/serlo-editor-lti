@@ -8,10 +8,11 @@ Requirements:
 - Docker & Docker Compose
 
 1. Create file `.env` and copy content from `.env-template`
-2. `yarn build` to build the frontend
-3. `yarn dev` to start docker containers
-4. Go to https://saltire.lti.app/platform, navigate to "Advanced options" and upload file `saltire-platform.config`
-5. Click "Connect"
+2. `yarn` to install dependencies
+3. `yarn build` to build the frontend
+4. `yarn dev` to start docker containers
+5. Go to https://saltire.lti.app/platform, sign in, navigate to "Advanced options" and upload file `saltire-platform.config`
+6. Click "Connect"
 
 The editor should open in a new tab.
 
