@@ -106,8 +106,14 @@ ltijs.app.put('/entity', async (req, res) => {
   return res.send('Success')
 })
 
-// Successful LTI launch
+// Successful LTI resource launch
 ltijs.onConnect((idToken, req, res) => {
+  // @ts-expect-error @types/ltijs
+  const resourceLinkId: string = idToken.platformContext.id
+
+  // http://celtic.lti.tools/wiki/LTI/Best_Practice/Issues_for_Developers#Resource_links
+  // TODO: If tool was launched with a different resourceLinkId before, this means the entity on the platform was copied. We could create a copy then with a new entityId.
+
   // Get entityId from lti custom claim or alternatively search query parameters
   // Using search query params is suggested by ltijs, see: https://github.com/Cvmcosta/ltijs/issues/100#issuecomment-832284300
   // @ts-expect-error @types/ltijs
@@ -129,6 +135,7 @@ ltijs.onConnect((idToken, req, res) => {
     'membership#Mentor',
     'membership#Manager',
     'membership#Officer',
+    'membership#Member', // Gets sent when added to collection on itslearning. TODO: What role do other users have?
   ]
   // @ts-expect-error @types/ltijs
   const courseMembershipRole = idToken.platformContext.roles?.find((role) =>
