@@ -13,7 +13,7 @@ const initialEditorState = {
           type: 'p',
           children: [
             {
-              text: 'Empty',
+              text: '',
             },
           ],
         },
@@ -23,7 +23,6 @@ const initialEditorState = {
 }
 
 function App() {
-  // TODO: Make editorState always contain valid value
   const [editorState, setEditorState] = useState<string>(
     JSON.stringify(initialEditorState)
   )

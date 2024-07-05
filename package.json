@@ -8,14 +8,12 @@
   "scripts": {
     "build": "tsc && vite build",
     "dev": "docker compose up --watch --build",
-    "docker:run": "docker run -p 3000:3000 -d --env-file .env-template --add-host=host.docker.internal:host-gateway",
     "format": "prettier . --write",
     "lint": "tsc --noEmit",
-    "push-image": "yarn node --loader=ts-node/esm push-image.ts",
+    "push-image": "yarn tsx push-image.ts",
     "push-image:dev": "yarn push-image dev",
     "push-image:latest": "yarn push-image latest",
-    "start": "tsx --watch src/backend/index.ts",
-    "start:dev": "nodemon --watch src --ext ts,tsx -exec 'node --loader=ts-node/esm src/backend/index.ts' --delay 3"
+    "start:dev": "tsx --watch src/backend/index.ts"
   },
   "dependencies": {
     "@serlo/editor": "0.7.2",
@@ -43,10 +41,8 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
-    "nodemon": "^3.1.3",
     "prettier": "3.3.2",
     "prettier-plugin-packagejson": "^2.5.0",
-    "ts-node": "10.9.2",
     "vite": "^5.2.0"
   },
   "packageManager": "yarn@4.2.2"

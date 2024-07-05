@@ -2,7 +2,9 @@
 
 services:
   express:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
     depends_on:
       - mongo
     networks:
