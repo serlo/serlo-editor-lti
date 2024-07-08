@@ -9,10 +9,9 @@ Requirements:
 
 1. Create file `.env` and copy content from `.env-template`
 2. `yarn` to install dependencies
-3. `yarn build` to build the frontend
-4. `yarn dev` to start docker containers
-5. Go to https://saltire.lti.app/platform, sign in, navigate to "Advanced options" and upload file `saltire-platform.config`
-6. Click "Connect"
+3. `yarn dev` to start docker containers (hot reload)
+4. Go to https://saltire.lti.app/platform, sign in, navigate to "Advanced options" and upload file `saltire-platform_[TYPE].config`. `TYPE=LTIDeepLinking` shows flow of creating a new Serlo Editor element. `TYPE=LTIResourceLink_Instructor` shows flow of opening an existing Serlo Editor element as Instructor (editable). `TYPE=LTIResourceLink_Learner` shows flow of opening an existing Serlo Editor element as Learner (non-editable).
+5. Click "Connect"
 
 The editor should open in a new tab.
 
