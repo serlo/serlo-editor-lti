@@ -10,6 +10,8 @@
     "dev": "docker compose up --watch --build",
     "format": "prettier . --write",
     "lint": "tsc --noEmit",
+    "mysql": "docker compose exec mysql serlo-mysql",
+    "mysql:rollback": "docker compose exec mysql sh -c \"pv /docker-entrypoint-initdb.d/001-init.sql | serlo-mysql\"",
     "push-image": "yarn tsx push-image.ts",
     "push-image:dev": "yarn push-image dev",
     "push-image:latest": "yarn push-image latest",

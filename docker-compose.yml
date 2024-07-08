@@ -2,7 +2,7 @@
 
 services:
   express:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile.dev
     depends_on:
@@ -15,7 +15,7 @@ services:
       - 3000:3000
     develop:
       watch:
-        # TODO: Sync would be faster but harder to setup. 
+        # TODO: Sync would be faster but harder to setup.
         # - action: sync
         #   path: ./src
         #   target: /usr/src/app/src
@@ -29,5 +29,11 @@ services:
       - express-mongo
     expose:
       - 27017
+  mysql:
+    image: eu.gcr.io/serlo-shared/serlo-mysql-database:prerelease-entityfield-coursepage-event-taxonomy
+    platform: linux/x86_64
+    pull_policy: always
+    ports:
+      - '3306:3306'
 networks:
   express-mongo:
