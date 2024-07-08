@@ -26,10 +26,12 @@
     "jsonwebtoken": "9.0.2",
     "jwt-decode": "4.0.0",
     "ltijs": "^5.9.5",
+    "mysql2": "^3.10.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tsx": "4.15.6",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "9.0.6",
@@ -37,6 +39,7 @@
     "@types/node": "^20.12.12",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
+    "@types/uuid": "^10",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
