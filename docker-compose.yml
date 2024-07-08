@@ -7,8 +7,9 @@ services:
       dockerfile: Dockerfile.dev
     depends_on:
       - mongo
+      - mysql
     networks:
-      - express-mongo
+      - express-mongo-mysql
     expose:
       - 3000
     ports:
@@ -26,7 +27,7 @@ services:
   mongo:
     image: mongo:7.0.11
     networks:
-      - express-mongo
+      - express-mongo-mysql
     expose:
       - 27017
   mysql:
@@ -35,5 +36,7 @@ services:
     pull_policy: always
     ports:
       - '3306:3306'
+    networks:
+      - express-mongo-mysql
 networks:
-  express-mongo:
+  express-mongo-mysql:
