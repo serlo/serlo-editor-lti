@@ -105,7 +105,8 @@ function App() {
 
   if (
     resourceLinkIdFromDb !== null &&
-    resourceLinkIdFromDb === resourceLinkIdFromUrl
+    resourceLinkIdFromUrl !== null &&
+    resourceLinkIdFromDb !== resourceLinkIdFromUrl
   ) {
     return (
       <p>

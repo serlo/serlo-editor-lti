@@ -196,7 +196,7 @@ ltijs.onConnect(async (idToken, req, res) => {
   if (resourceLinkId) {
     // Update resource link id in database
     await database.mutate(
-      'UPDATE lti_entity SET resource_link_id = ? WHERE id = ?',
+      'UPDATE lti_entity SET resource_link_id = ? WHERE id = ? AND resource_link_id IS NULL',
       [resourceLinkId, entityId]
     )
   }
