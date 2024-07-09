@@ -2,6 +2,9 @@ import { IdToken, Provider as ltijs } from 'ltijs'
 import 'dotenv/config'
 import path from 'path'
 import jwt from 'jsonwebtoken'
+import { Pool, createPool } from 'mysql2/promise'
+import { Database } from './database'
+import { v4 as uuidv4 } from 'uuid'
 
 // Requires Node.js 20.11 or higher
 const __dirname = import.meta.dirname
@@ -17,6 +20,23 @@ const ltiPlatform = {
   ),
   accessTokenEndpoint: readEnvVariable('LTI_PLATFORM_ACCESS_TOKEN_ENDPOINT'),
   keysetEndpoint: readEnvVariable('LTI_PLATFORM_KEYSET_ENDPOINT'),
+}
+let pool: Pool | null = null
+const defaultContent = {
+  plugin: 'rows',
+  state: [
+    {
+      plugin: 'text',
+      state: [
+        {
+          type: 'p',
+          children: {
+            text: 'Test content',
+          },
+        },
+      ],
+    },
+  ],
 }
 
 export interface AccesTokenType {
@@ -62,28 +82,13 @@ ltijs.app.get('/entity', (req, res) => {
   // const decodedAccessToken = jwt.verify(accessToken, ltijsKey)
 
   // TODO: Get json from database with decodedAccessToken.entityId
-  const json = {
-    plugin: 'rows',
-    state: [
-      {
-        plugin: 'text',
-        state: [
-          {
-            type: 'p',
-            children: {
-              text: 'Test content',
-            },
-          },
-        ],
-      },
-    ],
-  }
-
-  res.json(json)
+  res.json(defaultContent)
 })
 
 // Endpoint to save content
 ltijs.app.put('/entity', async (req, res) => {
+  const database = getDatabase()
+
   const accessToken = req.body.accessToken
   if (typeof accessToken !== 'string') {
     return res.send('Missing or invalid access token')
@@ -97,6 +102,10 @@ ltijs.app.put('/entity', async (req, res) => {
 
   // TODO: Modify entity with decodedAccessToken.entityId in database
 
+  await database.mutate('UPDATE lti_entity SET content = ? WHERE id = ?', [
+    JSON.stringify(req.body.editorState),
+    decodedAccessToken.entityId,
+  ])
   console.log(
     `Entity ${
       decodedAccessToken.entityId
@@ -160,9 +169,40 @@ ltijs.onConnect((idToken, req, res) => {
 }, {})
 
 // Successful LTI deep linking launch
-ltijs.onDeepLinking((_, __, res) => {
-  // TODO: create new entity in database and get its ID
-  const entityId = 123456
+// @ts-expect-error @types/ltijs
+ltijs.onDeepLinking(async (_, __, res) => {
+  const database = getDatabase()
+
+  const ltiCustomClaimId = uuidv4()
+
+  const { insertId: entityId } = await database.mutate(
+    'INSERT INTO lti_entity (custom_claim_id, content) values (?, ?)',
+    [ltiCustomClaimId, JSON.stringify(defaultContent)]
+  )
+
+  console.log('entityId: ', entityId)
+
+  interface Entity {
+    id: number
+    customClaimId: string
+    content: string
+  }
+
+  const entity = await database.fetchAll<Entity>(
+    `
+      SELECT
+        id,
+        custom_claim_id as customClaimId,
+        content
+      FROM
+        lti_entity
+      WHERE
+        id = ?
+    `,
+    [String(entityId)]
+  )
+
+  console.log('entity: ', entity)
 
   // Generate access token (authorizing write access) and send to client
   // TODO: Maybe use registered jwt names
@@ -274,4 +314,11 @@ function readEnvVariable(name: string): string {
     )
   }
   return value
+}
+
+function getDatabase() {
+  if (pool === null) {
+    pool = createPool(readEnvVariable('MYSQL_URI'))
+  }
+  return new Database(pool)
 }
