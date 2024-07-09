@@ -212,6 +212,12 @@ ltijs.onDeepLinking(async (_, __, res) => {
     ltijsKey // Reuse the symmetric HS256 key used by ltijs to sign ltik and database entries
   )
 
+  const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccesTokenType
+  await database.mutate(
+    'UPDATE lti_entity SET parsed_jwt_content = ? WHERE id = ?',
+    [JSON.stringify(decodedAccessToken), entityId]
+  )
+
   const searchParams = new URLSearchParams()
   searchParams.append('accessToken', accessToken)
   searchParams.append('deeplink', 'true')
