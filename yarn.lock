@@ -601,18 +601,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@serlo/editor@npm:0.7.2":
-  version: 0.7.2
-  resolution: "@serlo/editor@npm:0.7.2"
+"@serlo/editor@npm:0.9.0":
+  version: 0.9.0
+  resolution: "@serlo/editor@npm:0.9.0"
   dependencies:
-    "@serlo/katex-styles": "npm:^1.0.1"
+    "@serlo/katex-styles": "npm:1.0.1"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
-  checksum: 10/a9da0f9c24575464b55afeeabd1ba681d7515f4886203c5e64e4eb247f5cf73695a160a5fc8cb2cb510ca44b07dcad5ee465394574cd684c361780f0c333133b
+    react-resizable: "npm:^3.0.5"
+  checksum: 10/f04e7a5b03505b22b6f35ed85e2b14836184eca7c87ab0005fa9d73834401e6861884007102bd5d69abbf21a69817e19b7c7c10f585bed34b0897d5376361c59
   languageName: node
   linkType: hard
 
-"@serlo/katex-styles@npm:^1.0.1":
+"@serlo/katex-styles@npm:1.0.1":
   version: 1.0.1
   resolution: "@serlo/katex-styles@npm:1.0.1"
   checksum: 10/74b8849deac764981a09eed21d1f05f53df90fc1e2106cf88e568e2ab0015fd6e046dd81f6b51c0bb7e6d748e0a659ba72056de836f5c61b71a5118f291896da
@@ -1401,6 +1402,13 @@ __metadata:
   dependencies:
     mimic-response: "npm:^1.0.0"
   checksum: 10/4e671cac39b11c60aa8ba0a450657194a5d6504df51bca3fac5b3bd0145c4f8e8464898f87c8406b83232e3bc5cca555f51c1f9c8ac023969ebfbf7f6bdabb2e
+  languageName: node
+  linkType: hard
+
+"clsx@npm:^1.1.1":
+  version: 1.2.1
+  resolution: "clsx@npm:1.2.1"
+  checksum: 10/5ded6f61f15f1fa0350e691ccec43a28b12fb8e64c8e94715f2a937bc3722d4c3ed41d6e945c971fc4dcc2a7213a43323beaf2e1c28654af63ba70c9968a8643
   languageName: node
   linkType: hard
 
@@ -2899,7 +2907,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loose-envify@npm:^1.1.0":
+"loose-envify@npm:^1.1.0, loose-envify@npm:^1.4.0":
   version: 1.4.0
   resolution: "loose-envify@npm:1.4.0"
   dependencies:
@@ -3354,7 +3362,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"object-assign@npm:^4":
+"object-assign@npm:^4, object-assign@npm:^4.1.1":
   version: 4.1.1
   resolution: "object-assign@npm:4.1.1"
   checksum: 10/fcc6e4ea8c7fe48abfbb552578b1c53e0d194086e2e6bbbf59e0a536381a292f39943c6e9628af05b5528aa5e3318bb30d6b2e53cadaf5b8fe9e12c4b69af23f
@@ -3584,6 +3592,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prop-types@npm:15.x, prop-types@npm:^15.8.1":
+  version: 15.8.1
+  resolution: "prop-types@npm:15.8.1"
+  dependencies:
+    loose-envify: "npm:^1.4.0"
+    object-assign: "npm:^4.1.1"
+    react-is: "npm:^16.13.1"
+  checksum: 10/7d959caec002bc964c86cdc461ec93108b27337dabe6192fb97d69e16a0c799a03462713868b40749bfc1caf5f57ef80ac3e4ffad3effa636ee667582a75e2c0
+  languageName: node
+  linkType: hard
+
 "proxy-addr@npm:~2.0.7":
   version: 2.0.7
   resolution: "proxy-addr@npm:2.0.7"
@@ -3678,6 +3697,38 @@ __metadata:
   peerDependencies:
     react: ^18.3.1
   checksum: 10/3f4b73a3aa083091173b29812b10394dd06f4ac06aff410b74702cfb3aa29d7b0ced208aab92d5272919b612e5cda21aeb1d54191848cf6e46e9e354f3541f81
+  languageName: node
+  linkType: hard
+
+"react-draggable@npm:^4.0.3":
+  version: 4.4.6
+  resolution: "react-draggable@npm:4.4.6"
+  dependencies:
+    clsx: "npm:^1.1.1"
+    prop-types: "npm:^15.8.1"
+  peerDependencies:
+    react: ">= 16.3.0"
+    react-dom: ">= 16.3.0"
+  checksum: 10/51b9ac7f913797fc1cebc30ae383f346883033c45eb91e9b0b92e9ebd224bb1545b4ae2391825b649b798cc711a38351a5f41be24d949c64c6703ebc24eba661
+  languageName: node
+  linkType: hard
+
+"react-is@npm:^16.13.1":
+  version: 16.13.1
+  resolution: "react-is@npm:16.13.1"
+  checksum: 10/5aa564a1cde7d391ac980bedee21202fc90bdea3b399952117f54fb71a932af1e5902020144fb354b4690b2414a0c7aafe798eb617b76a3d441d956db7726fdf
+  languageName: node
+  linkType: hard
+
+"react-resizable@npm:^3.0.5":
+  version: 3.0.5
+  resolution: "react-resizable@npm:3.0.5"
+  dependencies:
+    prop-types: "npm:15.x"
+    react-draggable: "npm:^4.0.3"
+  peerDependencies:
+    react: ">= 16.3"
+  checksum: 10/745fad6ac827857b3a80d1d648b8d6723aa72fc17d5410a01707073f3d37b4adf6e0354dfe3cc33dee34d6e546a3fbd5603ef73e385dfc5218a425a39bf96275
   languageName: node
   linkType: hard
 
@@ -3888,7 +3939,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "serlo-editor-lti-tool@workspace:."
   dependencies:
-    "@serlo/editor": "npm:0.7.2"
+    "@serlo/editor": "npm:0.9.0"
     "@types/jsonwebtoken": "npm:9.0.6"
     "@types/ltijs": "npm:4.0.11"
     "@types/node": "npm:^20.12.12"

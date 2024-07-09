@@ -67,6 +67,12 @@ ltijs.setup(
   }
 )
 
+// Disable COEP
+ltijs.app.use((_, res, next) => {
+  res.removeHeader('Cross-Origin-Embedder-Policy')
+  next()
+})
+
 // Opens Serlo editor
 ltijs.app.get('/app', async (_, res) => {
   return res.sendFile(path.join(__dirname, '../../dist/index.html'))
@@ -204,6 +210,10 @@ ltijs.onConnect(async (idToken, req, res) => {
   const searchParams = new URLSearchParams()
   searchParams.append('accessToken', accessToken)
   searchParams.append('resourceLinkId', resourceLinkId)
+  searchParams.append(
+    'testingSecret',
+    readEnvVariable('SERLO_EDITOR_TESTING_SECRET')
+  )
 
   return ltijs.redirect(res, `/app?${searchParams}`)
 }, {})
@@ -232,6 +242,10 @@ ltijs.onDeepLinking(async (idToken, __, res) => {
   const searchParams = new URLSearchParams()
   searchParams.append('accessToken', accessToken)
   searchParams.append('deeplink', 'true')
+  searchParams.append(
+    'testingSecret',
+    readEnvVariable('SERLO_EDITOR_TESTING_SECRET')
+  )
   console.log('ltijs.onDeepLinking -> idToken: ', idToken)
 
   return ltijs.redirect(res, `/app?${searchParams}`, {

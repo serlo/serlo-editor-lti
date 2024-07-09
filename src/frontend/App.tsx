@@ -65,6 +65,7 @@ function App() {
   const accessToken = urlParams.get('accessToken')
   const ltik = urlParams.get('ltik')
   const resourceLinkIdFromUrl = urlParams.get('resourceLinkId')
+  const testingSecret = urlParams.get('testingSecret')
 
   useEffect(() => {
     function fetchContent() {
@@ -153,6 +154,12 @@ function App() {
             editorStateRef.current = JSON.stringify(newState)
             setEditorState(editorStateRef.current)
             setSavePending(true)
+          }}
+          pluginsConfig={{
+            general: {
+              testingSecret: testingSecret || undefined,
+              enableTextAreaExercise: false,
+            },
           }}
         >
           {(editor) => {
