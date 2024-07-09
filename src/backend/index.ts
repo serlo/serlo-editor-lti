@@ -90,10 +90,11 @@ ltijs.app.get('/entity', async (req, res) => {
     content: string
   }
 
-  const entity = await database.fetchAll<Entity>(
+  const entity = await database.fetchOne<Entity>(
     `
       SELECT
         id,
+        resource_link_id,
         custom_claim_id as customClaimId,
         content
       FROM
@@ -106,7 +107,7 @@ ltijs.app.get('/entity', async (req, res) => {
 
   console.log('entity: ', entity)
 
-  res.json(entity[0].content)
+  res.json(entity)
 })
 
 // Endpoint to save content
@@ -139,9 +140,13 @@ ltijs.app.put('/entity', async (req, res) => {
 })
 
 // Successful LTI resource launch
-ltijs.onConnect((idToken, req, res) => {
+// @ts-expect-error @types/ltijs
+ltijs.onConnect(async (idToken, req, res) => {
+  const database = getDatabase()
+
+  console.log('ltijs.onConnect -> idToken: ', idToken)
   // @ts-expect-error @types/ltijs
-  const resourceLinkId: string = idToken.platformContext.id
+  const resourceLinkId: string = idToken.platformContext.resource.id
 
   // http://celtic.lti.tools/wiki/LTI/Best_Practice/Issues_for_Developers#Resource_links
   // TODO: If tool was launched with a different resourceLinkId before, this means the entity on the platform was copied. We could create a copy then with a new entityId.
@@ -188,7 +193,19 @@ ltijs.onConnect((idToken, req, res) => {
     ltijsKey // Reuse the symmetric HS256 key used by ltijs to sign ltik and database entries
   )
 
-  return ltijs.redirect(res, `/app?accessToken=${accessToken}`)
+  if (resourceLinkId) {
+    // Update resource link id in database
+    await database.mutate(
+      'UPDATE lti_entity SET resource_link_id = ? WHERE id = ?',
+      [resourceLinkId, entityId]
+    )
+  }
+
+  const searchParams = new URLSearchParams()
+  searchParams.append('accessToken', accessToken)
+  searchParams.append('resourceLinkId', resourceLinkId)
+
+  return ltijs.redirect(res, `/app?${searchParams}`)
 }, {})
 
 // Successful LTI deep linking launch
@@ -215,6 +232,7 @@ ltijs.onDeepLinking(async (idToken, __, res) => {
   const searchParams = new URLSearchParams()
   searchParams.append('accessToken', accessToken)
   searchParams.append('deeplink', 'true')
+  console.log('ltijs.onDeepLinking -> idToken: ', idToken)
 
   return ltijs.redirect(res, `/app?${searchParams}`, {
     isNewResource: true, // Tell ltijs that this is a new resource so it can update some stuff in the database

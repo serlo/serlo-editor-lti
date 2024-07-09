@@ -27,6 +27,9 @@ function App() {
     JSON.stringify(initialEditorState)
   )
   const [savePending, setSavePending] = useState<boolean>(false)
+  const [resourceLinkIdFromDb, setResourceLinkIdFromDb] = useState<
+    string | null
+  >(null)
 
   const editorStateRef = useRef(editorState)
 
@@ -61,6 +64,7 @@ function App() {
 
   const accessToken = urlParams.get('accessToken')
   const ltik = urlParams.get('ltik')
+  const resourceLinkIdFromUrl = urlParams.get('resourceLinkId')
 
   useEffect(() => {
     function fetchContent() {
@@ -78,9 +82,11 @@ function App() {
         },
       }).then(async (res) => {
         if (res.status === 200) {
-          const contentStringified = await res.json()
-          const content = JSON.parse(contentStringified)
-          console.log(content)
+          const entity = await res.json()
+          console.log('entity: ', entity)
+          setResourceLinkIdFromDb(entity.resource_link_id)
+          const content = JSON.parse(entity.content)
+          console.log('content: ', content)
           // TODO: Update the editor with the fetched content
         } else {
           // TODO: Handle failure
@@ -96,6 +102,18 @@ function App() {
   const mode: 'read' | 'write' = decodedAccessToken.accessRight
 
   const isDeeplink = urlParams.get('deeplink')
+
+  if (
+    resourceLinkIdFromDb !== null &&
+    resourceLinkIdFromDb === resourceLinkIdFromUrl
+  ) {
+    return (
+      <p>
+        Warning message: This is a copy. We don't support that. TODO: Expand on
+        this message, also maybe in German?
+      </p>
+    )
+  }
 
   return (
     <>
