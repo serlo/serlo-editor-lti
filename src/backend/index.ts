@@ -193,14 +193,14 @@ ltijs.onConnect((idToken, req, res) => {
 
 // Successful LTI deep linking launch
 // @ts-expect-error @types/ltijs
-ltijs.onDeepLinking(async (_, __, res) => {
+ltijs.onDeepLinking(async (idToken, __, res) => {
   const database = getDatabase()
 
   const ltiCustomClaimId = uuidv4()
 
   const { insertId: entityId } = await database.mutate(
-    'INSERT INTO lti_entity (custom_claim_id, content) values (?, ?)',
-    [ltiCustomClaimId, JSON.stringify(defaultContent)]
+    'INSERT INTO lti_entity (custom_claim_id, content, parsed_jwt_content) values (?, ?, ?)',
+    [ltiCustomClaimId, JSON.stringify(defaultContent), JSON.stringify(idToken)]
   )
 
   console.log('entityId: ', entityId)
@@ -210,12 +210,6 @@ ltijs.onDeepLinking(async (_, __, res) => {
   const accessToken = jwt.sign(
     { entityId, accessRight: 'write' },
     ltijsKey // Reuse the symmetric HS256 key used by ltijs to sign ltik and database entries
-  )
-
-  const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccesTokenType
-  await database.mutate(
-    'UPDATE lti_entity SET parsed_jwt_content = ? WHERE id = ?',
-    [JSON.stringify(decodedAccessToken), entityId]
   )
 
   const searchParams = new URLSearchParams()
