@@ -1,5 +1,5 @@
 import { SerloEditor, SerloRenderer } from '@serlo/editor'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { AccesTokenType } from '../backend'
 import { jwtDecode } from 'jwt-decode'
 
@@ -27,7 +27,8 @@ function App() {
     JSON.stringify(initialEditorState)
   )
   const [savePending, setSavePending] = useState<boolean>(false)
-  // TODO: Fetch content json from database. Send along access token to authenticate request.
+
+  const editorStateRef = useRef(editorState)
 
   // Save content if there are unsaved changed
   useEffect(() => {
@@ -43,7 +44,7 @@ function App() {
         },
         body: JSON.stringify({
           accessToken,
-          editorState,
+          editorState: editorStateRef.current,
         }),
       }).then((res) => {
         if (res.status === 200) {
@@ -60,6 +61,35 @@ function App() {
 
   const accessToken = urlParams.get('accessToken')
   const ltik = urlParams.get('ltik')
+
+  useEffect(() => {
+    function fetchContent() {
+      if (!accessToken || !ltik) {
+        return new Error('Access token or ltik was missing!')
+      }
+
+      const queryString = new URLSearchParams()
+      queryString.append('accessToken', accessToken)
+
+      fetch('/entity?' + queryString, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${ltik}`,
+        },
+      }).then(async (res) => {
+        if (res.status === 200) {
+          const contentStringified = await res.json()
+          const content = JSON.parse(contentStringified)
+          console.log(content)
+          // TODO: Update the editor with the fetched content
+        } else {
+          // TODO: Handle failure
+        }
+      })
+    }
+    fetchContent()
+  }, [accessToken, ltik])
+
   if (!accessToken || !ltik) return <p>Access token or ltik was missing!</p>
 
   const decodedAccessToken = jwtDecode(accessToken) as AccesTokenType
@@ -101,7 +131,8 @@ function App() {
             if (!changed) return
             const newState = getDocument()
             if (!newState) return
-            setEditorState(JSON.stringify(newState))
+            editorStateRef.current = JSON.stringify(newState)
+            setEditorState(editorStateRef.current)
             setSavePending(true)
           }}
         >

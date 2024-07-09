@@ -73,16 +73,40 @@ ltijs.app.get('/app', async (_, res) => {
 })
 
 // Endpoint to get content
-ltijs.app.get('/entity', (req, res) => {
-  const accessToken = req.body.accessToken
+ltijs.app.get('/entity', async (req, res) => {
+  const database = getDatabase()
+
+  const accessToken = req.query.accessToken
   if (typeof accessToken !== 'string') {
     return res.send('Missing or invalid access token')
   }
 
-  // const decodedAccessToken = jwt.verify(accessToken, ltijsKey)
+  const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccesTokenType
 
-  // TODO: Get json from database with decodedAccessToken.entityId
-  res.json(defaultContent)
+  // Get json from database with decodedAccessToken.entityId
+  interface Entity {
+    id: number
+    customClaimId: string
+    content: string
+  }
+
+  const entity = await database.fetchAll<Entity>(
+    `
+      SELECT
+        id,
+        custom_claim_id as customClaimId,
+        content
+      FROM
+        lti_entity
+      WHERE
+        id = ?
+    `,
+    [String(decodedAccessToken.entityId)]
+  )
+
+  console.log('entity: ', entity)
+
+  res.json(entity[0].content)
 })
 
 // Endpoint to save content
@@ -100,16 +124,15 @@ ltijs.app.put('/entity', async (req, res) => {
     return res.send('Access token grants no right to modify content')
   }
 
-  // TODO: Modify entity with decodedAccessToken.entityId in database
-
+  // Modify entity with decodedAccessToken.entityId in database
   await database.mutate('UPDATE lti_entity SET content = ? WHERE id = ?', [
-    JSON.stringify(req.body.editorState),
+    req.body.editorState,
     decodedAccessToken.entityId,
   ])
   console.log(
     `Entity ${
       decodedAccessToken.entityId
-    } modified in database. New state:\n${JSON.stringify(req.body.editorState)}`
+    } modified in database. New state:\n${req.body.editorState}`
   )
 
   return res.send('Success')
@@ -181,28 +204,6 @@ ltijs.onDeepLinking(async (_, __, res) => {
   )
 
   console.log('entityId: ', entityId)
-
-  interface Entity {
-    id: number
-    customClaimId: string
-    content: string
-  }
-
-  const entity = await database.fetchAll<Entity>(
-    `
-      SELECT
-        id,
-        custom_claim_id as customClaimId,
-        content
-      FROM
-        lti_entity
-      WHERE
-        id = ?
-    `,
-    [String(entityId)]
-  )
-
-  console.log('entity: ', entity)
 
   // Generate access token (authorizing write access) and send to client
   // TODO: Maybe use registered jwt names
