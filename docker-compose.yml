@@ -1,4 +1,4 @@
-# Shared network 'express-mongo' makes service 'mongo' available to service 'express'. You can connect using the service name in MONGODB_CONNECTION_URI like this: mongodb://[SERVICE_NAME]:27017/
+# Shared network 'express-mongo-mysql' makes service 'mongo' & 'mysql' available to service 'express'. You can connect using the service name in MONGODB_CONNECTION_URI like this: mongodb://[SERVICE_NAME]:27017/
 
 services:
   express:
