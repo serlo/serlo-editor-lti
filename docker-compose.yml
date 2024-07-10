@@ -5,6 +5,7 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile.dev
+    env_file: ".env"
     depends_on:
       - mongo
     networks:
