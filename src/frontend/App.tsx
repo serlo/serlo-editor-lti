@@ -1,5 +1,5 @@
 import { SerloEditor, SerloRenderer } from '@serlo/editor'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { AccesTokenType } from '../backend'
 import { jwtDecode } from 'jwt-decode'
 
@@ -27,7 +27,11 @@ function App() {
     JSON.stringify(initialEditorState)
   )
   const [savePending, setSavePending] = useState<boolean>(false)
-  // TODO: Fetch content json from database. Send along access token to authenticate request.
+  const [resourceLinkIdFromDb, setResourceLinkIdFromDb] = useState<
+    string | null
+  >(null)
+
+  const editorStateRef = useRef(editorState)
 
   // Save content if there are unsaved changed
   useEffect(() => {
@@ -43,7 +47,7 @@ function App() {
         },
         body: JSON.stringify({
           accessToken,
-          editorState,
+          editorState: editorStateRef.current,
         }),
       }).then((res) => {
         if (res.status === 200) {
@@ -60,40 +64,59 @@ function App() {
 
   const accessToken = urlParams.get('accessToken')
   const ltik = urlParams.get('ltik')
+  const resourceLinkIdFromUrl = urlParams.get('resourceLinkId')
+  const testingSecret = urlParams.get('testingSecret')
+
+  useEffect(() => {
+    function fetchContent() {
+      if (!accessToken || !ltik) {
+        return new Error('Access token or ltik was missing!')
+      }
+
+      const queryString = new URLSearchParams()
+      queryString.append('accessToken', accessToken)
+
+      fetch('/entity?' + queryString, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${ltik}`,
+        },
+      }).then(async (res) => {
+        if (res.status === 200) {
+          const entity = await res.json()
+          console.log('entity: ', entity)
+          setResourceLinkIdFromDb(entity.resource_link_id)
+          const content = JSON.parse(entity.content)
+          console.log('content: ', content)
+          // TODO: Update the editor with the fetched content
+        } else {
+          // TODO: Handle failure
+        }
+      })
+    }
+    fetchContent()
+  }, [accessToken, ltik])
+
   if (!accessToken || !ltik) return <p>Access token or ltik was missing!</p>
 
   const decodedAccessToken = jwtDecode(accessToken) as AccesTokenType
   const mode: 'read' | 'write' = decodedAccessToken.accessRight
 
-  const isDeeplink = urlParams.get('deeplink')
+  if (
+    resourceLinkIdFromDb !== null &&
+    resourceLinkIdFromUrl !== null &&
+    resourceLinkIdFromDb !== resourceLinkIdFromUrl
+  ) {
+    return (
+      <p>
+        Warning message: This is a copy. We don't support that. TODO: Expand on
+        this message, also maybe in German?
+      </p>
+    )
+  }
 
   return (
-    <>
-      <div style={{ marginBottom: '3rem' }}>
-        {savePending || !editorState ? (
-          // Show close button but disable it
-          <button disabled>Close</button>
-        ) : isDeeplink ? (
-          // Enable close button
-          <form method="post" action="/lti/finish-deeplink">
-            <input type="hidden" name="accessToken" value={accessToken} />
-            <input type="hidden" name="ltik" value={ltik} />
-            <input type="hidden" name="editorState" value={editorState} />
-            <button
-              style={{
-                backgroundColor: 'grey',
-                borderRadius: '5px',
-                padding: '5px',
-              }}
-              type="submit"
-            >
-              Close
-            </button>
-          </form>
-        ) : (
-          <></>
-        )}
-      </div>
+    <div style={{ padding: '2rem' }}>
       {mode === 'write' ? (
         <SerloEditor
           initialState={initialEditorState}
@@ -101,8 +124,15 @@ function App() {
             if (!changed) return
             const newState = getDocument()
             if (!newState) return
-            setEditorState(JSON.stringify(newState))
+            editorStateRef.current = JSON.stringify(newState)
+            setEditorState(editorStateRef.current)
             setSavePending(true)
+          }}
+          pluginsConfig={{
+            general: {
+              testingSecret: testingSecret || undefined,
+              enableTextAreaExercise: false,
+            },
           }}
         >
           {(editor) => {
@@ -117,7 +147,7 @@ function App() {
       <div>{accessToken}</div>
       <h3>ltik:</h3>
       <div>{ltik}</div> */}
-    </>
+    </div>
   )
 }
 

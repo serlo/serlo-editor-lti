@@ -1,7 +1,10 @@
-import { IdToken, Provider as ltijs } from 'ltijs'
+import { Provider as ltijs } from 'ltijs'
 import 'dotenv/config'
 import path from 'path'
 import jwt from 'jsonwebtoken'
+import { Pool, createPool } from 'mysql2/promise'
+import { Database } from './database'
+import { v4 as uuidv4 } from 'uuid'
 
 // Requires Node.js 20.11 or higher
 const __dirname = import.meta.dirname
@@ -18,10 +21,33 @@ const ltiPlatform = {
   accessTokenEndpoint: readEnvVariable('LTI_PLATFORM_ACCESS_TOKEN_ENDPOINT'),
   keysetEndpoint: readEnvVariable('LTI_PLATFORM_KEYSET_ENDPOINT'),
 }
+let pool: Pool | null = null
+const defaultContent = {
+  plugin: 'rows',
+  state: [
+    {
+      plugin: 'text',
+      state: [
+        {
+          type: 'p',
+          children: {
+            text: 'Test content',
+          },
+        },
+      ],
+    },
+  ],
+}
 
 export interface AccesTokenType {
   entityId: string
   accessRight: 'read' | 'write'
+}
+
+interface Entity {
+  id: number
+  customClaimId: string
+  content: string
 }
 
 // Setup
@@ -47,43 +73,53 @@ ltijs.setup(
   }
 )
 
+// Disable COEP
+ltijs.app.use((_, res, next) => {
+  res.removeHeader('Cross-Origin-Embedder-Policy')
+  next()
+})
+
 // Opens Serlo editor
 ltijs.app.get('/app', async (_, res) => {
   return res.sendFile(path.join(__dirname, '../../dist/index.html'))
 })
 
 // Endpoint to get content
-ltijs.app.get('/entity', (req, res) => {
-  const accessToken = req.body.accessToken
+ltijs.app.get('/entity', async (req, res) => {
+  const database = getDatabase()
+
+  const accessToken = req.query.accessToken
   if (typeof accessToken !== 'string') {
     return res.send('Missing or invalid access token')
   }
 
-  // const decodedAccessToken = jwt.verify(accessToken, ltijsKey)
+  const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccesTokenType
 
-  // TODO: Get json from database with decodedAccessToken.entityId
-  const json = {
-    plugin: 'rows',
-    state: [
-      {
-        plugin: 'text',
-        state: [
-          {
-            type: 'p',
-            children: {
-              text: 'Test content',
-            },
-          },
-        ],
-      },
-    ],
-  }
+  // Get json from database with decodedAccessToken.entityId
+  const entity = await database.fetchOne<Entity>(
+    `
+      SELECT
+        id,
+        resource_link_id,
+        custom_claim_id as customClaimId,
+        content
+      FROM
+        lti_entity
+      WHERE
+        id = ?
+    `,
+    [String(decodedAccessToken.entityId)]
+  )
 
-  res.json(json)
+  console.log('entity: ', entity)
+
+  res.json(entity)
 })
 
 // Endpoint to save content
 ltijs.app.put('/entity', async (req, res) => {
+  const database = getDatabase()
+
   const accessToken = req.body.accessToken
   if (typeof accessToken !== 'string') {
     return res.send('Missing or invalid access token')
@@ -95,32 +131,51 @@ ltijs.app.put('/entity', async (req, res) => {
     return res.send('Access token grants no right to modify content')
   }
 
-  // TODO: Modify entity with decodedAccessToken.entityId in database
-
+  // Modify entity with decodedAccessToken.entityId in database
+  await database.mutate('UPDATE lti_entity SET content = ? WHERE id = ?', [
+    req.body.editorState,
+    decodedAccessToken.entityId,
+  ])
   console.log(
     `Entity ${
       decodedAccessToken.entityId
-    } modified in database. New state:\n${JSON.stringify(req.body.editorState)}`
+    } modified in database. New state:\n${req.body.editorState}`
   )
 
   return res.send('Success')
 })
 
-// Successful LTI resource launch
-ltijs.onConnect((idToken, req, res) => {
-  // @ts-expect-error @types/ltijs
-  const resourceLinkId: string = idToken.platformContext.id
-
-  // http://celtic.lti.tools/wiki/LTI/Best_Practice/Issues_for_Developers#Resource_links
-  // TODO: If tool was launched with a different resourceLinkId before, this means the entity on the platform was copied. We could create a copy then with a new entityId.
-
-  // Get entityId from lti custom claim or alternatively search query parameters
+// Successful LTI resource link launch
+// @ts-expect-error @types/ltijs
+ltijs.onConnect(async (idToken, req, res) => {
+  // Get customId from lti custom claim or alternatively search query parameters
   // Using search query params is suggested by ltijs, see: https://github.com/Cvmcosta/ltijs/issues/100#issuecomment-832284300
   // @ts-expect-error @types/ltijs
-  const entityId = idToken.platformContext.custom.id ?? req.query.id
+  const customId = idToken.platformContext.custom.id ?? req.query.id
+  if (!customId) return res.send('Missing customId!')
 
-  if (!entityId)
-    return res.send('Search query parameter "entityId" was missing!')
+  // @ts-expect-error @types/ltijs
+  const resourceLinkId: string = idToken.platformContext.resource.id
+
+  console.log('ltijs.onConnect -> idToken: ', idToken)
+
+  const database = getDatabase()
+
+  // Future: Might need to fetch multiple once we create new entries with the same custom_claim_id
+  const entity = await database.fetchOne<Entity>(
+    `
+      SELECT
+        id,
+        resource_link_id,
+        custom_claim_id as customClaimId,
+        content
+      FROM
+        lti_entity
+      WHERE
+        custom_claim_id = ?
+    `,
+    [String(customId)]
+  )
 
   // https://www.imsglobal.org/spec/lti/v1p3#lis-vocabulary-for-context-roles
   // Example roles claim from itslearning
@@ -135,7 +190,8 @@ ltijs.onConnect((idToken, req, res) => {
     'membership#Mentor',
     'membership#Manager',
     'membership#Officer',
-    'membership#Member', // Gets sent when added to collection on itslearning. TODO: What role do other users have?
+    // This role is sent in the itslearning library and we disallow editing there for now
+    // 'membership#Member',
   ]
   // @ts-expect-error @types/ltijs
   const courseMembershipRole = idToken.platformContext.roles?.find((role) =>
@@ -152,59 +208,58 @@ ltijs.onConnect((idToken, req, res) => {
   // Generate access token and send to client
   // TODO: Maybe use registered jwt names
   const accessToken = jwt.sign(
-    { entityId, accessRight: editorMode },
+    { entityId: entity.id, accessRight: editorMode },
     ltijsKey // Reuse the symmetric HS256 key used by ltijs to sign ltik and database entries
   )
 
-  return ltijs.redirect(res, `/app?accessToken=${accessToken}`)
-}, {})
-
-// Successful LTI deep linking launch
-ltijs.onDeepLinking((_, __, res) => {
-  // TODO: create new entity in database and get its ID
-  const entityId = 123456
-
-  // Generate access token (authorizing write access) and send to client
-  // TODO: Maybe use registered jwt names
-  const accessToken = jwt.sign(
-    { entityId, accessRight: 'write' },
-    ltijsKey // Reuse the symmetric HS256 key used by ltijs to sign ltik and database entries
-  )
+  if (resourceLinkId) {
+    // Update resource link id in database
+    await database.mutate(
+      'UPDATE lti_entity SET resource_link_id = ? WHERE id = ? AND resource_link_id IS NULL',
+      [resourceLinkId, entity.id]
+    )
+  }
 
   const searchParams = new URLSearchParams()
   searchParams.append('accessToken', accessToken)
-  searchParams.append('deeplink', 'true')
+  searchParams.append('resourceLinkId', resourceLinkId)
+  searchParams.append(
+    'testingSecret',
+    readEnvVariable('SERLO_EDITOR_TESTING_SECRET')
+  )
 
-  return ltijs.redirect(res, `/app?${searchParams}`, {
-    isNewResource: true, // Tell ltijs that this is a new resource so it can update some stuff in the database
-  })
-})
+  return ltijs.redirect(res, `/app?${searchParams}`)
+}, {})
 
-ltijs.app.post('/lti/finish-deeplink', async (req, res) => {
-  const idToken = res.locals.token as IdToken | undefined
-  if (!idToken) return res.send('Missing idToken')
-  const accessToken = req.body.accessToken
-  if (typeof accessToken !== 'string') {
-    return res.send('Missing or invalid access token')
-  }
+// Successful LTI deep linking launch
+// @ts-expect-error @types/ltijs
+ltijs.onDeepLinking(async (idToken, __, res) => {
+  const database = getDatabase()
 
-  const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccesTokenType
+  const isLocalEnvironment = process.env['ENVIRONMENT'] === 'local'
+
+  const ltiCustomClaimId = uuidv4()
+
+  // Create new entity in database
+  const { insertId: entityId } = await database.mutate(
+    'INSERT INTO lti_entity (custom_claim_id, content, parsed_jwt_content) values (?, ?, ?)',
+    [ltiCustomClaimId, JSON.stringify(defaultContent), JSON.stringify(idToken)]
+  )
+
+  console.log('entityId: ', entityId)
 
   const url = new URL(
-    process.env['ENVIRONMENT'] === 'local'
+    isLocalEnvironment
       ? 'http://localhost:3000'
       : 'https://editor.serlo-staging.dev'
   )
   url.pathname = '/lti/launch'
-  // Temporarily deactivated
-  // url.searchParams.append("entityId", decodedAccessToken.entityId);
-
   // https://www.imsglobal.org/spec/lti-dl/v2p0#lti-resource-link
   const items = [
     {
       type: 'ltiResourceLink',
       url: url.href,
-      title: `Serlo Editor Content ${decodedAccessToken.entityId}`,
+      title: `Serlo Editor Content`,
       text: 'Placeholder description',
       // icon:
       // thumbnail:
@@ -215,7 +270,7 @@ ltijs.app.post('/lti/finish-deeplink', async (req, res) => {
       // },
       custom: {
         // Important: Only use lowercase letters in key. When I used uppercase letters they were changed to lowercase letters in the LTI Resource Link launch.
-        id: decodedAccessToken.entityId,
+        id: ltiCustomClaimId,
       },
       // lineItem:
       // available:
@@ -274,4 +329,11 @@ function readEnvVariable(name: string): string {
     )
   }
   return value
+}
+
+function getDatabase() {
+  if (pool === null) {
+    pool = createPool(readEnvVariable('MYSQL_URI'))
+  }
+  return new Database(pool)
 }

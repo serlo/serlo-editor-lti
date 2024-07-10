@@ -10,13 +10,15 @@
     "dev": "docker compose up --watch --build",
     "format": "prettier . --write",
     "lint": "tsc --noEmit",
+    "mysql": "docker compose exec mysql serlo-mysql",
+    "mysql:rollback": "docker compose exec mysql sh -c \"pv /docker-entrypoint-initdb.d/001-init.sql | serlo-mysql\"",
     "push-image": "yarn tsx push-image.ts",
     "push-image:dev": "yarn push-image dev",
     "push-image:latest": "yarn push-image latest",
     "start:dev": "tsx --watch src/backend/index.ts"
   },
   "dependencies": {
-    "@serlo/editor": "0.7.2",
+    "@serlo/editor": "0.9.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "fp-ts": "2.16.6",
@@ -24,10 +26,12 @@
     "jsonwebtoken": "9.0.2",
     "jwt-decode": "4.0.0",
     "ltijs": "^5.9.5",
+    "mysql2": "^3.10.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tsx": "4.15.6",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "9.0.6",
@@ -35,6 +39,7 @@
     "@types/node": "^20.12.12",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
+    "@types/uuid": "^10",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
