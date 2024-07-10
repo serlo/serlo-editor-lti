@@ -102,8 +102,6 @@ function App() {
   const decodedAccessToken = jwtDecode(accessToken) as AccesTokenType
   const mode: 'read' | 'write' = decodedAccessToken.accessRight
 
-  const isDeeplink = urlParams.get('deeplink')
-
   if (
     resourceLinkIdFromDb !== null &&
     resourceLinkIdFromUrl !== null &&
@@ -118,32 +116,7 @@ function App() {
   }
 
   return (
-    <>
-      <div style={{ marginBottom: '3rem' }}>
-        {savePending || !editorState ? (
-          // Show close button but disable it
-          <button disabled>Close</button>
-        ) : isDeeplink ? (
-          // Enable close button
-          <form method="post" action="/lti/finish-deeplink">
-            <input type="hidden" name="accessToken" value={accessToken} />
-            <input type="hidden" name="ltik" value={ltik} />
-            <input type="hidden" name="editorState" value={editorState} />
-            <button
-              style={{
-                backgroundColor: 'grey',
-                borderRadius: '5px',
-                padding: '5px',
-              }}
-              type="submit"
-            >
-              Close
-            </button>
-          </form>
-        ) : (
-          <></>
-        )}
-      </div>
+    <div style={{ padding: '2rem' }}>
       {mode === 'write' ? (
         <SerloEditor
           initialState={initialEditorState}
@@ -174,7 +147,7 @@ function App() {
       <div>{accessToken}</div>
       <h3>ltik:</h3>
       <div>{ltik}</div> */}
-    </>
+    </div>
   )
 }
 
