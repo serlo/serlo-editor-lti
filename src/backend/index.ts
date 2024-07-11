@@ -244,7 +244,7 @@ ltijs.onDeepLinking(async (idToken, __, res) => {
 
   // Create new entity in database
   const { insertId: entityId } = await database.mutate(
-    'INSERT INTO lti_entity (custom_claim_id, content, parsed_jwt_content) values (?, ?, ?)',
+    'INSERT INTO lti_entity (custom_claim_id, content, id_token_on_creation) values (?, ?, ?)',
     [ltiCustomClaimId, JSON.stringify(defaultContent), JSON.stringify(idToken)]
   )
 
