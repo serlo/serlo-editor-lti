@@ -62,7 +62,7 @@ export default function SerloContent(props: SerloContentProps) {
   const mode: 'read' | 'write' = decodedAccessToken.accessRight
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div style={{ padding: '2rem', backgroundColor: 'white' }}>
       {mode === 'write' ? (
         <SerloEditor
           initialState={initialState}
