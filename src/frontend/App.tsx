@@ -1,73 +1,33 @@
-import { SerloEditor, SerloRenderer } from '@serlo/editor'
-import { useEffect, useRef, useState } from 'react'
-import type { AccesTokenType } from '../backend'
-import { jwtDecode } from 'jwt-decode'
+import { type SerloEditorProps } from '@serlo/editor'
+import { useEffect, useState } from 'react'
+import SerloContent from './SerloContent'
 
-const initialEditorState = {
-  plugin: 'rows',
-  state: [
-    {
-      plugin: 'text',
-      state: [
-        {
-          type: 'p',
-          children: [
-            {
-              text: '',
-            },
-          ],
-        },
-      ],
-    },
-  ],
-}
+type AppState =
+  | { type: 'fetching-content' }
+  | { type: 'error'; message: string }
+  | { type: 'content-fetched'; content: SerloEditorProps['initialState'] }
 
 function App() {
-  const [editorState, setEditorState] = useState<string>(
-    JSON.stringify(initialEditorState)
-  )
-  const [savePending, setSavePending] = useState<boolean>(false)
-  const [resourceLinkIdFromDb, setResourceLinkIdFromDb] = useState<
-    string | null
-  >(null)
-
-  const editorStateRef = useRef(editorState)
-
-  // Save content if there are unsaved changed
-  useEffect(() => {
-    if (!savePending) return
-
-    setTimeout(saveContent, 1000)
-    function saveContent() {
-      fetch('/entity', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization: `Bearer ${ltik}`,
-        },
-        body: JSON.stringify({
-          accessToken,
-          editorState: editorStateRef.current,
-        }),
-      }).then((res) => {
-        if (res.status === 200) {
-          setSavePending(false)
-        } else {
-          // TODO: Handle failure
-        }
-      })
-    }
-  }, [savePending])
-
   const queryString = window.location.search
   const urlParams = new URLSearchParams(queryString)
-
   const accessToken = urlParams.get('accessToken')
   const ltik = urlParams.get('ltik')
   const resourceLinkIdFromUrl = urlParams.get('resourceLinkId')
-  const testingSecret = urlParams.get('testingSecret')
+
+  const [appState, setAppState] = useState<AppState>({
+    type: 'fetching-content',
+  })
 
   useEffect(() => {
+    if (!accessToken) {
+      setAppState({
+        type: 'error',
+        message: 'Error: Missing accessToken in serach query parameters.',
+      })
+      return
+    }
+    // TODO: Check if other search query parameters are valid
+
     function fetchContent() {
       if (!accessToken || !ltik) {
         return new Error('Access token or ltik was missing!')
@@ -81,74 +41,52 @@ function App() {
         headers: {
           Authorization: `Bearer ${ltik}`,
         },
-      }).then(async (res) => {
-        if (res.status === 200) {
-          const entity = await res.json()
-          console.log('entity: ', entity)
-          setResourceLinkIdFromDb(entity.resource_link_id)
-          const content = JSON.parse(entity.content)
-          console.log('content: ', content)
-          // TODO: Update the editor with the fetched content
-        } else {
-          // TODO: Handle failure
-        }
       })
+        .then(async (res) => {
+          if (res.status === 200) {
+            const entity = await res.json()
+            console.log('entity: ', entity)
+            const resourceLinkIdFromDb = entity.resource_link_id
+            if (!resourceLinkIdFromDb || !resourceLinkIdFromUrl) {
+              setAppState({
+                type: 'error',
+                message: 'Error: resource_link_id was missing!',
+              })
+              return
+            }
+            if (resourceLinkIdFromDb !== resourceLinkIdFromUrl) {
+              setAppState({
+                type: 'error',
+                message:
+                  'Auf der itslearning Platform wurde eine Kopie erstellt. Leider ist dies aus technischen Gründen noch nicht möglich. Du kannst allerdings einen neuen Serlo Editor Inhalt auf itslearning erstellen und die gewünschten Inhalte per "Plugin in die Zwischenablage kopieren" dorthin übernehmen.',
+              })
+              return
+            }
+            const content = JSON.parse(entity.content)
+            console.log('content: ', content)
+            setAppState({ type: 'content-fetched', content })
+          } else {
+            setAppState({
+              type: 'error',
+              message: 'Fehler beim Laden des Inhalts.',
+            })
+          }
+        })
+        .catch(() => {
+          setAppState({
+            type: 'error',
+            message: 'Fehler beim Laden des Inhalts.',
+          })
+        })
     }
     fetchContent()
-  }, [accessToken, ltik])
+  }, [])
 
-  if (!accessToken || !ltik) return <p>Access token or ltik was missing!</p>
+  if (appState.type === 'fetching-content') return null
+  if (appState.type === 'error') return <div>{appState.message}</div>
 
-  const decodedAccessToken = jwtDecode(accessToken) as AccesTokenType
-  const mode: 'read' | 'write' = decodedAccessToken.accessRight
-
-  if (
-    resourceLinkIdFromDb !== null &&
-    resourceLinkIdFromUrl !== null &&
-    resourceLinkIdFromDb !== resourceLinkIdFromUrl
-  ) {
-    return (
-      <p>
-        Warning message: This is a copy. We don't support that. TODO: Expand on
-        this message, also maybe in German?
-      </p>
-    )
-  }
-
-  return (
-    <div style={{ padding: '2rem' }}>
-      {mode === 'write' ? (
-        <SerloEditor
-          initialState={initialEditorState}
-          onChange={({ changed, getDocument }) => {
-            if (!changed) return
-            const newState = getDocument()
-            if (!newState) return
-            editorStateRef.current = JSON.stringify(newState)
-            setEditorState(editorStateRef.current)
-            setSavePending(true)
-          }}
-          pluginsConfig={{
-            general: {
-              testingSecret: testingSecret || undefined,
-              enableTextAreaExercise: false,
-            },
-          }}
-        >
-          {(editor) => {
-            return <>{editor.element}</>
-          }}
-        </SerloEditor>
-      ) : (
-        <SerloRenderer document={initialEditorState} />
-      )}
-      {/* <h2>Debug info</h2>
-      <h3>Access token:</h3>
-      <div>{accessToken}</div>
-      <h3>ltik:</h3>
-      <div>{ltik}</div> */}
-    </div>
-  )
+  // appState.type === 'fetched-content'
+  return <SerloContent initialState={appState.content} />
 }
 
 export default App

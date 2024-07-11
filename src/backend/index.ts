@@ -30,9 +30,11 @@ const defaultContent = {
       state: [
         {
           type: 'p',
-          children: {
-            text: 'Test content',
-          },
+          children: [
+            {
+              text: '',
+            },
+          ],
         },
       ],
     },
