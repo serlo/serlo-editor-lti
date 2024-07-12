@@ -215,10 +215,10 @@ ltijs.onConnect(async (idToken, req, res) => {
     ltijsKey // Reuse the symmetric HS256 key used by ltijs to sign ltik and database entries
   )
 
-  if (resourceLinkId) {
-    // Update resource link id in database
+  if (!entity.resource_link_id) {
+    // Set resource_link_id in database
     await database.mutate(
-      'UPDATE lti_entity SET resource_link_id = ? WHERE id = ? AND resource_link_id IS NULL',
+      'UPDATE lti_entity SET resource_link_id = ? WHERE id = ?',
       [resourceLinkId, entity.id]
     )
   }
