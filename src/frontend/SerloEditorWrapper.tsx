@@ -1,21 +1,11 @@
-import {
-  SerloEditor,
-  SerloRenderer,
-  type SerloEditorProps,
-} from '@serlo/editor'
-import { jwtDecode } from 'jwt-decode'
+import { SerloEditor, type SerloEditorProps } from '@serlo/editor'
 import { useEffect, useRef, useState } from 'react'
 
 interface SerloContentProps {
   initialState: SerloEditorProps['initialState']
 }
 
-export interface AccessTokenType {
-  entityId: string
-  accessRight: 'read' | 'write'
-}
-
-export default function SerloContent(props: SerloContentProps) {
+export default function SerloEditorWrapper(props: SerloContentProps) {
   const { initialState } = props
   const queryString = window.location.search
   const urlParams = new URLSearchParams(queryString)
@@ -56,38 +46,29 @@ export default function SerloContent(props: SerloContentProps) {
     }
   }, [savePending])
 
-  if (!accessToken) return
-
-  const decodedAccessToken = jwtDecode(accessToken) as AccessTokenType
-  const mode: 'read' | 'write' = decodedAccessToken.accessRight
-
   return (
     <div style={{ padding: '2rem', backgroundColor: 'white' }}>
-      {mode === 'write' ? (
-        <SerloEditor
-          initialState={initialState}
-          onChange={({ changed, getDocument }) => {
-            if (!changed) return
-            const newState = getDocument()
-            if (!newState) return
-            editorStateRef.current = JSON.stringify(newState)
-            setEditorState(editorStateRef.current)
-            setSavePending(true)
-          }}
-          pluginsConfig={{
-            general: {
-              testingSecret: testingSecret || undefined,
-              enableTextAreaExercise: false,
-            },
-          }}
-        >
-          {(editor) => {
-            return <>{editor.element}</>
-          }}
-        </SerloEditor>
-      ) : (
-        <SerloRenderer document={initialState} />
-      )}
+      <SerloEditor
+        initialState={initialState}
+        onChange={({ changed, getDocument }) => {
+          if (!changed) return
+          const newState = getDocument()
+          if (!newState) return
+          editorStateRef.current = JSON.stringify(newState)
+          setEditorState(editorStateRef.current)
+          setSavePending(true)
+        }}
+        pluginsConfig={{
+          general: {
+            testingSecret: testingSecret || undefined,
+            enableTextAreaExercise: false,
+          },
+        }}
+      >
+        {(editor) => {
+          return <>{editor.element}</>
+        }}
+      </SerloEditor>
       {/* <h2>Debug info</h2>
       <h3>Access token:</h3>
       <div>{accessToken}</div>
