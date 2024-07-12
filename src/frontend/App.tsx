@@ -1,154 +1,148 @@
-import { SerloEditor, SerloRenderer } from '@serlo/editor'
-import { useEffect, useRef, useState } from 'react'
-import type { AccesTokenType } from '../backend'
+import {
+  SerloRenderer,
+  SerloRendererProps,
+  type SerloEditorProps,
+} from '@serlo/editor'
+import { useEffect, useState } from 'react'
+import SerloEditorWrapper from './SerloEditorWrapper'
 import { jwtDecode } from 'jwt-decode'
+import { type AccessToken, type Entity } from '../backend'
+import copyPluginToClipboardImage from './assets/copy-plugin-to-clipboard.png'
 
-const initialEditorState = {
-  plugin: 'rows',
-  state: [
-    {
-      plugin: 'text',
-      state: [
-        {
-          type: 'p',
-          children: [
-            {
-              text: '',
-            },
-          ],
-        },
-      ],
-    },
-  ],
-}
+type AppState =
+  | { type: 'fetching-content' }
+  | { type: 'error'; message: string; imageURL?: string }
+  | { type: 'editor'; content: SerloEditorProps['initialState'] }
+  | { type: 'static-renderer'; content: SerloRendererProps['document'] }
 
 function App() {
-  const [editorState, setEditorState] = useState<string>(
-    JSON.stringify(initialEditorState)
-  )
-  const [savePending, setSavePending] = useState<boolean>(false)
-  const [resourceLinkIdFromDb, setResourceLinkIdFromDb] = useState<
-    string | null
-  >(null)
-
-  const editorStateRef = useRef(editorState)
-
-  // Save content if there are unsaved changed
-  useEffect(() => {
-    if (!savePending) return
-
-    setTimeout(saveContent, 1000)
-    function saveContent() {
-      fetch('/entity', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization: `Bearer ${ltik}`,
-        },
-        body: JSON.stringify({
-          accessToken,
-          editorState: editorStateRef.current,
-        }),
-      }).then((res) => {
-        if (res.status === 200) {
-          setSavePending(false)
-        } else {
-          // TODO: Handle failure
-        }
-      })
-    }
-  }, [savePending])
-
   const queryString = window.location.search
   const urlParams = new URLSearchParams(queryString)
-
   const accessToken = urlParams.get('accessToken')
   const ltik = urlParams.get('ltik')
   const resourceLinkIdFromUrl = urlParams.get('resourceLinkId')
-  const testingSecret = urlParams.get('testingSecret')
+
+  const [appState, setAppState] = useState<AppState>({
+    type: 'fetching-content',
+  })
 
   useEffect(() => {
-    function fetchContent() {
-      if (!accessToken || !ltik) {
-        return new Error('Access token or ltik was missing!')
-      }
+    if (!accessToken) {
+      setAppState({
+        type: 'error',
+        message: 'Error: Missing accessToken in search query parameters.',
+      })
+      return
+    }
+    if (!ltik) {
+      setAppState({
+        type: 'error',
+        message: 'Error: Missing ltik in search query parameters.',
+      })
+      return
+    }
+    if (!resourceLinkIdFromUrl) {
+      setAppState({
+        type: 'error',
+        message: 'Error: Missing resourceLinkId in search query parameters.',
+      })
+      return
+    }
 
-      const queryString = new URLSearchParams()
-      queryString.append('accessToken', accessToken)
+    const decodedAccessToken = jwtDecode(accessToken) as AccessToken
+    const mode: 'read' | 'write' = decodedAccessToken.accessRight
 
-      fetch('/entity?' + queryString, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${ltik}`,
-        },
-      }).then(async (res) => {
-        if (res.status === 200) {
-          const entity = await res.json()
-          console.log('entity: ', entity)
-          setResourceLinkIdFromDb(entity.resource_link_id)
-          const content = JSON.parse(entity.content)
-          console.log('content: ', content)
-          // TODO: Update the editor with the fetched content
-        } else {
-          // TODO: Handle failure
+    fetchEntity(accessToken, ltik)
+      .then((entity) => {
+        const resourceLinkIdFromDb = entity.resource_link_id
+        if (!resourceLinkIdFromDb || !resourceLinkIdFromUrl) {
+          setAppState({
+            type: 'error',
+            message: 'Error: resource_link_id was missing!',
+          })
+          return
         }
+
+        if (resourceLinkIdFromDb !== resourceLinkIdFromUrl) {
+          setAppState({
+            type: 'error',
+            // In German because we expect the user to see it
+            message:
+              'Auf itslearning wurde eine Kopie erstellt. Leider ist dies aus technischen Gründen noch nicht möglich. Du kannst allerdings einen neuen Serlo Editor Inhalt auf itslearning erstellen und die gewünschten Inhalte per "Plugin in die Zwischenablage kopieren" & Strg-V dorthin übernehmen.',
+            imageURL: copyPluginToClipboardImage,
+          })
+          return
+        }
+
+        const content = JSON.parse(entity.content)
+        console.log('content: ', content)
+        setAppState({
+          type: mode === 'write' ? 'editor' : 'static-renderer',
+          content,
+        })
+      })
+      .catch(() => {
+        setAppState({
+          type: 'error',
+          message: 'Error: Failed to fetch entity from database.',
+        })
+      })
+
+    function fetchEntity(accessToken: string, ltik: string) {
+      return new Promise<Entity>((resolve, reject) => {
+        const queryString = new URLSearchParams()
+        queryString.append('accessToken', accessToken)
+
+        fetch('/entity?' + queryString, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${ltik}`,
+          },
+        })
+          .then(async (res) => {
+            if (res.status !== 200) reject()
+
+            const entity = (await res.json()) as Entity
+            console.log('entity: ', entity)
+            resolve(entity)
+          })
+          .catch(() => {
+            reject()
+          })
       })
     }
-    fetchContent()
-  }, [accessToken, ltik])
+  }, [])
 
-  if (!accessToken || !ltik) return <p>Access token or ltik was missing!</p>
-
-  const decodedAccessToken = jwtDecode(accessToken) as AccesTokenType
-  const mode: 'read' | 'write' = decodedAccessToken.accessRight
-
-  if (
-    resourceLinkIdFromDb !== null &&
-    resourceLinkIdFromUrl !== null &&
-    resourceLinkIdFromDb !== resourceLinkIdFromUrl
-  ) {
+  if (appState.type === 'fetching-content') return null
+  if (appState.type === 'error')
     return (
-      <p>
-        Warning message: This is a copy. We don't support that. TODO: Expand on
-        this message, also maybe in German?
-      </p>
-    )
-  }
-
-  return (
-    <div style={{ padding: '2rem' }}>
-      {mode === 'write' ? (
-        <SerloEditor
-          initialState={initialEditorState}
-          onChange={({ changed, getDocument }) => {
-            if (!changed) return
-            const newState = getDocument()
-            if (!newState) return
-            editorStateRef.current = JSON.stringify(newState)
-            setEditorState(editorStateRef.current)
-            setSavePending(true)
-          }}
-          pluginsConfig={{
-            general: {
-              testingSecret: testingSecret || undefined,
-              enableTextAreaExercise: false,
-            },
+      <div style={{ backgroundColor: 'white' }}>
+        <div
+          style={{
+            borderColor: 'red',
+            borderWidth: '5px',
+            borderRadius: '10px',
+            padding: '1rem',
           }}
         >
-          {(editor) => {
-            return <>{editor.element}</>
-          }}
-        </SerloEditor>
-      ) : (
-        <SerloRenderer document={initialEditorState} />
-      )}
-      {/* <h2>Debug info</h2>
-      <h3>Access token:</h3>
-      <div>{accessToken}</div>
-      <h3>ltik:</h3>
-      <div>{ltik}</div> */}
-    </div>
-  )
+          {appState.message}
+        </div>
+        {appState.imageURL ? (
+          <img
+            style={{ marginTop: '2rem', maxWidth: '350px' }}
+            src={appState.imageURL}
+          />
+        ) : null}
+      </div>
+    )
+  if (appState.type === 'static-renderer') {
+    return <SerloRenderer document={appState.content} />
+  }
+  if (appState.type === 'editor') {
+    return <SerloEditorWrapper initialState={appState.content} />
+  }
+
+  return <div>Invalid app state: {appState}</div>
 }
 
 export default App

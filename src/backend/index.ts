@@ -30,24 +30,27 @@ const defaultContent = {
       state: [
         {
           type: 'p',
-          children: {
-            text: 'Test content',
-          },
+          children: [
+            {
+              text: '',
+            },
+          ],
         },
       ],
     },
   ],
 }
 
-export interface AccesTokenType {
+export interface AccessToken {
   entityId: string
   accessRight: 'read' | 'write'
 }
 
-interface Entity {
+export interface Entity {
   id: number
   customClaimId: string
   content: string
+  resource_link_id: string
 }
 
 // Setup
@@ -93,7 +96,7 @@ ltijs.app.get('/entity', async (req, res) => {
     return res.send('Missing or invalid access token')
   }
 
-  const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccesTokenType
+  const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccessToken
 
   // Get json from database with decodedAccessToken.entityId
   const entity = await database.fetchOne<Entity>(
@@ -125,7 +128,7 @@ ltijs.app.put('/entity', async (req, res) => {
     return res.send('Missing or invalid access token')
   }
 
-  const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccesTokenType
+  const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccessToken
 
   if (decodedAccessToken.accessRight !== 'write') {
     return res.send('Access token grants no right to modify content')
