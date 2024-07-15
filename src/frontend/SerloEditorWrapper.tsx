@@ -1,4 +1,4 @@
-import { SerloEditor, type SerloEditorProps } from '@serlo/editor'
+import { BaseEditor, SerloEditor, type SerloEditorProps } from '@serlo/editor'
 import { useEffect, useRef, useState } from 'react'
 
 interface SerloContentProps {
@@ -68,6 +68,7 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
         }}
       >
         {(editor) => {
+          customizeEditorStrings(editor.i18n)
           return <>{editor.element}</>
         }}
       </SerloEditor>
@@ -78,4 +79,11 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
       <div>{ltik}</div> */}
     </div>
   )
+}
+
+function customizeEditorStrings(languageData: BaseEditor['i18n']) {
+  languageData.loggedInData.strings.editor.plugins.text.linkOverlay.placeholder =
+    'https://example.com/'
+  languageData.loggedInData.strings.editor.plugins.text.linkOverlay.inputLabel =
+    "Gib eine URL inklusive 'https://' ein"
 }
