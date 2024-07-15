@@ -47,7 +47,9 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
   }, [savePending])
 
   return (
-    <div style={{ padding: '4rem', backgroundColor: 'white' }}>
+    <div
+      style={{ padding: '3rem', backgroundColor: 'white', minWidth: '600px' }}
+    >
       <SerloEditor
         initialState={initialState}
         onChange={({ changed, getDocument }) => {
