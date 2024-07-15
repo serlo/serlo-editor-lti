@@ -296,17 +296,14 @@ ltijs.onDeepLinking(async (idToken, __, res) => {
 const setup = async () => {
   await ltijs.deploy()
 
-  // Remove all platforms
-  // There might be already an entry in mongodb for this platform. On restart, we want to remove it and re-add it to prevent the issue `bad decrypt`. See: https://github.com/Cvmcosta/ltijs/issues/119#issuecomment-882898770
-  const platforms = await ltijs.getAllPlatforms()
-  if (platforms) {
-    for (const platform of platforms) {
-      // @ts-expect-error @types/ltijs is missing this
-      await platform.delete()
-    }
-  }
-
-  console.log(`Registered platform: ${ltiPlatform.name}`)
+  // If you encounter error message `bad decrypt` or changed the ltijs encryption key this might help. See: https://github.com/Cvmcosta/ltijs/issues/119#issuecomment-882898770
+  // const platforms = await ltijs.getAllPlatforms()
+  // if (platforms) {
+  //   for (const platform of platforms) {
+  //     // @ts-expect-error @types/ltijs is missing this
+  //     await platform.delete()
+  //   }
+  // }
 
   // Register platform
   await ltijs.registerPlatform({
@@ -320,6 +317,8 @@ const setup = async () => {
       key: ltiPlatform.keysetEndpoint,
     },
   })
+
+  console.log(`Registered platform: ${ltiPlatform.name}`)
 }
 
 setup()
