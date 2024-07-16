@@ -124,7 +124,9 @@ function App() {
   if (appState.type === 'error') return <Error appState={appState} />
   if (appState.type === 'static-renderer') {
     return (
-      <div style={{ backgroundColor: 'white', minWidth: '600px' }}>
+      <div
+        style={{ padding: '1rem', backgroundColor: 'white', minWidth: '600px' }}
+      >
         <SerloRenderer document={appState.content} />
       </div>
     )
