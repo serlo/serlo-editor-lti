@@ -99,7 +99,7 @@ ltijs.app.get('/entity', async (req, res) => {
   const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccessToken
 
   // Get json from database with decodedAccessToken.entityId
-  const entity = await database.fetchOne<Entity>(
+  const entity = await database.fetchOptional<Entity | null>(
     `
       SELECT
         id,
@@ -165,7 +165,7 @@ ltijs.onConnect(async (idToken, req, res) => {
   const database = getDatabase()
 
   // Future: Might need to fetch multiple once we create new entries with the same custom_claim_id
-  const entity = await database.fetchOne<Entity>(
+  const entity = await database.fetchOptional<Entity | null>(
     `
       SELECT
         id,
@@ -179,6 +179,14 @@ ltijs.onConnect(async (idToken, req, res) => {
     `,
     [String(customId)]
   )
+
+  // MySQL table will be reset once per day. Result: Fetching content created yesterday or earlier will fail.
+  if (!entity) {
+    res.send(
+      '<div>Dieser Inhalt wurde automatisch gelöscht. Bitte erstelle einen neuen Inhalt.</div>'
+    )
+    return
+  }
 
   // https://www.imsglobal.org/spec/lti/v1p3#lis-vocabulary-for-context-roles
   // Example roles claim from itslearning
