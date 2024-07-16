@@ -8,12 +8,19 @@ import SerloEditorWrapper from './SerloEditorWrapper'
 import { jwtDecode } from 'jwt-decode'
 import { type AccessToken, type Entity } from '../backend'
 import copyPluginToClipboardImage from './assets/copy-plugin-to-clipboard.png'
+import Error from './Error'
 
-type AppState =
+export type AppState =
   | { type: 'fetching-content' }
-  | { type: 'error'; message: string; imageURL?: string }
+  | AppStateError
   | { type: 'editor'; content: SerloEditorProps['initialState'] }
   | { type: 'static-renderer'; content: SerloRendererProps['document'] }
+
+export type AppStateError = {
+  type: 'error'
+  message: string
+  imageURL?: string
+}
 
 function App() {
   const queryString = window.location.search
@@ -114,29 +121,13 @@ function App() {
   }, [])
 
   if (appState.type === 'fetching-content') return null
-  if (appState.type === 'error')
+  if (appState.type === 'error') return <Error appState={appState} />
+  if (appState.type === 'static-renderer') {
     return (
-      <div style={{ backgroundColor: 'white' }}>
-        <div
-          style={{
-            borderColor: 'red',
-            borderWidth: '5px',
-            borderRadius: '10px',
-            padding: '1rem',
-          }}
-        >
-          {appState.message}
-        </div>
-        {appState.imageURL ? (
-          <img
-            style={{ marginTop: '2rem', maxWidth: '350px' }}
-            src={appState.imageURL}
-          />
-        ) : null}
+      <div style={{ backgroundColor: 'white', minWidth: '600px' }}>
+        <SerloRenderer document={appState.content} />
       </div>
     )
-  if (appState.type === 'static-renderer') {
-    return <SerloRenderer document={appState.content} />
   }
   if (appState.type === 'editor') {
     return <SerloEditorWrapper initialState={appState.content} />
