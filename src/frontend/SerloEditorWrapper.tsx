@@ -1,5 +1,6 @@
 import { BaseEditor, SerloEditor, type SerloEditorProps } from '@serlo/editor'
 import { useEffect, useRef, useState } from 'react'
+import { createPluginsConfig } from './plugins-config'
 
 interface SerloContentProps {
   initialState: SerloEditorProps['initialState']
@@ -60,12 +61,7 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
           setEditorState(editorStateRef.current)
           setSavePending(true)
         }}
-        pluginsConfig={{
-          general: {
-            testingSecret: testingSecret || undefined,
-            enableTextAreaExercise: false,
-          },
-        }}
+        pluginsConfig={createPluginsConfig(testingSecret)}
       >
         {(editor) => {
           customizeEditorStrings(editor.i18n)
