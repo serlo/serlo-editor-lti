@@ -23,22 +23,25 @@ const ltiPlatform = {
 }
 let pool: Pool | null = null
 const defaultContent = {
-  plugin: 'rows',
-  state: [
-    {
-      plugin: 'text',
-      state: [
-        {
-          type: 'p',
-          children: [
-            {
-              text: '',
-            },
-          ],
-        },
-      ],
-    },
-  ],
+  plugin: 'type-generic-content',
+  content: {
+    plugin: 'rows',
+    state: [
+      {
+        plugin: 'text',
+        state: [
+          {
+            type: 'p',
+            children: [
+              {
+                text: '',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 }
 
 export interface AccessToken {
