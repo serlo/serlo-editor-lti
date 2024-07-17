@@ -51,6 +51,9 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
     <div
       style={{ padding: '3rem', backgroundColor: 'white', minWidth: '600px' }}
     >
+      {/* <div style={{ color: 'grey' }}>
+        {savePending ? 'Ungespeicherte Änderungen' : 'Gespeichert'}
+      </div> */}
       <SerloEditor
         initialState={initialState}
         onChange={({ changed, getDocument }) => {

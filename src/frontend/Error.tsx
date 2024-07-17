@@ -6,7 +6,7 @@ interface ErrorProps {
 
 export default function Error({ appState }: ErrorProps) {
   return (
-    <div style={{ backgroundColor: 'white' }}>
+    <div style={{ backgroundColor: 'white', padding: '1rem' }}>
       <div
         style={{
           borderColor: 'red',
