@@ -6,7 +6,6 @@
   "author": "Serlo Education e.V.",
   "type": "module",
   "scripts": {
-    "build": "tsc && vite build",
     "dev": "docker compose up --watch --build",
     "format": "prettier . --write",
     "lint": "tsc --noEmit",
@@ -42,13 +41,11 @@
     "@types/uuid": "^10",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
-    "@vitejs/plugin-react-swc": "^3.5.0",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
     "prettier": "3.3.2",
-    "prettier-plugin-packagejson": "^2.5.0",
-    "vite": "^5.2.0"
+    "prettier-plugin-packagejson": "^2.5.0"
   },
   "packageManager": "yarn@4.2.2"
 }

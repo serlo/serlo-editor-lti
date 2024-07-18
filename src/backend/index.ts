@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken'
 import { Pool, createPool } from 'mysql2/promise'
 import { Database } from './database'
 import { v4 as uuidv4 } from 'uuid'
+import esbuild from 'esbuild'
 
 // Requires Node.js 20.11 or higher
 const __dirname = import.meta.dirname
@@ -71,7 +72,7 @@ ltijs.setup(
     loginUrl: '/lti/login',
     keysetUrl: '/lti/keys',
     dynRegRoute: '/lti/register',
-    staticPath: path.join(__dirname, './../../dist'), // Path to static files
+    staticPath: path.join(__dirname, './../../public'),
     cookies: {
       secure: process.env['ENVIRONMENT'] === 'local' ? false : true, // Set secure to true if the testing platform is in a different domain and https is being used
       sameSite: process.env['ENVIRONMENT'] === 'local' ? '' : 'None', // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
@@ -85,10 +86,37 @@ ltijs.app.use((_, res, next) => {
   next()
 })
 
-// Opens Serlo editor
-ltijs.app.get('/app', async (_, res) => {
-  return res.sendFile(path.join(__dirname, '../../dist/index.html'))
+// Compiles `src/frontend/index.tsx` on the fly with esbuild to a bundled
+// JavaScript file.
+ltijs.app.get('/app.js', async (_, res) => {
+  res.setHeader('Content-Type', 'application/javascript')
+
+  try {
+    const result = await esbuild.build({
+      entryPoints: [path.join(__dirname, '..', 'frontend', 'index.tsx')],
+      bundle: true,
+      format: 'esm',
+      platform: 'browser',
+      write: false,
+      minify: true,
+      treeShaking: true,
+      define: {
+        'process.env.NEXT_PUBLIC_ENV': '"development"',
+        'process.env.__NEXT_STRICT_NEXT_HEAD': 'false',
+        'process.env.__NEXT_ROUTER_BASEPATH': 'false',
+        'process.env.__NEXT_SCROLL_RESTORATION': 'false',
+      },
+    })
+
+    res.setHeader('Content-Type', 'application/javascript')
+    res.send(result.outputFiles[0].text)
+  } catch (error) {
+    console.error('Error bundling TypeScript:', error)
+    res.status(500).send('Error bundling TypeScript')
+  }
 })
+
+ltijs.whitelist({ route: '/app.js', method: 'get' })
 
 // Endpoint to get content
 ltijs.app.get('/entity', async (req, res) => {
@@ -242,7 +270,7 @@ ltijs.onConnect(async (idToken, req, res) => {
     readEnvVariable('SERLO_EDITOR_TESTING_SECRET')
   )
 
-  return ltijs.redirect(res, `/app?${searchParams}`)
+  return ltijs.redirect(res, `/app.html?${searchParams}`)
 }, {})
 
 // Successful LTI deep linking launch

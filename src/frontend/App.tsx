@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react'
 import SerloEditorWrapper from './SerloEditorWrapper'
 import { jwtDecode } from 'jwt-decode'
 import { type AccessToken, type Entity } from '../backend'
-import copyPluginToClipboardImage from './assets/copy-plugin-to-clipboard.png'
 import Error from './Error'
 
 export type AppState =
@@ -76,7 +75,7 @@ function App() {
             // In German because we expect the user to see it
             message:
               'Auf itslearning wurde eine Kopie erstellt. Leider ist dies aus technischen Gründen noch nicht möglich. Du kannst allerdings einen neuen Serlo Editor Inhalt auf itslearning erstellen und die gewünschten Inhalte per "Plugin in die Zwischenablage kopieren" & Strg-V dorthin übernehmen.',
-            imageURL: copyPluginToClipboardImage,
+            imageURL: '/copy-plugin-to-clipboard.png',
           })
           return
         }
