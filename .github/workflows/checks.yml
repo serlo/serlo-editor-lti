@@ -21,24 +21,9 @@ jobs:
       - uses: ./.github/actions/setup-node
       - run: yarn lint:prettier
 
-  # tsc:
-  #   runs-on: ubuntu-latest
-  #  steps:
-  #    - uses: actions/checkout@v4
-  #    - uses: serlo/configure-repositories/actions/setup-node@main
-  #    - run: yarn lint:tsc
-
-  # test:
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - uses: actions/checkout@v4
-  #    - uses: serlo/configure-repositories/actions/setup-mysql@main
-  #    - uses: serlo/configure-repositories/actions/setup-node@main
-  #    - run: yarn start:containers
-  #    - run: scripts/mysql/wait-for-mysql.sh
-  #    - run: yarn migrate:all
-  # It seems that running tests for changing taxonomies in parallel
-  # to metadata query messes up with internal optimizatons so that
-  # testing metadata endpoint runs into a timout
-  # => solution: Run tests for metadata in an extra step
-  #    - run: yarn test
+  tsc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - run: yarn lint:tsc
