@@ -53,6 +53,10 @@ function buildDockerImage({
   ])
   const tags = [...remoteTags, ...toTags(name, [imageTag])]
 
+  if (imageTag !== ImageTag.Dev) {
+    throw new Error(`Tag other than '${ImageTag.Dev}' is not implemented yet.`)
+  }
+
   const dockerfile = imageTag == ImageTag.Dev ? ['-f', 'Dockerfile.dev'] : []
 
   spawnSync(
