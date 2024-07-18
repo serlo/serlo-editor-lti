@@ -7,12 +7,12 @@ on:
   merge_group:
 
 jobs:
-  # eslint:
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - uses: actions/checkout@v4
-  #    - uses: serlo/configure-repositories/actions/setup-node@main
-  #    - run: yarn lint:eslint
+  eslint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - run: yarn lint:eslint
 
   prettier:
     runs-on: ubuntu-latest
