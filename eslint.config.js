@@ -10,8 +10,8 @@ const ourCustomConfig = {
       version: 'detect',
     },
   },
+  // Add our custom rules here
   rules: {
-    // Add our custom rules here
     'no-console': 'warn',
   },
 }
