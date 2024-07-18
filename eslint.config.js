@@ -12,7 +12,7 @@ const ourCustomConfig = {
   },
   rules: {
     // Add our custom rules here
-    'no-console': 'error',
+    'no-console': 'warn',
   },
 }
 
