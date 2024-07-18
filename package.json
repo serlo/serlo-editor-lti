@@ -8,7 +8,9 @@
   "scripts": {
     "build": "tsc && vite build",
     "dev": "docker compose up --watch --build",
-    "format": "prettier . --write",
+    "format": "npm-run-all --sequential --continue \"format:*\"",
+    "format:eslint": "eslint --fix",
+    "format:prettier": "prettier . --write",
     "lint": "npm-run-all --parallel \"lint:*\"",
     "lint:eslint": "eslint",
     "lint:prettier": "prettier --check .",
