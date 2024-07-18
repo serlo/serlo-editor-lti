@@ -44,7 +44,7 @@
     "@types/react-dom": "^18.2.22",
     "@types/uuid": "^10",
     "@vitejs/plugin-react-swc": "^3.5.0",
-    "eslint": "9.x",
+    "eslint": "^9.7.0",
     "eslint-plugin-react": "^7.34.4",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.8",
