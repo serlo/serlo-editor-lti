@@ -18,7 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: serlo/configure-repositories/actions/setup-node@main
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .tool-versions
+          cache: yarn
       - run: yarn lint:prettier
 
   # tsc:
