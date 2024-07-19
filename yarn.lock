@@ -2591,10 +2591,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fp-ts@npm:2.16.6":
-  version: 2.16.6
-  resolution: "fp-ts@npm:2.16.6"
-  checksum: 10/1fd299585feebece4ffce2beaa8d4087b840aed4386d2fed6a980ac767f741f6afc8136c1ece5a09d8ec8fb7ad2d5b2e30247f56037382eec8e5e94b1b7719a0
+"fp-ts@npm:2.16.8":
+  version: 2.16.8
+  resolution: "fp-ts@npm:2.16.8"
+  checksum: 10/a6cf1b4d13d42b5cb5ecd70b000dd5c0c2894db1fce064f020fe506a77a8cc91e064fcd91fb46a7b2297c508aa35d37764a92e8302573bb40d99a14b3c045351
   languageName: node
   linkType: hard
 
@@ -4920,7 +4920,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^4.6.2"
     eslint-plugin-react-refresh: "npm:^0.4.8"
     express: "npm:^4.18.2"
-    fp-ts: "npm:2.16.6"
+    fp-ts: "npm:2.16.8"
     globals: "npm:^15.8.0"
     io-ts: "npm:^2.2.21"
     jsonwebtoken: "npm:9.0.2"
