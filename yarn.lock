@@ -2150,7 +2150,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:~0.21.4":
+"esbuild@npm:~0.21.5":
   version: 0.21.5
   resolution: "esbuild@npm:0.21.5"
   dependencies:
@@ -4941,7 +4941,7 @@ __metadata:
     prettier-plugin-packagejson: "npm:^2.5.0"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
-    tsx: "npm:4.15.6"
+    tsx: "npm:4.16.3"
     typescript: "npm:^5.5.4"
     typescript-eslint: "npm:^7.16.1"
     uuid: "npm:^10.0.0"
@@ -5433,11 +5433,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:4.15.6":
-  version: 4.15.6
-  resolution: "tsx@npm:4.15.6"
+"tsx@npm:4.16.3":
+  version: 4.16.3
+  resolution: "tsx@npm:4.16.3"
   dependencies:
-    esbuild: "npm:~0.21.4"
+    esbuild: "npm:~0.21.5"
     fsevents: "npm:~2.3.3"
     get-tsconfig: "npm:^4.7.5"
   dependenciesMeta:
@@ -5445,7 +5445,7 @@ __metadata:
       optional: true
   bin:
     tsx: dist/cli.mjs
-  checksum: 10/d4d33a75e0fce7691b6a51375acef986f3567c461e1f3f0762bfe64336b309ea7840baec7dea46fd3707fd5858f97b0d449de76c3530f36b458c0989ee3ad144
+  checksum: 10/44790934d426579c11f9d38cd98868158821fb79aac8404f85746c623f689965dc1e285dfc2c9cf86980e447e0ff4a58ff35b3d0ef39bca01cbd30c8e3c8570c
   languageName: node
   linkType: hard
 
