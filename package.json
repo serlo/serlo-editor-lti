@@ -26,7 +26,7 @@
     "@serlo/editor": "0.9.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "fp-ts": "2.16.6",
+    "fp-ts": "2.16.9",
     "io-ts": "^2.2.21",
     "jsonwebtoken": "9.0.2",
     "jwt-decode": "4.0.0",
