@@ -330,6 +330,35 @@ const setup = async () => {
   })
 
   console.log(`Registered platform: ${ltiPlatform.name}`)
+
+  if (process.env['ENVIRONMENT'] === 'local') {
+    // Make sure there is an entity with a fixed ID in database to simplify local development
+    const database = getDatabase()
+    const entity = await database.fetchOptional<Entity | null>(
+      `
+      SELECT
+        id,
+        resource_link_id,
+        custom_claim_id as customClaimId,
+        content
+      FROM
+        lti_entity
+      WHERE
+        custom_claim_id = ?
+    `,
+      ['00000000-0000-0000-0000-000000000000']
+    )
+    if (!entity) {
+      await database.mutate(
+        'INSERT INTO lti_entity (custom_claim_id, content, id_token_on_creation) values (?, ?, ?)',
+        [
+          '00000000-0000-0000-0000-000000000000',
+          JSON.stringify(defaultContent),
+          JSON.stringify({}),
+        ]
+      )
+    }
+  }
 }
 
 setup()
