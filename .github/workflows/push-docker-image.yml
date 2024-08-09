@@ -2,8 +2,8 @@ name: Push Docker Image
 
 on:
   push:
-    #paths:
-      #- 'package.json'
+    paths:
+      - 'package.json'
 
 env:
   REGISTRY: ghcr.io
