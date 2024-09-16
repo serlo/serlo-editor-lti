@@ -631,15 +631,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@serlo/editor@npm:0.9.2":
-  version: 0.9.2
-  resolution: "@serlo/editor@npm:0.9.2"
+"@serlo/editor@npm:0.14.0":
+  version: 0.14.0
+  resolution: "@serlo/editor@npm:0.14.0"
   dependencies:
     "@serlo/katex-styles": "npm:1.0.1"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
     react-resizable: "npm:^3.0.5"
-  checksum: 10/186f4201430d19e71a6831ff57f585babd79decf221efe2c397404302ab634cffd0f215aee79d1e3ab231aace8dec992e65f6d03e88046e1a8d6712220153ee3
+  checksum: 10/d281b531ba43f7ea95c4476399220b6e406fa7a11553067edec879d4b0a3c04682db60dbaed681de4a84dfe3e174a13935ed8df0b5e3526fbe0c02d5ca05072e
   languageName: node
   linkType: hard
 
@@ -4895,7 +4895,7 @@ __metadata:
   dependencies:
     "@eslint/compat": "npm:^1.1.1"
     "@eslint/js": "npm:^9.10.0"
-    "@serlo/editor": "npm:0.9.2"
+    "@serlo/editor": "npm:0.14.0"
     "@types/jsonwebtoken": "npm:9.0.6"
     "@types/ltijs": "npm:4.0.11"
     "@types/node": "npm:^22.5.4"
