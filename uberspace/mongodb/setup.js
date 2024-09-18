@@ -1,6 +1,5 @@
-const username = 'vitomirs_mongoroot'
-const password = 'password_placeholder'
-const roles = ['root']
+const username = `${process.env.USER}_mongoroot`
+const password = process.env.MONGODB_PASSWORD
 
 try {
   db.auth(username, password)
@@ -9,7 +8,7 @@ try {
   db.createUser({
     user: username,
     pwd: password,
-    roles: roles,
+    roles: ['root'],
   })
   print(`User '${username}' created.`)
 }

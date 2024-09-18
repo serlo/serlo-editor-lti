@@ -8,12 +8,22 @@ if ! $(uberspace tools version show node | grep -q '20'); then
 fi
 
 # Create MySQL table
-mysql -e 'USE vitomirs; CREATE TABLE IF NOT EXISTS `lti_entity` ( `id` bigint NOT NULL AUTO_INCREMENT, `resource_link_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, `custom_claim_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, `id_token_on_creation` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, PRIMARY KEY (`id`), KEY `idx_lti_entity_custom_claim_id` (`custom_claim_id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;'
+# TODO Change username
+mysql -e 'USE '$USER'; CREATE TABLE IF NOT EXISTS `lti_entity` ( `id` bigint NOT NULL AUTO_INCREMENT, `resource_link_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, `custom_claim_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, `id_token_on_creation` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, PRIMARY KEY (`id`), KEY `idx_lti_entity_custom_claim_id` (`custom_claim_id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;'
 echo 'MySQL table created successfully (or existed already)'
+
+# Generate mongodb password
+# TODO Maybe store in env variable and dont regenerate?
+export MONGODB_PASSWORD=$(pwgen 32 1)
+
+echo "export MONGODB_PASSWORD=$MONGODB_PASSWORD" >> ~/.bashrc
+. ~/.bashrc # Pulls env into current shell
 
 # Set up MongoDB
 if ! $(uberspace tools version show mongodb | grep -q '6.0'); then
   uberspace tools version use mongodb 6.0
+  echo 'MongoDB version set to 6.0. Waiting a few seconds until it runs.'
+  sleep 2
 fi
 mkdir -p ~/mongodb
 cp ./uberspace/mongodb/mongodb.ini ~/etc/services.d/
