@@ -2,18 +2,12 @@
 
 set -e
 
-#if ! $(git status); then
-#  echo 'Please run in repo directory'
-#  exit 1
-#fi
-
 # Set Node.js version
 if ! $(uberspace tools version show node | grep -q '20'); then
   uberspace tools version use node 20
 fi
 
 # Create MySQL table
-# TODO Change username
 mysql -e 'USE '$USER'; CREATE TABLE IF NOT EXISTS `lti_entity` ( `id` bigint NOT NULL AUTO_INCREMENT, `resource_link_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, `custom_claim_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, `id_token_on_creation` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, PRIMARY KEY (`id`), KEY `idx_lti_entity_custom_claim_id` (`custom_claim_id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;'
 echo 'MySQL table created successfully (or existed already)'
 
@@ -23,24 +17,24 @@ if ! $(grep MONGODB_PASSWORD ~/.bashrc); then
   echo "export MONGODB_PASSWORD=$MONGODB_PASSWORD" >> ~/.bashrc
 fi
 
-source ~/.bashrc # Pulls env into current shell
+# Pull env into current shell
+source ~/.bashrc
 
 # Set up MongoDB
 if ! $(uberspace tools version show mongodb | grep -q '6.0'); then
   uberspace tools version use mongodb 6.0
   echo 'MongoDB version set to 6.0. Waiting a few seconds until it runs.'
-  sleep 2
 fi
 mkdir -p ~/mongodb
 cp ./uberspace/mongodb/mongodb.ini ~/etc/services.d/
 echo $(supervisorctl reread)
 echo $(supervisorctl update)
+sleep 2
 if ! $(supervisorctl status | grep -q 'RUNNING'); then
   echo 'MongoDB status is not RUNNING'
   exit 1
 fi
 cp ./uberspace/mongodb/.mongoshrc.js ~/
-# TODO: avoid using a setup.js file here, don't commit password
 cp ./uberspace/mongodb/setup.js ~/mongodb/
 mongosh admin ~/mongodb/setup.js
 echo 'MongoDB set up successfully'
