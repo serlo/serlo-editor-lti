@@ -2,6 +2,11 @@
 
 set -e
 
+#if ! $(git status); then
+#  echo 'Please run in repo directory'
+#  exit 1
+#fi
+
 # Set Node.js version
 if ! $(uberspace tools version show node | grep -q '20'); then
   uberspace tools version use node 20
@@ -13,11 +18,12 @@ mysql -e 'USE '$USER'; CREATE TABLE IF NOT EXISTS `lti_entity` ( `id` bigint NOT
 echo 'MySQL table created successfully (or existed already)'
 
 # Generate mongodb password
-# TODO Maybe store in env variable and dont regenerate?
-export MONGODB_PASSWORD=$(pwgen 32 1)
+if ! $(grep MONGODB_PASSWORD ~/.bashrc); then
+  export MONGODB_PASSWORD=$(pwgen 32 1)
+  echo "export MONGODB_PASSWORD=$MONGODB_PASSWORD" >> ~/.bashrc
+fi
 
-echo "export MONGODB_PASSWORD=$MONGODB_PASSWORD" >> ~/.bashrc
-. ~/.bashrc # Pulls env into current shell
+source ~/.bashrc # Pulls env into current shell
 
 # Set up MongoDB
 if ! $(uberspace tools version show mongodb | grep -q '6.0'); then
@@ -42,9 +48,8 @@ echo 'MongoDB set up successfully'
 # Set environment variables
 cp .env-template .env
 mysql_pw=$(grep -oP -m 1 "^password=(.*)" ~/.my.cnf | cut -d '=' -f 2-)
-echo "MYSQL_URI=mysql://vitomirs:$mysql_pw@localhost:3306/vitomirs" >> .env
-# TODO: don't use password directly, so that you don't commit it
-echo 'MONGODB_CONNECTION_URI=mongodb://vitomirs_mongoroot:password_placeholder@127.0.0.1:27017/' >> .env
+echo "MYSQL_URI=mysql://${USER}:${mysql_pw}@localhost:3306/${USER}" >> .env
+echo "MONGODB_CONNECTION_URI=mongodb://${USER}_mongoroot:${MONGODB_PASSWORD}@127.0.0.1:27017/" >> .env
 echo 'Updated environment variables'
 
 # Install dependencies
