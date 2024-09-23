@@ -1,3 +1,4 @@
+/* eslint no-undef: 0 */
 const username = `${process.env.USER}_mongoroot`
 const password = process.env.MONGODB_PASSWORD
 
