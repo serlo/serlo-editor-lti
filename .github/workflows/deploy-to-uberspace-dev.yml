@@ -2,7 +2,7 @@ name: Deploy to Uberspace
 
 on:
   push:
-    branches: [build/deploy-to-uberspace-dev-action]
+    branches: [development]
 
 jobs:
   build:
