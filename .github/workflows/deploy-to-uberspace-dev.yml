@@ -13,9 +13,9 @@ jobs:
         uses: easingthemes/ssh-deploy@v5.1.0
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: '-rlgoDzvc -i --delete'
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          SOURCE: '.'
           TARGET: '/home/${{ secrets.REMOTE_USER }}/serlo-editor-as-lti-tool/'
           SCRIPT_AFTER: |
             cd /home/${{ secrets.REMOTE_USER }}/serlo-editor-as-lti-tool/
