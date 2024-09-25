@@ -2,7 +2,7 @@ name: Deploy to Uberspace
 
 on:
   push:
-    branches: [development]
+    branches: [staging]
 
 jobs:
   build:
@@ -16,14 +16,14 @@ jobs:
         with:
           ARGS: '-rlgoDzvc -i --delete'
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST_DEV }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER_DEV }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST_STAGING }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER_STAGING }}
           SOURCE: '.'
           TARGET:
-            '/home/${{ secrets.REMOTE_USER_DEV }}/serlo-editor-as-lti-tool/'
+            '/home/${{ secrets.REMOTE_USER_STAGING }}/serlo-editor-as-lti-tool/'
           EXCLUDE: '/node_modules/'
           SCRIPT_AFTER: |
-            cd /home/${{ secrets.REMOTE_USER_DEV }}/serlo-editor-as-lti-tool/
+            cd /home/${{ secrets.REMOTE_USER_STAGING }}/serlo-editor-as-lti-tool/
             yarn
             yarn build
             supervisorctl restart serlo-app
