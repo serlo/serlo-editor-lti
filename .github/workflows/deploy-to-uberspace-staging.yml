@@ -1,4 +1,4 @@
-name: Deploy to Uberspace
+name: Deploy to Uberspace staging
 
 on:
   push:
