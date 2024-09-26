@@ -1,1 +1,2 @@
+# See https://crontab.guru/ for schedule
 0 2 * * * /bin/bash ~/serlo-editor-as-lti-tool/uberspace/database_backup.sh
