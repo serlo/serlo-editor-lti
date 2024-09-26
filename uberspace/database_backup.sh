@@ -1,1 +1,0 @@
-mysqldump ${USER} > ~/backup.sql
