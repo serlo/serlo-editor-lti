@@ -23,7 +23,7 @@
     "start:dev": "tsx --watch src/backend/index.ts"
   },
   "dependencies": {
-    "@serlo/editor": "0.9.2",
+    "@serlo/editor": "0.14.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "fp-ts": "2.16.9",

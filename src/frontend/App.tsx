@@ -14,7 +14,7 @@ export type AppState =
   | { type: 'fetching-content' }
   | AppStateError
   | { type: 'editor'; content: SerloEditorProps['initialState'] }
-  | { type: 'static-renderer'; content: SerloRendererProps['document'] }
+  | { type: 'static-renderer'; content: SerloRendererProps['state'] }
 
 export type AppStateError = {
   type: 'error'
@@ -127,7 +127,7 @@ function App() {
       <div
         style={{ padding: '1rem', backgroundColor: 'white', minWidth: '600px' }}
       >
-        <SerloRenderer document={appState.content} />
+        <SerloRenderer state={appState.content} editorVariant="lti-tool" />
       </div>
     )
   }
