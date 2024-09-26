@@ -79,5 +79,8 @@ fi
 echo 'Backend app opened to the internet'
 
 # Set cronjob for database backups
-# IMPORTANT: This overwrites existing entries!
-crontab ~/serlo-editor-as-lti-tool/uberspace/backup_cron
+# IMPORTANT: This completely overwrites existing cronjob entries!
+if [ "$USER" = "edtr" ]; then
+  crontab ~/serlo-editor-as-lti-tool/uberspace/backup_cron
+  echo 'Added cronjob for database backups'
+fi
