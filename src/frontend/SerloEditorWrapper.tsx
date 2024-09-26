@@ -1,10 +1,12 @@
 import { BaseEditor, SerloEditor, type SerloEditorProps } from '@serlo/editor'
-import { useEffect, useRef, useState } from 'react'
-import { createPluginsConfig } from './plugins-config'
+import React, { useEffect, useRef, useState } from 'react'
 
 interface SerloContentProps {
   initialState: SerloEditorProps['initialState']
 }
+
+// HACK: Skip rerendering SerloEditor. It leads to slate error (not finding DOM node) and resets the cursor position. But, I don't think we need to support rerendering currently. There is probably a better way to do this but the way `initialState` and `onChange` works makes it tricky.
+const MemoSerloEditor = React.memo(SerloEditor, () => true)
 
 export default function SerloEditorWrapper(props: SerloContentProps) {
   const { initialState } = props
@@ -54,28 +56,21 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
       {/* <div style={{ color: 'grey' }}>
         {savePending ? 'Ungespeicherte Änderungen' : 'Gespeichert'}
       </div> */}
-      <SerloEditor
+      <MemoSerloEditor
         initialState={initialState}
-        onChange={({ changed, getDocument }) => {
-          if (!changed) return
-          const newState = getDocument()
-          if (!newState) return
+        onChange={(newState) => {
           editorStateRef.current = JSON.stringify(newState)
           setEditorState(editorStateRef.current)
           setSavePending(true)
         }}
-        pluginsConfig={createPluginsConfig(testingSecret)}
+        editorVariant="lti-tool"
+        _testingSecret={testingSecret}
       >
         {(editor) => {
           customizeEditorStrings(editor.i18n)
           return <>{editor.element}</>
         }}
-      </SerloEditor>
-      {/* <h2>Debug info</h2>
-      <h3>Access token:</h3>
-      <div>{accessToken}</div>
-      <h3>ltik:</h3>
-      <div>{ltik}</div> */}
+      </MemoSerloEditor>
     </div>
   )
 }
