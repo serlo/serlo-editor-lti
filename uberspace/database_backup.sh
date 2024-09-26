@@ -1,1 +1,1 @@
-mysqldump edtrstag > ~/backup.sql
+mysqldump ${USER} > ~/backup.sql
