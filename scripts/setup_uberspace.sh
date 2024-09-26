@@ -77,3 +77,7 @@ if ! $(uberspace web backend list | grep -q 'http:3000 => OK, listening'); then
   exit 2
 fi
 echo 'Backend app opened to the internet'
+
+# Set cronjob for database backups
+# IMPORTANT: This overwrites existing entries!
+crontab ~/serlo-editor-as-lti-tool/uberspace/backup_cron

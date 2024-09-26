@@ -1,0 +1,1 @@
+mysqldump edtrstag > ~/backup.sql
