@@ -1,3 +1,5 @@
+# Disable sending all cronjob results, send only errors
+# https://manual.uberspace.de/daemons-cron/#mails
 MAILTO=""
 
 # See https://crontab.guru/ for schedule
