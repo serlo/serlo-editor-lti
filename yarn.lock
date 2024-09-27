@@ -3632,10 +3632,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:^8.0.0":
-  version: 8.0.5
-  resolution: "lru-cache@npm:8.0.5"
-  checksum: 10/74153ab136d0c2d735003b8b1c0fa8213c94c2520701dfe8bb31d957f975b3d3665b1ef27ac9a5b9f92c8f581c79008834c0f9bd60c5adf368476f9a95e8fa82
+"lru.min@npm:^1.0.0":
+  version: 1.1.0
+  resolution: "lru.min@npm:1.1.0"
+  checksum: 10/af2f74d6434634e229599116040fc72e4ea42b973de45ad87bf061786894b818f3c3cc3e70e6e0cc55e2df205a68bd060407281e79dfc437a0211320e840dd61
   languageName: node
   linkType: hard
 
@@ -3976,20 +3976,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mysql2@npm:^3.11.0":
-  version: 3.11.0
-  resolution: "mysql2@npm:3.11.0"
+"mysql2@npm:^3.11.3":
+  version: 3.11.3
+  resolution: "mysql2@npm:3.11.3"
   dependencies:
     aws-ssl-profiles: "npm:^1.1.1"
     denque: "npm:^2.1.0"
     generate-function: "npm:^2.3.1"
     iconv-lite: "npm:^0.6.3"
     long: "npm:^5.2.1"
-    lru-cache: "npm:^8.0.0"
+    lru.min: "npm:^1.0.0"
     named-placeholders: "npm:^1.1.3"
     seq-queue: "npm:^0.0.5"
     sqlstring: "npm:^2.3.2"
-  checksum: 10/8795f3bbfc6b3bd6fd884c9daef3c1ce637ddbfffd6d2db30356fbd753477a40239b637d3ce12c5bcfb5cc5cf6e813bb6209c2691cd5febbc8427dfae6ade7f3
+  checksum: 10/9f07cecce5b27588564210dbdcae1c79729f04d25475a028f00d639f8a0fd84bde24d09e24b6449b238724d84303c82288f493f6dccd9e96c13d0a24c1494811
   languageName: node
   linkType: hard
 
@@ -4924,7 +4924,7 @@ __metadata:
     jsonwebtoken: "npm:9.0.2"
     jwt-decode: "npm:4.0.0"
     ltijs: "npm:^5.9.5"
-    mysql2: "npm:^3.11.0"
+    mysql2: "npm:^3.11.3"
     npm-run-all: "npm:^4.1.5"
     prettier: "npm:3.3.3"
     prettier-plugin-packagejson: "npm:^2.5.2"
