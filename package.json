@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "npm-run-all --parallel \"build:*\"",
-    "build:backend": "esbuild src/backend/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/backend/index.js",
+    "build:backend": "esbuild ./src/backend/index.ts --bundle --platform=node --outfile=dist/backend/index.cjs",
     "build:frontend": "vite build",
     "dev": "docker compose up --watch --build",
     "format": "npm-run-all --sequential --continue-on-error \"format:*\"",
@@ -23,7 +23,7 @@
     "push-image:dev": "yarn push-image dev",
     "push-image:latest": "yarn push-image latest",
     "start:dev": "tsx --watch src/backend/index.ts",
-    "start": "node dist/backend/index.js"
+    "start": "node dist/backend/index.cjs"
   },
   "dependencies": {
     "@serlo/editor": "0.14.0",

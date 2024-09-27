@@ -1,14 +1,10 @@
 import { Provider as ltijs } from 'ltijs'
 import 'dotenv/config'
-import path, { dirname } from 'path'
-import { fileURLToPath } from 'url'
+import path from 'path'
 import jwt from 'jsonwebtoken'
 import { Pool, createPool } from 'mysql2/promise'
 import { Database } from './database'
 import { v4 as uuidv4 } from 'uuid'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
 
 const ltijsKey = readEnvVariable('LTIJS_KEY')
 const mongodbConnectionUri = readEnvVariable('MONGODB_CONNECTION_URI')
@@ -72,7 +68,7 @@ ltijs.setup(
     loginUrl: '/lti/login',
     keysetUrl: '/lti/keys',
     dynRegRoute: '/lti/register',
-    staticPath: path.join(__dirname, './../../dist'), // Path to static files
+    staticPath: path.join(__dirname, './../../dist/frontend'), // Path to static files
     cookies: {
       secure: process.env['ENVIRONMENT'] === 'local' ? false : true, // Set secure to true if the testing platform is in a different domain and https is being used
       sameSite: process.env['ENVIRONMENT'] === 'local' ? '' : 'None', // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
@@ -88,7 +84,7 @@ ltijs.app.use((_, res, next) => {
 
 // Opens Serlo editor
 ltijs.app.get('/app', async (_, res) => {
-  return res.sendFile(path.join(__dirname, '../../dist/index.html'))
+  return res.sendFile(path.join(__dirname, '../../dist/frontend/index.html'))
 })
 
 // Endpoint to get content
