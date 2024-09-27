@@ -6,7 +6,9 @@
   "author": "Serlo Education e.V.",
   "type": "module",
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "npm-run-all --parallel \"build:*\"",
+    "build:backend": "esbuild src/backend/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/backend/index.js",
+    "build:frontend": "vite build",
     "dev": "docker compose up --watch --build",
     "format": "npm-run-all --sequential --continue-on-error \"format:*\"",
     "format:eslint": "eslint --fix",
@@ -48,6 +50,7 @@
     "@types/react-dom": "^18.3.0",
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react-swc": "^3.7.0",
+    "esbuild": "^0.24.0",
     "eslint": "^9.10.0",
     "eslint-plugin-react": "^7.35.2",
     "eslint-plugin-react-hooks": "^4.6.2",

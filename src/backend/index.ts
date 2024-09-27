@@ -1,13 +1,14 @@
 import { Provider as ltijs } from 'ltijs'
 import 'dotenv/config'
-import path from 'path'
+import path, { dirname } from 'path'
+import { fileURLToPath } from 'url'
 import jwt from 'jsonwebtoken'
 import { Pool, createPool } from 'mysql2/promise'
 import { Database } from './database'
 import { v4 as uuidv4 } from 'uuid'
 
-// Requires Node.js 20.11 or higher
-const __dirname = import.meta.dirname
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 const ltijsKey = readEnvVariable('LTIJS_KEY')
 const mongodbConnectionUri = readEnvVariable('MONGODB_CONNECTION_URI')
