@@ -68,7 +68,7 @@ ltijs.setup(
     loginUrl: '/lti/login',
     keysetUrl: '/lti/keys',
     dynRegRoute: '/lti/register',
-    staticPath: path.join(__dirname, './../../dist'), // Path to static files
+    staticPath: path.join(__dirname, './../../dist/frontend'), // Path to static files
     cookies: {
       secure: process.env['ENVIRONMENT'] === 'local' ? false : true, // Set secure to true if the testing platform is in a different domain and https is being used
       sameSite: process.env['ENVIRONMENT'] === 'local' ? '' : 'None', // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
