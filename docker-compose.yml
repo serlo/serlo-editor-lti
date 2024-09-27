@@ -4,7 +4,7 @@ services:
   express:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     env_file: '.env'
     depends_on:
       - mongo
