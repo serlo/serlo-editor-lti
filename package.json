@@ -22,7 +22,8 @@
     "push-image": "yarn tsx push-image.ts",
     "push-image:dev": "yarn push-image dev",
     "push-image:latest": "yarn push-image latest",
-    "start:dev": "tsx --watch src/backend/index.ts"
+    "start:dev": "tsx --watch src/backend/index.ts",
+    "start": "node dist/backend/index.js"
   },
   "dependencies": {
     "@serlo/editor": "0.14.0",
