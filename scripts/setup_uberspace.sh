@@ -54,9 +54,9 @@ echo 'Updated environment variables'
 yarn
 echo 'Installed dependencies using Yarn'
 
-# Build frontend
+# Build frontend and backend
 yarn build
-echo 'Built the frontend app using Yarn'
+echo 'Built the frontend and the backend apps using Yarn'
 
 # Run the backend as an Uberspace service
 cp ./uberspace/app.ini ~/etc/services.d/
