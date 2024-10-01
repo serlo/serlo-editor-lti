@@ -27,17 +27,15 @@ jobs:
           echo "REMOTE_USER=${{ secrets.REMOTE_USER_STAGING }}" >> $GITHUB_ENV
 
       - name: Deploy to Server
-        uses: easingthemes/ssh-deploy@v5.1.1
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          ARGS: '-rlgoDzvc -i --delete'
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ env.REMOTE_HOST }}
-          REMOTE_USER: ${{ env.REMOTE_USER }}
-          SOURCE: '.'
-          TARGET: '/home/${{ env.REMOTE_USER }}/serlo-editor-as-lti-tool/'
-          EXCLUDE: '/node_modules/'
-          SCRIPT_AFTER: |
+          host: ${{  env.REMOTE_HOST }}
+          username: ${{ env.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
             cd /home/${{ env.REMOTE_USER }}/serlo-editor-as-lti-tool/
+            git checkout ${{ github.ref_name }}
+            git pull
             yarn
             yarn build
             supervisorctl restart serlo-app
