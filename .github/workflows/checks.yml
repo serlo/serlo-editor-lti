@@ -44,6 +44,7 @@ jobs:
       - uses: ./.github/actions/setup-node
       - run: cp .env-template .env
       - run: docker compose up mysql mongo -d
+      - run: sleep 30
       - run:
           yarn mysql -e "CREATE TABLE lti_entity ( id bigint, resource_link_id
           varchar(255), custom_claim_id varchar(255), content longtext,
