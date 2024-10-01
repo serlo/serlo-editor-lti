@@ -2,7 +2,7 @@ name: Deploy to Uberspace development
 
 on:
   push:
-    branches: 
+    branches:
       - staging
       - development
       - ci
@@ -14,37 +14,31 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Deploy to Development Server
+
+      - name: Set environment variables for development
         if: ${{ github.ref_name == 'ci' }}
-        uses: easingthemes/ssh-deploy@v5.1.1
-        with:
-          ARGS: '-rlgoDzvc -i --delete'
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST_DEV }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER_DEV }}
-          SOURCE: '.'
-          TARGET:
-            '/home/${{ secrets.REMOTE_USER_DEV }}/serlo-editor-as-lti-tool/'
-          EXCLUDE: '/node_modules/'
-          SCRIPT_AFTER: |
-            cd /home/${{ secrets.REMOTE_USER_DEV }}/serlo-editor-as-lti-tool/
-            yarn
-            yarn build
-            supervisorctl restart serlo-app
-      - name: Deploy to Staging Server
+        run: |
+          echo "REMOTE_HOST=${{ secrets.REMOTE_HOST_DEV }}" >> $GITHUB_ENV
+          echo "REMOTE_USER=${{ secrets.REMOTE_USER_DEV }}" >> $GITHUB_ENV
+
+      - name: Set environment variables for staging
         if: ${{ github.ref_name == 'staging' }}
+        run: |
+          echo "REMOTE_HOST=${{ secrets.REMOTE_HOST_STAGING }}" >> $GITHUB_ENV
+          echo "REMOTE_USER=${{ secrets.REMOTE_USER_STAGING }}" >> $GITHUB_ENV
+
+      - name: Deploy to Server
         uses: easingthemes/ssh-deploy@v5.1.1
         with:
           ARGS: '-rlgoDzvc -i --delete'
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST_STAGING }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER_STAGING }}
+          REMOTE_HOST: ${{ env.REMOTE_HOST }}
+          REMOTE_USER: ${{ env.REMOTE_USER }}
           SOURCE: '.'
-          TARGET:
-            '/home/${{ secrets.REMOTE_USER_STAGING }}/serlo-editor-as-lti-tool/'
+          TARGET: '/home/${{ env.REMOTE_USER }}/serlo-editor-as-lti-tool/'
           EXCLUDE: '/node_modules/'
           SCRIPT_AFTER: |
-            cd /home/${{ secrets.REMOTE_USER_STAGING }}/serlo-editor-as-lti-tool/
+            cd /home/${{ env.REMOTE_USER }}/serlo-editor-as-lti-tool/
             yarn
             yarn build
             supervisorctl restart serlo-app
