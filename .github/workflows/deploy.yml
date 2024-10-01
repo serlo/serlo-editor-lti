@@ -1,0 +1,50 @@
+name: Deploy to Uberspace development
+
+on:
+  push:
+    branches: 
+      - staging
+      - development
+      - ci
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Deploy to Development Server
+        if: ${{ github.ref_name == 'ci' }}
+        uses: easingthemes/ssh-deploy@v5.1.1
+        with:
+          ARGS: '-rlgoDzvc -i --delete'
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST_DEV }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER_DEV }}
+          SOURCE: '.'
+          TARGET:
+            '/home/${{ secrets.REMOTE_USER_DEV }}/serlo-editor-as-lti-tool/'
+          EXCLUDE: '/node_modules/'
+          SCRIPT_AFTER: |
+            cd /home/${{ secrets.REMOTE_USER_DEV }}/serlo-editor-as-lti-tool/
+            yarn
+            yarn build
+            supervisorctl restart serlo-app
+      - name: Deploy to Staging Server
+        if: ${{ github.ref_name == 'staging' }}
+        uses: easingthemes/ssh-deploy@v5.1.1
+        with:
+          ARGS: '-rlgoDzvc -i --delete'
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST_STAGING }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER_STAGING }}
+          SOURCE: '.'
+          TARGET:
+            '/home/${{ secrets.REMOTE_USER_STAGING }}/serlo-editor-as-lti-tool/'
+          EXCLUDE: '/node_modules/'
+          SCRIPT_AFTER: |
+            cd /home/${{ secrets.REMOTE_USER_STAGING }}/serlo-editor-as-lti-tool/
+            yarn
+            yarn build
+            supervisorctl restart serlo-app
