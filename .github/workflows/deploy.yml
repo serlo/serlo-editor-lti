@@ -5,6 +5,7 @@ on:
     branches:
       - staging
       - development
+      - ci
 
 jobs:
   build:
@@ -15,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set environment variables for development
-        if: ${{ github.ref_name == 'development' }}
+        if: ${{ github.ref_name == 'ci' }}
         run: |
           echo "REMOTE_HOST=${{ secrets.REMOTE_HOST_DEV }}" >> $GITHUB_ENV
           echo "REMOTE_USER=${{ secrets.REMOTE_USER_DEV }}" >> $GITHUB_ENV
