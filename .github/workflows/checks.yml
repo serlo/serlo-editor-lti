@@ -42,9 +42,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
-      - run: cp .env-example .env
+      - run: cp .env-template .env
       - run: docker compose up mysql mongo -d
-      - run: yarn mysql -e "CREATE TABLE lti_entity ( id bigint, resource_link_id varchar(255), custom_claim_id varchar(255), content longtext, id_token_on_creation text )"
+      - run:
+          yarn mysql -e "CREATE TABLE lti_entity ( id bigint, resource_link_id
+          varchar(255), custom_claim_id varchar(255), content longtext,
+          id_token_on_creation text )"
       - run: yarn build
       - run: docker compose up express -d
       - run: curl localhost:3000 | grep NO_LTIK_OR_IDTOKEN_FOUND
