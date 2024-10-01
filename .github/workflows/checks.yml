@@ -51,7 +51,5 @@ jobs:
           id_token_on_creation text )"
       - run: yarn build
       - run: docker compose up express -d
-      - run: sleep 1
-      - run: docker compose logs express
-      - run: sleep 1
+      - run: sleep 2
       - run: curl localhost:3000 | grep NO_LTIK_OR_IDTOKEN_FOUND
