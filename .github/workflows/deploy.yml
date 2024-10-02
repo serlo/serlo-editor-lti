@@ -1,0 +1,46 @@
+name: Deploy to Uberspace
+
+on:
+  push:
+    branches:
+      - staging
+      - development
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set environment variables for development
+        if: ${{ github.ref_name == 'development' }}
+        run: |
+          echo "REMOTE_HOST=${{ secrets.REMOTE_HOST_DEV }}" >> $GITHUB_ENV
+          echo "REMOTE_USER=${{ secrets.REMOTE_USER_DEV }}" >> $GITHUB_ENV
+          echo "DOMAIN=https://editor.serlo.dev/" >> $GITHUB_ENV
+
+      - name: Set environment variables for staging
+        if: ${{ github.ref_name == 'staging' }}
+        run: |
+          echo "REMOTE_HOST=${{ secrets.REMOTE_HOST_STAGING }}" >> $GITHUB_ENV
+          echo "REMOTE_USER=${{ secrets.REMOTE_USER_STAGING }}" >> $GITHUB_ENV
+          echo "DOMAIN=https://editor.serlo-staging.dev/" >> $GITHUB_ENV
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{  env.REMOTE_HOST }}
+          username: ${{ env.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/${{ env.REMOTE_USER }}/serlo-editor-as-lti-tool/
+            git checkout ${{ github.ref_name }}
+            git pull
+            yarn
+            yarn build
+            supervisorctl restart serlo-app
+
+      - name: Test deployment successful
+        run: curl ${{ env.DOMAIN }} | grep NO_LTIK_OR_IDTOKEN_FOUND
