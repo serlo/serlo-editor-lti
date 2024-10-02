@@ -42,5 +42,5 @@ jobs:
             yarn build
             supervisorctl restart serlo-app
 
-      - name: Test deployment successfull
+      - name: Test deployment successful
         run: curl ${{ env.DOMAIN }} | grep NO_LTIK_OR_IDTOKEN_FOUND
