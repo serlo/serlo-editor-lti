@@ -12,11 +12,11 @@ export const config: CodeceptJS.MainConfig = {
     Playwright: {
       browser: 'chromium',
       url: 'http://localhost:3000',
-      show: true
-    }
+      show: true,
+    },
   },
   include: {
-    I: './steps_file'
+    I: './steps_file',
   },
-  name: 'serlo-editor-as-lti-tool'
+  name: 'serlo-editor-as-lti-tool',
 }
