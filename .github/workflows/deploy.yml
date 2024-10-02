@@ -19,12 +19,14 @@ jobs:
         run: |
           echo "REMOTE_HOST=${{ secrets.REMOTE_HOST_DEV }}" >> $GITHUB_ENV
           echo "REMOTE_USER=${{ secrets.REMOTE_USER_DEV }}" >> $GITHUB_ENV
+          echo "DOMAIN=https://editor.serlo.dev/" >> $GITHUB_ENV
 
       - name: Set environment variables for staging
         if: ${{ github.ref_name == 'staging' }}
         run: |
           echo "REMOTE_HOST=${{ secrets.REMOTE_HOST_STAGING }}" >> $GITHUB_ENV
           echo "REMOTE_USER=${{ secrets.REMOTE_USER_STAGING }}" >> $GITHUB_ENV
+          echo "DOMAIN=https://editor.serlo-staging.dev/" >> $GITHUB_ENV
 
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.3
@@ -39,3 +41,6 @@ jobs:
             yarn
             yarn build
             supervisorctl restart serlo-app
+
+      - name: Test deployment successfull
+        run: curl ${{ env.DOMAIN }} | grep NO_LTIK_OR_IDTOKEN_FOUND
