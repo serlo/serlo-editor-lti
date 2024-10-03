@@ -22,7 +22,8 @@
     "push-image:dev": "yarn push-image dev",
     "push-image:latest": "yarn push-image latest",
     "start:dev": "tsx --watch src/backend/index.ts",
-    "start": "node dist/backend/index.cjs"
+    "start": "node dist/backend/index.cjs",
+    "test": "codeceptjs run"
   },
   "dependencies": {
     "@serlo/editor": "0.14.0",

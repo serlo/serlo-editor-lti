@@ -6,7 +6,7 @@ setHeadlessWhen(process.env.HEADLESS)
 setCommonPlugins()
 
 export const config: CodeceptJS.MainConfig = {
-  tests: 'e2e-tests',
+  tests: 'e2e-tests/*.ts',
   output: './output',
   helpers: {
     Playwright: {
@@ -16,7 +16,7 @@ export const config: CodeceptJS.MainConfig = {
     },
   },
   include: {
-    I: './steps_file',
+    I: './e2e-tests/steps/steps_file',
   },
   name: 'serlo-editor-as-lti-tool',
 }
