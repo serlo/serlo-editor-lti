@@ -1,6 +1,6 @@
 Feature('keys')
 
-Scenario('test something', ({ I }) => {
+Scenario('are available', ({ I }) => {
   I.amOnPage('/lti/keys')
   I.see('{"keys":[{"kty":')
 })
