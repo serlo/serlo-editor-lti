@@ -17,7 +17,7 @@ Scenario(
 )
 
 Scenario(
-  `requests to /lti/launch should return Unauthorized (401) if url parameter "ltik" is missing`,
+  `requests to /lti/register should return Unauthorized (401) if url parameter "ltik" is missing`,
   ({ I }) => {
     I.amOnPage('/lti/register')
     I.see('"status":403,"error":"Forbidden"')
