@@ -16,7 +16,7 @@ export const config: CodeceptJS.MainConfig = {
     },
   },
   include: {
-    I: './e2e/steps',
+    I: './e2e/steps_file',
   },
   name: 'serlo-editor-as-lti-tool',
 }
