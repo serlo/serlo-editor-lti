@@ -52,4 +52,5 @@ jobs:
       - run: yarn build
       - run: docker compose up express -d
       - run: sleep 2
-      - run: yarn test
+      - run: yarn playwright install
+      - run: HEADLESS=true yarn test
