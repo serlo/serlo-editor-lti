@@ -23,3 +23,11 @@ Scenario(
     I.see('"status":403,"error":"Forbidden"')
   }
 )
+
+Scenario(
+  `requests to /entity should return Unauthorized (401) if url parameter "ltik" is missing`,
+  ({ I }) => {
+    I.amOnPage('/entity')
+    I.see('"status":401,"error":"Unauthorized"')
+  }
+)
