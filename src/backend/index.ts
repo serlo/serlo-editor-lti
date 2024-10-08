@@ -340,13 +340,14 @@ ltijs.app.get('/platform/login', async (req, res, next) => {
   })
 })
 
-ltijs.app.use('/platform/keys', async (_req, res) => {
-  createJWKSResponse({
-    res,
-    keyid: keyId,
-    publicKey: publicKey,
-  })
-})
+// @@@ reactivate
+// ltijs.app.use('/platform/keys', async (_req, res) => {
+//   createJWKSResponse({
+//     res,
+//     keyid: keyId,
+//     publicKey: publicKey,
+//   })
+// })
 
 // Called after the resource selection on Edusharing (within iframe) when user selected what resource to embed.
 // Receives a LTI Deep Linking Response Message in payload. Contains content_items array that specifies which resource should be embedded.
@@ -518,7 +519,8 @@ ltijs.app.get('/lti/get-embed-html', async (req, res, next) => {
 ltijs.onConnect(async (idToken, req, res, next) => {
   if (
     idToken.iss ===
-    'https://repository.staging.cloud.schulcampus-rlp.de/edu-sharing'
+      'https://repository.staging.cloud.schulcampus-rlp.de/edu-sharing' ||
+    idToken.iss === 'http://repository.127.0.0.1.nip.io:8100/edu-sharing'
   ) {
     await onConnectEdusharing(idToken, req, res, next)
   } else {

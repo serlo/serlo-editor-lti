@@ -25,14 +25,14 @@ export class EdusharingServer {
   private nonce = 'nonce-value'
   private defaultCustom = {
     getContentApiUrl:
-      'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/content',
+      'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/ltiplatform/v13/content',
     fileName: 'Hello world',
     getDetailsSnippetUrl:
-      'http://localhost:8100/edu-sharing/rest/lti/v13/details',
+      'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/lti/v13/details',
     dataToken:
       'kOXGc6AbqYW7iHOl3b48Pj/ngudoLCZk+DJwYxAg9wTiKsN9TKRY13qU+6vNNMEV2Guya3NPWO+Ay8IJDtQWMKxnkku/3mc+n64TIgMjs2yY7wXMYcvoRK4C9iXXpydNWQCGreYU2BcnMwne/b5BngOvBjqqVCPLMGT/lmvylP//GCzM7V99h9fKVMrgY97qOdsB1O0Ti//E3odWU1dFUMu3NLPy3MdTHXdViQpyPFRpgnZ8kcywDl0bLYSKy0pUuJy0hBvlnGmFyKlcQ38HaR2CZ9wRxrNgRxxEzGd8J+T6YSNoD8OyB9Nyjbp0N3tog4XhEZ/UASIqLYBzk+ygOA==',
     postContentApiUrl:
-      'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/content',
+      'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/ltiplatform/v13/content',
     appId: 'qsa2DgKBJ2WgoJO1',
     nodeId: '604f62c1-6463-4206-a571-8c57097a54ae',
     user: 'admin',
@@ -61,13 +61,13 @@ export class EdusharingServer {
         targetUrl: process.env.EDITOR_URL + 'lti/login',
         params: {
           target_link_uri: process.env.EDITOR_URL + 'lti/launch',
-          iss: process.env.EDUSHARING_RLP_URL,
+          iss: 'http://repository.127.0.0.1.nip.io:8100/edu-sharing',
 
           // Test whether this is optional
           login_hint: this.user,
           lti_message_hint: 'd882efaa-1f84-4a0f-9bc9-4f74f19f7576',
           lti_deployment_id: '1',
-          client_id: process.env.EDITOR_CLIENT_ID_FOR_LAUNCH,
+          client_id: 'piQ0JV8O880ZrVt',
         },
       })
     })
@@ -76,8 +76,8 @@ export class EdusharingServer {
     this.app.get('/edu-sharing/rest/ltiplatform/v13/auth', async (req, res) => {
       const payload = {
         nonce: req.query['nonce'],
-        iss: process.env.EDUSHARING_RLP_URL,
-        aud: process.env.EDITOR_CLIENT_ID_FOR_LAUNCH,
+        iss: 'http://repository.127.0.0.1.nip.io:8100/edu-sharing',
+        aud: 'piQ0JV8O880ZrVt',
         sub: this.user,
         'https://purl.imsglobal.org/spec/lti/claim/deployment_id': '1',
         'https://purl.imsglobal.org/spec/lti/claim/context': {
@@ -105,8 +105,7 @@ export class EdusharingServer {
         'https://purl.imsglobal.org/spec/lti/claim/launch_presentation': {
           document_target: 'window',
           return_url:
-            process.env.EDUSHARING_RLP_URL +
-            'components/workspace?id=d882efaa-1f84-4a0f-9bc9-4f74f19f7576&mainnav=true&displayType=0',
+            'http://repository.127.0.0.1.nip.io:8100/edu-sharing/components/workspace?id=d882efaa-1f84-4a0f-9bc9-4f74f19f7576&mainnav=true&displayType=0',
           locale: 'de_DE',
         },
         'https://purl.imsglobal.org/spec/lti/claim/message_type':

@@ -24,7 +24,7 @@
     "push-image:latest": "yarn push-image latest",
     "start:dev": "tsx --watch src/backend/index.ts",
     "start": "node dist/backend/index.cjs",
-    "dev:edusharing": "dotenvx run --env-file=dev.env --env-file=.env -- tsx --watch src/edusharing-server/start-server.ts"
+    "dev:edusharing": "dotenvx run --env-file=.env -- tsx --watch src/edusharing-server/start-server.ts"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.14.2",

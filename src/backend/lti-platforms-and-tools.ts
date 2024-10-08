@@ -125,16 +125,45 @@ export async function ltiRegisterPlatformsAndTools() {
   }
 
   // Register platform: edusharing mock
-  // await ltijs.registerPlatform({
-  //   url: 'http://localhost:8100/', // LTI iss
-  //   name: 'edusharing-mock',
-  //   clientId: 'piQ0JV8O880ZrVt', // The ID for this LTI tool on the LTI platform
-  //   authenticationEndpoint: 'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/auth',
-  //   accesstokenEndpoint: 'http://localhost:8100/',
-  //   authConfig: {
-  //     method: 'JWK_SET',
-  //     key: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
-  //   },
-  // })
-  // console.log(`Registered platform: ${edusharingMock.name}`)
+  if (process.env.ALLOW_EDUSHARING_MOCK) {
+    const platform = await ltijs.registerPlatform({
+      url: 'http://repository.127.0.0.1.nip.io:8100/edu-sharing', // LTI iss
+      name: 'Platform',
+      clientId: 'piQ0JV8O880ZrVt', // The ID for this LTI tool on the LTI platform
+      authenticationEndpoint:
+        'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/ltiplatform/v13/auth',
+      accesstokenEndpoint:
+        'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/ltiplatform/v13/token',
+      authConfig: {
+        method: 'JWK_SET',
+        key: 'http://host.docker.internal:8100/edu-sharing/rest/lti/v13/jwks',
+        // key: 'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/lti/v13/jwks',
+      },
+    })
+    if (platform) {
+      console.log(`Registered platform: edusharing-mock`)
+    }
+  }
+
+  // Register platform: edusharing mock
+  if (process.env.ALLOW_LOCAL_EDUSHARING) {
+    const platform = await ltijs.registerPlatform({
+      url: 'http://repository.127.0.0.1.nip.io:8100/edu-sharing', // LTI iss
+      name: 'Platform', // TODO: Change
+      clientId: 'aZZDRp40gsj459a', // The ID for this LTI tool on the LTI platform
+      authenticationEndpoint:
+        'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/ltiplatform/v13/auth',
+      accesstokenEndpoint:
+        'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/ltiplatform/v13/token',
+      authConfig: {
+        method: 'JWK_SET',
+        // key: 'http://host.docker.internal:8100/edu-sharing/rest/lti/v13/jwks',
+        key: 'https://serlo-edusharing_repository-service_1:8080/edu-sharing/rest/lti/v13/jwks',
+        // key: 'http://repository-service:8080/edu-sharing/rest/lti/v13/jwks',
+      },
+    })
+    if (platform) {
+      console.log(`Registered platform: edusharing-local`)
+    }
+  }
 }

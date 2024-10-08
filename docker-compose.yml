@@ -27,6 +27,8 @@ services:
         #     - node_modules/
         - action: rebuild
           path: .
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
   mongo:
     image: mongo:7.0.11
     networks:
