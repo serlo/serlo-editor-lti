@@ -27,6 +27,8 @@ import {
   ltiRegisterPlatformsAndTools,
 } from './lti-platforms-and-tools'
 import { generateKeyPairSync } from 'crypto'
+import { createInitialContent } from './create-initial-content'
+import urlJoin from 'url-join'
 
 const ltijsKey = readEnvVariable('LTIJS_KEY')
 const mongodbConnectionUri = readEnvVariable('MONGODB_URI')
@@ -43,27 +45,6 @@ const mongoUri = new URL(mongodbConnectionUri)
 const mongoClient = new MongoClient(mongoUri.href)
 
 let pool: Pool | null = null
-const defaultContent = {
-  plugin: 'type-generic-content',
-  content: {
-    plugin: 'rows',
-    state: [
-      {
-        plugin: 'text',
-        state: [
-          {
-            type: 'p',
-            children: [
-              {
-                text: '',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-}
 
 export interface AccessToken {
   entityId: string
@@ -104,6 +85,14 @@ ltijs.setup(
       sameSite: process.env['ENVIRONMENT'] === 'local' ? '' : 'None', // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
     },
   }
+)
+
+// Disable authentication using ltik for some endpoints in edusharing embed flow.
+ltijs.whitelist(
+  '/platform/login',
+  '/platform/done',
+  '/platform/keys',
+  'platform/get-'
 )
 
 // Disable COEP
@@ -182,8 +171,8 @@ ltijs.app.put('/entity', async (req, res) => {
 // Called when user clicks on "embed content from edusharing"
 // TODO: Rename to /lti/start-edusharing-embed-flow
 ltijs.app.get('/lti/start-edusharing-deeplink-flow', async (req, res, next) => {
-  const idToken = res.locals.token
-  const { iss } = idToken
+  const idToken = res.locals.token as IdToken
+  const iss = idToken.iss
 
   const custom: unknown = res.locals.context.custom
 
@@ -199,14 +188,17 @@ ltijs.app.get('/lti/start-edusharing-deeplink-flow', async (req, res, next) => {
 
   const { user, dataToken, nodeId } = custom
 
-  const loginData = await deeplinkLoginData.insertOne({
-    createdAt: new Date(),
+  const insertResult = await edusharingEmbedSessions.insertOne({
+    // createdAt: new Date(),
     user,
     dataToken,
     nodeId,
+    iss,
   })
+  if (!insertResult.acknowledged)
+    throw new Error('Failed to add edusharing session information to mongodb')
 
-  const edusharingAsToolConfig = getEdusharingAsToolConfig(iss)
+  const edusharingAsToolConfig = getEdusharingAsToolConfig({ iss })
   if (!edusharingAsToolConfig) {
     return next(new Error(`Could not find endpoints for LTI tool ${iss}`))
   }
@@ -220,7 +212,7 @@ ltijs.app.get('/lti/start-edusharing-deeplink-flow', async (req, res, next) => {
     params: {
       iss: editorUrl,
       target_link_uri: edusharingAsToolConfig.launchEndpoint,
-      login_hint: loginData.insertedId.toString(),
+      login_hint: insertResult.insertedId.toString(),
       client_id: edusharingAsToolConfig.clientId,
       lti_deployment_id: edusharingAsToolDeploymentId,
     },
@@ -230,15 +222,52 @@ ltijs.app.get('/lti/start-edusharing-deeplink-flow', async (req, res, next) => {
 // Receives an Authentication Request in payload
 // See: https://www.imsglobal.org/spec/security/v1p0/#step-2-authentication-request
 ltijs.app.get('/platform/login', async (req, res, next) => {
-  const idToken = res.locals.token
-  const { iss } = idToken
-  const edusharingAsToolConfig = getEdusharingAsToolConfig(iss)
+  const loginHint = req.query['login_hint']
+  if (typeof loginHint !== 'string') {
+    res.status(400).send('login_hint is not valid').end()
+    return
+  }
+
+  const edusharingEmbedSessionId = parseObjectId(loginHint)
+
+  if (edusharingEmbedSessionId == null) {
+    res.status(400).send('login_hint is not valid').end()
+    return
+  }
+
+  const result = await edusharingEmbedSessions.findOneAndDelete({
+    _id: edusharingEmbedSessionId,
+  })
+  if (!result) {
+    res.status(400).send('could not find edusharingEmbedSession').end()
+    return
+  }
+
+  const { value: edusharingEmbedSession } = result
+
+  if (
+    !t
+      .type({
+        user: t.string,
+        nodeId: t.string,
+        dataToken: t.string,
+        iss: t.string,
+      })
+      .is(edusharingEmbedSession)
+  ) {
+    res.status(400).send('login_hint is invalid or session is expired').end()
+    return
+  }
+
+  const { user, nodeId, dataToken, iss } = edusharingEmbedSession
+
+  const edusharingAsToolConfig = getEdusharingAsToolConfig({ iss })
   if (!edusharingAsToolConfig) {
     return next(new Error(`Could not find endpoints for LTI tool ${iss}`))
   }
+
   const nonce = req.query['nonce']
   const state = req.query['state']
-  const loginHint = req.query['login_hint']
 
   if (typeof nonce !== 'string') {
     res.status(400).send('nonce is not valid').end()
@@ -254,34 +283,7 @@ ltijs.app.get('/platform/login', async (req, res, next) => {
   } else if (req.query['client_id'] !== 'editor') {
     res.status(400).send('client_id is not valid').end()
     return
-  } else if (typeof loginHint !== 'string') {
-    res.status(400).send('login_hint is not valid').end()
-    return
   }
-
-  const loginDataId = parseObjectId(loginHint)
-
-  if (loginDataId == null) {
-    res.status(400).send('login_hint is not valid').end()
-    return
-  }
-
-  const result = await deeplinkLoginData.findOneAndDelete({
-    _id: loginDataId,
-  })
-  if (!result) {
-    res.status(400).send('could not no entry in deeplinkLoginData').end()
-    return
-  }
-
-  const { value: loginData } = result
-
-  if (!DeeplinkLoginData.is(loginData)) {
-    res.status(400).send('login_hint is invalid or session is expired').end()
-    return
-  }
-
-  const { user, nodeId, dataToken } = loginData
 
   const nonceId = await deeplinkNonces.insertOne({
     createdAt: new Date(),
@@ -340,26 +342,21 @@ ltijs.app.get('/platform/login', async (req, res, next) => {
   })
 })
 
-// @@@ reactivate
-// ltijs.app.use('/platform/keys', async (_req, res) => {
-//   createJWKSResponse({
-//     res,
-//     keyid: keyId,
-//     publicKey: publicKey,
-//   })
-// })
+ltijs.app.use('/platform/keys', async (_req, res) => {
+  createJWKSResponse({
+    res,
+    keyid: keyId,
+    publicKey: publicKey,
+  })
+})
 
 // Called after the resource selection on Edusharing (within iframe) when user selected what resource to embed.
 // Receives a LTI Deep Linking Response Message in payload. Contains content_items array that specifies which resource should be embedded.
 // See: https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-message
 // See https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-example for an example response payload
 ltijs.app.post('/platform/done', async (req, res, next) => {
-  const idToken = res.locals.token
-  const { iss } = idToken
-  const edusharingAsToolConfig = getEdusharingAsToolConfig(iss)
-  if (!edusharingAsToolConfig) {
-    return next(new Error(`Could not find endpoints for LTI tool ${iss}`))
-  }
+  // const idToken = res.locals.token
+  // const { iss } = idToken
   if (req.headers['content-type'] !== 'application/x-www-form-urlencoded') {
     res
       .status(400)
@@ -373,6 +370,12 @@ ltijs.app.post('/platform/done', async (req, res, next) => {
     return
   }
 
+  const { iss } = jwt.decode(req.body.JWT) as { iss: string }
+
+  const edusharingAsToolConfig = getEdusharingAsToolConfig({ clientId: iss })
+  if (!edusharingAsToolConfig) {
+    return next(new Error(`Could not find endpoints for LTI tool ${iss}`))
+  }
   const verifyResult = await verifyJwt({
     token: req.body.JWT,
     keysetUrl: edusharingAsToolConfig.keysetEndpoint,
@@ -402,13 +405,15 @@ ltijs.app.post('/platform/done', async (req, res, next) => {
     return
   }
 
-  const deeplinkNonce = await deeplinkNonces.findOneAndDelete({
+  const result = await deeplinkNonces.findOneAndDelete({
     _id: nonceId,
   })
-  if (!deeplinkNonce) {
+  if (!result.ok) {
     res.status(400).send('No entry found in deeplinkNonces').end()
     return
   }
+
+  const deeplinkNonce = result.value
 
   if (!DeeplinkNonce.is(deeplinkNonce)) {
     res.status(400).send('deeplink flow session expired').end()
@@ -451,7 +456,7 @@ ltijs.app.post('/platform/done', async (req, res, next) => {
 ltijs.app.get('/lti/get-embed-html', async (req, res, next) => {
   const idToken = res.locals.token
   const { iss } = idToken
-  const edusharingAsToolConfig = getEdusharingAsToolConfig(iss)
+  const edusharingAsToolConfig = getEdusharingAsToolConfig({ iss })
   if (!edusharingAsToolConfig) {
     return next(new Error(`Could not find endpoints for LTI tool ${iss}`))
   }
@@ -487,14 +492,13 @@ ltijs.app.get('/lti/get-embed-html', async (req, res, next) => {
   })
 
   const url = new URL(
-    `${repositoryId}/${nodeId}`,
-    edusharingAsToolConfig.detailsEndpoint
+    urlJoin(edusharingAsToolConfig.detailsEndpoint, `${repositoryId}/${nodeId}`)
   )
 
   url.searchParams.append('displayMode', 'inline')
   url.searchParams.append('jwt', encodeURIComponent(message))
 
-  const response = await fetch(url.href, {
+  const response = await fetch(url, {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -520,7 +524,7 @@ ltijs.onConnect(async (idToken, req, res, next) => {
   if (
     idToken.iss ===
       'https://repository.staging.cloud.schulcampus-rlp.de/edu-sharing' ||
-    idToken.iss === 'http://repository.127.0.0.1.nip.io:8100/edu-sharing'
+    idToken.iss === 'http://localhost:8100/edu-sharing'
   ) {
     await onConnectEdusharing(idToken, req, res, next)
   } else {
@@ -570,7 +574,7 @@ async function onConnectEdusharing(
       'INSERT INTO lti_entity (edusharing_node_id, content, id_token_on_creation, resource_link_id) values (?, ?, ?, ?)',
       [
         edusharingNodeId,
-        JSON.stringify(defaultContent),
+        JSON.stringify(createInitialContent()),
         JSON.stringify(idToken),
         resourceLinkId,
       ]
@@ -695,7 +699,11 @@ ltijs.onDeepLinking(async (idToken, __, res) => {
   // Create new entity in database
   const { insertId: entityId } = await mysqlDatabase.mutate(
     'INSERT INTO lti_entity (custom_claim_id, content, id_token_on_creation) values (?, ?, ?)',
-    [ltiCustomClaimId, JSON.stringify(defaultContent), JSON.stringify(idToken)]
+    [
+      ltiCustomClaimId,
+      JSON.stringify(createInitialContent()),
+      JSON.stringify(idToken),
+    ]
   )
 
   console.log('entityId: ', entityId)
@@ -743,7 +751,7 @@ ltijs.onDeepLinking(async (idToken, __, res) => {
 
 // TODO: Rename to edusharingEmbed...
 let deeplinkNonces: Collection
-let deeplinkLoginData: Collection
+let edusharingEmbedSessions: Collection
 
 // Setup function
 const setup = async () => {
@@ -751,7 +759,23 @@ const setup = async () => {
   await mongoClient.connect()
 
   deeplinkNonces = mongoClient.db().collection('deeplink_nonce')
-  deeplinkLoginData = mongoClient.db().collection('deeplink_login_data')
+  edusharingEmbedSessions = mongoClient
+    .db()
+    .collection('edusharing_embed_session')
+
+  // const sevenDaysInSeconds = 604800
+  // await deeplinkNonces.createIndex(
+  //   { createdAt: 1 },
+  //   // The nonce is generated and stored in the database when the user clicks "embed content from edu sharing". It needs to stay valid until the user selects & embeds a content from edu-sharing within the iframe. But it should not exist indefinitely and the database should be cleared from old nonce values at some point. So we make them expire after 7 days.
+  //   // https://www.mongodb.com/docs/manual/tutorial/expire-data/
+  //   { expireAfterSeconds: sevenDaysInSeconds }
+  // )
+  // await edusharingEmbedSession.createIndex(
+  //   { createdAt: 1 },
+  //   // Since edusharing should directly redirect the user to our page a small
+  //   // max age should be fine her
+  //   { expireAfterSeconds: 20 }
+  // )
 
   // If you encounter error message `bad decrypt` or changed the ltijs encryption key this might help. See: https://github.com/Cvmcosta/ltijs/issues/119#issuecomment-882898770
   // const platforms = await ltijs.getAllPlatforms()
@@ -801,7 +825,7 @@ const setup = async () => {
         'INSERT INTO lti_entity (custom_claim_id, content, id_token_on_creation) values (?, ?, ?)',
         [
           '00000000-0000-0000-0000-000000000000',
-          JSON.stringify(defaultContent),
+          JSON.stringify(createInitialContent()),
           JSON.stringify({}),
         ]
       )

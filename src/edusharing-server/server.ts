@@ -25,14 +25,14 @@ export class EdusharingServer {
   private nonce = 'nonce-value'
   private defaultCustom = {
     getContentApiUrl:
-      'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/ltiplatform/v13/content',
+      'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/content',
     fileName: 'Hello world',
     getDetailsSnippetUrl:
-      'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/lti/v13/details',
+      'http://localhost:8100/edu-sharing/rest/lti/v13/details',
     dataToken:
       'kOXGc6AbqYW7iHOl3b48Pj/ngudoLCZk+DJwYxAg9wTiKsN9TKRY13qU+6vNNMEV2Guya3NPWO+Ay8IJDtQWMKxnkku/3mc+n64TIgMjs2yY7wXMYcvoRK4C9iXXpydNWQCGreYU2BcnMwne/b5BngOvBjqqVCPLMGT/lmvylP//GCzM7V99h9fKVMrgY97qOdsB1O0Ti//E3odWU1dFUMu3NLPy3MdTHXdViQpyPFRpgnZ8kcywDl0bLYSKy0pUuJy0hBvlnGmFyKlcQ38HaR2CZ9wRxrNgRxxEzGd8J+T6YSNoD8OyB9Nyjbp0N3tog4XhEZ/UASIqLYBzk+ygOA==',
     postContentApiUrl:
-      'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/ltiplatform/v13/content',
+      'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/content',
     appId: 'qsa2DgKBJ2WgoJO1',
     nodeId: '604f62c1-6463-4206-a571-8c57097a54ae',
     user: 'admin',
@@ -61,7 +61,7 @@ export class EdusharingServer {
         targetUrl: process.env.EDITOR_URL + 'lti/login',
         params: {
           target_link_uri: process.env.EDITOR_URL + 'lti/launch',
-          iss: 'http://repository.127.0.0.1.nip.io:8100/edu-sharing',
+          iss: 'http://localhost:8100/edu-sharing',
 
           // Test whether this is optional
           login_hint: this.user,
@@ -76,7 +76,7 @@ export class EdusharingServer {
     this.app.get('/edu-sharing/rest/ltiplatform/v13/auth', async (req, res) => {
       const payload = {
         nonce: req.query['nonce'],
-        iss: 'http://repository.127.0.0.1.nip.io:8100/edu-sharing',
+        iss: 'http://localhost:8100/edu-sharing',
         aud: 'piQ0JV8O880ZrVt',
         sub: this.user,
         'https://purl.imsglobal.org/spec/lti/claim/deployment_id': '1',
@@ -105,7 +105,7 @@ export class EdusharingServer {
         'https://purl.imsglobal.org/spec/lti/claim/launch_presentation': {
           document_target: 'window',
           return_url:
-            'http://repository.127.0.0.1.nip.io:8100/edu-sharing/components/workspace?id=d882efaa-1f84-4a0f-9bc9-4f74f19f7576&mainnav=true&displayType=0',
+            'http://localhost:8100/edu-sharing/components/workspace?id=d882efaa-1f84-4a0f-9bc9-4f74f19f7576&mainnav=true&displayType=0',
           locale: 'de_DE',
         },
         'https://purl.imsglobal.org/spec/lti/claim/message_type':
@@ -213,9 +213,9 @@ export class EdusharingServer {
         const targetParameters = {
           iss: process.env.EDITOR_URL,
           target_link_uri:
-            process.env.EDUSHARING_AUTHENTICATION_RESPONSE_URL_FOR_EMBEDDING,
-          client_id: process.env.EDITOR_CLIENT_ID_FOR_EMBEDDING,
-          lti_deployment_id: process.env.EDITOR_DEPLOYMENT_ID_FOR_EMBEDDING,
+            'http://localhost:8100/edu-sharing/rest/lti/v13/lti13',
+          client_id: 'editor',
+          lti_deployment_id: '2',
         }
 
         for (const [name, targetValue] of Object.entries(targetParameters)) {
@@ -235,8 +235,8 @@ export class EdusharingServer {
             state: this.state,
             login_hint: req.query['login_hint'].toString(),
             redirect_uri:
-              process.env.EDUSHARING_AUTHENTICATION_RESPONSE_URL_FOR_EMBEDDING,
-            client_id: process.env.EDITOR_CLIENT_ID_FOR_EMBEDDING,
+              'http://localhost:8100/edu-sharing/rest/lti/v13/lti13',
+            client_id: 'editor',
           },
         })
       }
@@ -267,7 +267,7 @@ export class EdusharingServer {
         req.body.id_token,
         serloEditorJwks,
         {
-          audience: process.env.EDITOR_CLIENT_ID_FOR_EMBEDDING,
+          audience: 'editor',
           issuer: process.env.EDITOR_URL,
           subject: this.user,
         }
@@ -301,7 +301,7 @@ export class EdusharingServer {
           'LtiDeepLinkingResponse',
         'https://purl.imsglobal.org/spec/lti/claim/version': '1.3.0',
         'https://purl.imsglobal.org/spec/lti-dl/claim/data':
-          idToken.decoded[
+          idToken[
             'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings'
           ].data,
         'https://purl.imsglobal.org/spec/lti-dl/claim/content_items': [
@@ -312,21 +312,18 @@ export class EdusharingServer {
             },
             icon: {
               width: 'null',
-              url:
-                process.env.EDUSHARING_RLP_URL +
-                'themes/default/images/common/mime-types/svg/file-image.svg',
+              url: 'http://localhost:8100/edu-sharing/themes/default/images/common/mime-types/svg/file-image.svg',
               height: 'null',
             },
             type: 'ltiResourceLink',
             title: '2020-11-13-152700_392x305_scrot.png',
-            url:
-              process.env.EDUSHARING_RLP_URL +
-              'rest/lti/v13/lti13/960c48d0-5e01-45ca-aaf6-d648269f0db2',
+            url: 'http://localhost:8100/edu-sharing/rest/lti/v13/lti13/960c48d0-5e01-45ca-aaf6-d648269f0db2',
           },
         ],
       }
 
       const jwt = await new jose.SignJWT(payload)
+        .setIssuedAt()
         .setProtectedHeader({ alg: 'RS256', kid: keyid })
         .sign(privateKey)
 

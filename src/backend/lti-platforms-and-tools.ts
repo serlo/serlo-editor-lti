@@ -9,9 +9,14 @@ const edusharingAsToolConfigs: {
   keysetEndpoint: string
 }[] = []
 
-export function getEdusharingAsToolConfig(iss: string) {
-  const edusharingAsToolConfig = edusharingAsToolConfigs.find(
-    (tool) => tool.iss === iss
+// TODO: Avoid having to either search for iss or clientId
+export function getEdusharingAsToolConfig(
+  searchFor: { iss: string } | { clientId: string }
+) {
+  const edusharingAsToolConfig = edusharingAsToolConfigs.find((tool) =>
+    'iss' in searchFor
+      ? tool.iss === searchFor.iss
+      : tool.clientId === searchFor.clientId
   )
   return edusharingAsToolConfig
 }
@@ -127,18 +132,29 @@ export async function ltiRegisterPlatformsAndTools() {
   // Register platform: edusharing mock
   if (process.env.ALLOW_EDUSHARING_MOCK) {
     const platform = await ltijs.registerPlatform({
-      url: 'http://repository.127.0.0.1.nip.io:8100/edu-sharing', // LTI iss
-      name: 'Platform',
+      url: 'http://localhost:8100/edu-sharing', // LTI iss
+      name: 'edusharing-mock',
       clientId: 'piQ0JV8O880ZrVt', // The ID for this LTI tool on the LTI platform
       authenticationEndpoint:
-        'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/ltiplatform/v13/auth',
+        'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/auth',
       accesstokenEndpoint:
-        'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/ltiplatform/v13/token',
+        'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/token',
       authConfig: {
         method: 'JWK_SET',
         key: 'http://host.docker.internal:8100/edu-sharing/rest/lti/v13/jwks',
-        // key: 'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/lti/v13/jwks',
+        // key: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
       },
+    })
+    edusharingAsToolConfigs.push({
+      iss: 'http://localhost:8100/edu-sharing',
+      loginEndpoint:
+        'http://localhost:8100/edu-sharing/rest/lti/v13/oidc/login_initiations',
+      launchEndpoint: 'http://localhost:8100/edu-sharing/rest/lti/v13/lti13',
+      clientId: 'editor',
+      detailsEndpoint:
+        'http://host.docker.internal:8100/edu-sharing/rest/lti/v13/details',
+      keysetEndpoint:
+        'http://host.docker.internal:8100/edu-sharing/rest/lti/v13/jwks',
     })
     if (platform) {
       console.log(`Registered platform: edusharing-mock`)
@@ -148,13 +164,13 @@ export async function ltiRegisterPlatformsAndTools() {
   // Register platform: edusharing mock
   if (process.env.ALLOW_LOCAL_EDUSHARING) {
     const platform = await ltijs.registerPlatform({
-      url: 'http://repository.127.0.0.1.nip.io:8100/edu-sharing', // LTI iss
+      url: 'http://localhost:8100/edu-sharing', // LTI iss
       name: 'Platform', // TODO: Change
       clientId: 'aZZDRp40gsj459a', // The ID for this LTI tool on the LTI platform
       authenticationEndpoint:
-        'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/ltiplatform/v13/auth',
+        'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/auth',
       accesstokenEndpoint:
-        'http://repository.127.0.0.1.nip.io:8100/edu-sharing/rest/ltiplatform/v13/token',
+        'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/token',
       authConfig: {
         method: 'JWK_SET',
         // key: 'http://host.docker.internal:8100/edu-sharing/rest/lti/v13/jwks',
