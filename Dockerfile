@@ -1,4 +1,4 @@
-FROM node:20.17.0 as build
+FROM node:20.18.0 as build
 WORKDIR /usr/src/app
 
 COPY . .
@@ -6,7 +6,7 @@ RUN yarn install --immutable
 
 RUN yarn build
 
-FROM node:20.17.0 as production
+FROM node:20.18.0 as production
 
 WORKDIR /usr/src/app
 
