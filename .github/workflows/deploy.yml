@@ -11,9 +11,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Set environment variables for development
         if: ${{ github.ref_name == 'development' }}
         run: |
@@ -43,4 +40,4 @@ jobs:
             supervisorctl restart serlo-app
 
       - name: Test deployment successful
-        run: curl ${{ env.DOMAIN }} | grep NO_LTIK_OR_IDTOKEN_FOUND
+        run: sleep 2 && curl ${{ env.DOMAIN }} | grep NO_LTIK_OR_IDTOKEN_FOUND
