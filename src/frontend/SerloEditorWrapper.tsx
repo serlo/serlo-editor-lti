@@ -70,7 +70,17 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
   const onEdusharing = platformUrl.includes('edu-sharing')
   // Activate edusharing plugin only when launched by edu-sharing
   const plugins = onEdusharing
-    ? [...defaultPlugins, EditorPluginType.EdusharingAsset]
+    ? [
+        ...defaultPlugins.filter(
+          (plugin) =>
+            plugin !== EditorPluginType.Image &&
+            plugin !== EditorPluginType.DropzoneImage &&
+            plugin !== EditorPluginType.ImageGallery
+        ),
+        EditorPluginType.EdusharingAsset,
+        EditorPluginType.SerloInjection,
+        EditorPluginType.TextAreaExercise,
+      ]
     : defaultPlugins
 
   return (

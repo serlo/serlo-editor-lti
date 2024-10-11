@@ -849,15 +849,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@serlo/editor@npm:0.12.0":
-  version: 0.12.0
-  resolution: "@serlo/editor@npm:0.12.0"
+"@serlo/editor@npm:0.15.4":
+  version: 0.15.4
+  resolution: "@serlo/editor@npm:0.15.4"
   dependencies:
     "@serlo/katex-styles": "npm:1.0.1"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
+    react-hot-toast: "npm:^2.4.1"
     react-resizable: "npm:^3.0.5"
-  checksum: 10/c81f1a8709ffa43723f599bd57ee1722ecec1b5a0f89a4543d08f2867c950e54cee289a8d4e9c2bf4cda04017e30533cb5c86d975334fb36669505565c12d84b
+  checksum: 10/38bd3898c72c13f40fae2d0ededf76ff3a8f5800ce92166b6c215029d032a2c399a7a9b53a5f45a143c6686f10191346b373facef5443f3623cca16d5f6b7ae0
   languageName: node
   linkType: hard
 
@@ -3255,6 +3256,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"goober@npm:^2.1.10":
+  version: 2.1.15
+  resolution: "goober@npm:2.1.15"
+  peerDependencies:
+    csstype: ^3.0.10
+  checksum: 10/89c7891c65b883e190f57d0f925dfa947cf56aee6809ea82c741fd55dfed79935e5fcbb20a563eafc04ced6e879076f481c9e504698d3c6dd4d6ba7449c64a53
+  languageName: node
+  linkType: hard
+
 "gopd@npm:^1.0.1":
   version: 1.0.1
   resolution: "gopd@npm:1.0.1"
@@ -5214,6 +5224,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-hot-toast@npm:^2.4.1":
+  version: 2.4.1
+  resolution: "react-hot-toast@npm:2.4.1"
+  dependencies:
+    goober: "npm:^2.1.10"
+  peerDependencies:
+    react: ">=16"
+    react-dom: ">=16"
+  checksum: 10/9af91efdb98837e39a126aff084b54db0336c5f88a7dad7c42daf7ee873d06a79d6e59f398412cc250a35ddf1a73c25700fe90b3c3a2a0c394fd17d99b2bcf8b
+  languageName: node
+  linkType: hard
+
 "react-is@npm:^16.13.1":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
@@ -5594,7 +5616,7 @@ __metadata:
     "@dotenvx/dotenvx": "npm:^1.14.2"
     "@eslint/compat": "npm:^1.1.1"
     "@eslint/js": "npm:^9.11.1"
-    "@serlo/editor": "npm:0.12.0"
+    "@serlo/editor": "npm:0.15.4"
     "@types/jsonwebtoken": "npm:9.0.6"
     "@types/lodash": "npm:^4"
     "@types/ltijs": "npm:4.0.11"

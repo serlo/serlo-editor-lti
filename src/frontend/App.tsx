@@ -82,7 +82,7 @@ function App() {
         }
 
         const content = JSON.parse(entity.content)
-        console.log('content: ', content)
+        // console.log('content: ', content)
         setAppState({
           type: mode === 'write' ? 'editor' : 'static-renderer',
           content,
@@ -110,7 +110,7 @@ function App() {
             if (res.status !== 200) reject()
 
             const entity = (await res.json()) as Entity
-            console.log('entity: ', entity)
+            // console.log('entity: ', entity)
             resolve(entity)
           })
           .catch(() => {

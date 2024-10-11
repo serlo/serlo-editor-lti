@@ -9,7 +9,6 @@ import * as t from 'io-ts'
 import { Collection, MongoClient, ObjectId } from 'mongodb'
 import {
   createAutoFromResponse,
-  DeeplinkLoginData,
   DeeplinkNonce,
   JwtDeepflowResponseDecoder,
   LtiCustomType,
@@ -23,7 +22,7 @@ import {
 import { NextFunction, Request, Response } from 'express'
 import { createAccessToken } from './create-acccess-token'
 import {
-  getEdusharingAsToolConfig,
+  getEdusharingAsToolConfiguration,
   ltiRegisterPlatformsAndTools,
 } from './lti-platforms-and-tools'
 import { generateKeyPairSync } from 'crypto'
@@ -34,7 +33,7 @@ const ltijsKey = readEnvVariable('LTIJS_KEY')
 const mongodbConnectionUri = readEnvVariable('MONGODB_URI')
 const mysqlUri = readEnvVariable('MYSQL_URI')
 
-const edusharingAsToolDeploymentId = '2'
+const edusharingAsToolDeploymentId = '1'
 
 const editorUrl =
   process.env['ENVIRONMENT'] === 'local'
@@ -87,12 +86,11 @@ ltijs.setup(
   }
 )
 
-// Disable authentication using ltik for some endpoints in edusharing embed flow.
+// Disable authentication using ltik for some endpoints in edusharing embed flow. The
 ltijs.whitelist(
-  '/platform/login',
-  '/platform/done',
-  '/platform/keys',
-  'platform/get-'
+  '/edusharing-embed/login',
+  '/edusharing-embed/done',
+  '/edusharing-embed/keys'
 )
 
 // Disable COEP
@@ -167,12 +165,11 @@ ltijs.app.put('/entity', async (req, res) => {
   return res.send('Success')
 })
 
-// Provide endpoint to start embed flow on @edu-sharing
+// Provide endpoint to start embed flow on edu-sharing
 // Called when user clicks on "embed content from edusharing"
-// TODO: Rename to /lti/start-edusharing-embed-flow
-ltijs.app.get('/lti/start-edusharing-deeplink-flow', async (req, res, next) => {
+ltijs.app.get('/edusharing-embed/start', async (req, res, next) => {
   const idToken = res.locals.token as IdToken
-  const iss = idToken.iss
+  const issWhenEdusharingLaunchedSerloEditor = idToken.iss
 
   const custom: unknown = res.locals.context.custom
 
@@ -189,18 +186,24 @@ ltijs.app.get('/lti/start-edusharing-deeplink-flow', async (req, res, next) => {
   const { user, dataToken, nodeId } = custom
 
   const insertResult = await edusharingEmbedSessions.insertOne({
-    // createdAt: new Date(),
+    createdAt: new Date(),
     user,
     dataToken,
     nodeId,
-    iss,
+    iss: issWhenEdusharingLaunchedSerloEditor,
   })
   if (!insertResult.acknowledged)
     throw new Error('Failed to add edusharing session information to mongodb')
 
-  const edusharingAsToolConfig = getEdusharingAsToolConfig({ iss })
-  if (!edusharingAsToolConfig) {
-    return next(new Error(`Could not find endpoints for LTI tool ${iss}`))
+  const edusharingAsToolConfiguration = getEdusharingAsToolConfiguration({
+    issWhenEdusharingLaunchedSerloEditor,
+  })
+  if (!edusharingAsToolConfiguration) {
+    return next(
+      new Error(
+        `Could not find endpoints for iss ${issWhenEdusharingLaunchedSerloEditor}`
+      )
+    )
   }
 
   // Create a Third-party Initiated Login request
@@ -208,12 +211,12 @@ ltijs.app.get('/lti/start-edusharing-deeplink-flow', async (req, res, next) => {
   createAutoFromResponse({
     res,
     method: 'GET',
-    targetUrl: edusharingAsToolConfig.loginEndpoint,
+    targetUrl: edusharingAsToolConfiguration.loginEndpoint,
     params: {
       iss: editorUrl,
-      target_link_uri: edusharingAsToolConfig.launchEndpoint,
+      target_link_uri: edusharingAsToolConfiguration.launchEndpoint,
       login_hint: insertResult.insertedId.toString(),
-      client_id: edusharingAsToolConfig.clientId,
+      client_id: edusharingAsToolConfiguration.clientId,
       lti_deployment_id: edusharingAsToolDeploymentId,
     },
   })
@@ -221,7 +224,13 @@ ltijs.app.get('/lti/start-edusharing-deeplink-flow', async (req, res, next) => {
 
 // Receives an Authentication Request in payload
 // See: https://www.imsglobal.org/spec/security/v1p0/#step-2-authentication-request
-ltijs.app.get('/platform/login', async (req, res, next) => {
+ltijs.app.get('/edusharing-embed/login', async (req, res, next) => {
+  // const queryParameterType = t.type({ client_id: t.string })
+  // console.log(JSON.stringify(req.query)) // @@@ remove
+  // if (!queryParameterType.is(req.query)) {
+  //   throw new Error('Query params wrong')
+  // }
+
   const loginHint = req.query['login_hint']
   if (typeof loginHint !== 'string') {
     res.status(400).send('login_hint is not valid').end()
@@ -235,15 +244,15 @@ ltijs.app.get('/platform/login', async (req, res, next) => {
     return
   }
 
-  const result = await edusharingEmbedSessions.findOneAndDelete({
+  const findResult = await edusharingEmbedSessions.findOneAndDelete({
     _id: edusharingEmbedSessionId,
   })
-  if (!result) {
+  if (!findResult) {
     res.status(400).send('could not find edusharingEmbedSession').end()
     return
   }
 
-  const { value: edusharingEmbedSession } = result
+  const { value: edusharingEmbedSession } = findResult
 
   if (
     !t
@@ -261,7 +270,9 @@ ltijs.app.get('/platform/login', async (req, res, next) => {
 
   const { user, nodeId, dataToken, iss } = edusharingEmbedSession
 
-  const edusharingAsToolConfig = getEdusharingAsToolConfig({ iss })
+  const edusharingAsToolConfig = getEdusharingAsToolConfiguration({
+    issWhenEdusharingLaunchedSerloEditor: iss,
+  })
   if (!edusharingAsToolConfig) {
     return next(new Error(`Could not find endpoints for LTI tool ${iss}`))
   }
@@ -280,17 +291,17 @@ ltijs.app.get('/platform/login', async (req, res, next) => {
   ) {
     res.status(400).send('redirect_uri is not valid').end()
     return
-  } else if (req.query['client_id'] !== 'editor') {
+  } else if (req.query['client_id'] !== edusharingAsToolConfig.clientId) {
     res.status(400).send('client_id is not valid').end()
     return
   }
 
-  const nonceId = await deeplinkNonces.insertOne({
+  const insertResult = await edusharingEmbedNonces.insertOne({
     createdAt: new Date(),
     nonce,
   })
 
-  const platformDoneEndpoint = new URL('/platform/done', editorUrl)
+  const platformDoneEndpoint = new URL('/edusharing-embed/done', editorUrl)
 
   // Construct a Authentication Response
   // See: https://www.imsglobal.org/spec/security/v1p0/#step-3-authentication-response
@@ -324,7 +335,7 @@ ltijs.app.get('/platform/login', async (req, res, next) => {
       deep_link_return_url: platformDoneEndpoint,
       title: '',
       text: '',
-      data: nonceId.insertedId.toString(),
+      data: insertResult.insertedId.toString(),
     },
   }
 
@@ -342,7 +353,7 @@ ltijs.app.get('/platform/login', async (req, res, next) => {
   })
 })
 
-ltijs.app.use('/platform/keys', async (_req, res) => {
+ltijs.app.use('/edusharing-embed/keys', async (_req, res) => {
   createJWKSResponse({
     res,
     keyid: keyId,
@@ -354,9 +365,7 @@ ltijs.app.use('/platform/keys', async (_req, res) => {
 // Receives a LTI Deep Linking Response Message in payload. Contains content_items array that specifies which resource should be embedded.
 // See: https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-message
 // See https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-example for an example response payload
-ltijs.app.post('/platform/done', async (req, res, next) => {
-  // const idToken = res.locals.token
-  // const { iss } = idToken
+ltijs.app.post('/edusharing-embed/done', async (req, res, next) => {
   if (req.headers['content-type'] !== 'application/x-www-form-urlencoded') {
     res
       .status(400)
@@ -370,9 +379,17 @@ ltijs.app.post('/platform/done', async (req, res, next) => {
     return
   }
 
-  const { iss } = jwt.decode(req.body.JWT) as { iss: string }
+  const decodedJwt = jwt.decode(req.body.JWT)
 
-  const edusharingAsToolConfig = getEdusharingAsToolConfig({ clientId: iss })
+  if (!t.type({ iss: t.string }).is(decodedJwt)) {
+    return next(new Error(`Failed to decode jwt`))
+  }
+
+  const edusharingClientIdOnSerloEditor = decodedJwt.iss
+
+  const edusharingAsToolConfig = getEdusharingAsToolConfiguration({
+    edusharingClientIdOnSerloEditor,
+  })
   if (!edusharingAsToolConfig) {
     return next(new Error(`Could not find endpoints for LTI tool ${iss}`))
   }
@@ -405,15 +422,15 @@ ltijs.app.post('/platform/done', async (req, res, next) => {
     return
   }
 
-  const result = await deeplinkNonces.findOneAndDelete({
+  const findResult = await edusharingEmbedNonces.findOneAndDelete({
     _id: nonceId,
   })
-  if (!result.ok) {
+  if (!findResult.ok) {
     res.status(400).send('No entry found in deeplinkNonces').end()
     return
   }
 
-  const deeplinkNonce = result.value
+  const deeplinkNonce = findResult.value
 
   if (!DeeplinkNonce.is(deeplinkNonce)) {
     res.status(400).send('deeplink flow session expired').end()
@@ -453,10 +470,12 @@ ltijs.app.post('/platform/done', async (req, res, next) => {
     .end()
 })
 
-ltijs.app.get('/lti/get-embed-html', async (req, res, next) => {
+ltijs.app.get('/edusharing-embed/get', async (req, res, next) => {
   const idToken = res.locals.token
   const { iss } = idToken
-  const edusharingAsToolConfig = getEdusharingAsToolConfig({ iss })
+  const edusharingAsToolConfig = getEdusharingAsToolConfiguration({
+    issWhenEdusharingLaunchedSerloEditor: iss,
+  })
   if (!edusharingAsToolConfig) {
     return next(new Error(`Could not find endpoints for LTI tool ${iss}`))
   }
@@ -749,8 +768,7 @@ ltijs.onDeepLinking(async (idToken, __, res) => {
   return res.send(form)
 })
 
-// TODO: Rename to edusharingEmbed...
-let deeplinkNonces: Collection
+let edusharingEmbedNonces: Collection
 let edusharingEmbedSessions: Collection
 
 // Setup function
@@ -758,24 +776,24 @@ const setup = async () => {
   await ltijs.deploy()
   await mongoClient.connect()
 
-  deeplinkNonces = mongoClient.db().collection('deeplink_nonce')
+  edusharingEmbedNonces = mongoClient.db().collection('edusharing_embed_nonce')
   edusharingEmbedSessions = mongoClient
     .db()
     .collection('edusharing_embed_session')
 
-  // const sevenDaysInSeconds = 604800
-  // await deeplinkNonces.createIndex(
-  //   { createdAt: 1 },
-  //   // The nonce is generated and stored in the database when the user clicks "embed content from edu sharing". It needs to stay valid until the user selects & embeds a content from edu-sharing within the iframe. But it should not exist indefinitely and the database should be cleared from old nonce values at some point. So we make them expire after 7 days.
-  //   // https://www.mongodb.com/docs/manual/tutorial/expire-data/
-  //   { expireAfterSeconds: sevenDaysInSeconds }
-  // )
-  // await edusharingEmbedSession.createIndex(
-  //   { createdAt: 1 },
-  //   // Since edusharing should directly redirect the user to our page a small
-  //   // max age should be fine her
-  //   { expireAfterSeconds: 20 }
-  // )
+  const sevenDaysInSeconds = 604800
+  await edusharingEmbedNonces.createIndex(
+    { createdAt: 1 },
+    // The nonce is generated and stored in the database when the user clicks "embed content from edu sharing". It needs to stay valid until the user selects & embeds a content from edu-sharing within the iframe. But it should not exist indefinitely and the database should be cleared from old nonce values at some point. So we make them expire after 7 days.
+    // https://www.mongodb.com/docs/manual/tutorial/expire-data/
+    { expireAfterSeconds: sevenDaysInSeconds }
+  )
+  await edusharingEmbedSessions.createIndex(
+    { createdAt: 1 },
+    // Since edusharing should directly redirect the user to our page a small
+    // max age should be fine her
+    { expireAfterSeconds: 20 }
+  )
 
   // If you encounter error message `bad decrypt` or changed the ltijs encryption key this might help. See: https://github.com/Cvmcosta/ltijs/issues/119#issuecomment-882898770
   // const platforms = await ltijs.getAllPlatforms()

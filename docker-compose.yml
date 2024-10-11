@@ -39,7 +39,6 @@ services:
     image: mariadb:lts
     environment:
       - MARIADB_DATABASE=serlo
-      - MARIADB_USER=root
       - MARIADB_PASSWORD=secret
       - MARIADB_ROOT_PASSWORD=secret
     # https://mariadb.com/kb/en/using-healthcheck-sh/

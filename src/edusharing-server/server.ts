@@ -4,29 +4,24 @@ import * as t from 'io-ts'
 import { kitchenSinkContent } from './kitchen-sink-content'
 import { createAutoFromResponse } from './server-utils'
 import { imageEmbedJson } from './mocked-embed-json/image'
-// import jwt from 'jsonwebtoken'
-// import { generateKeyPairSync, KeyObject } from 'crypto'
 import { v4 as uuid_v4 } from 'uuid'
 import * as jose from 'jose'
 
-// We define the absence of `versionComment` with `null` so that we can
-// tranfer it inside the cypress environment (only proper JSON can be
-// transfered)
+export const edusharingMockClientId = 'edusharing-mock'
+
 const VersionComment = t.union([t.null, t.string, t.array(t.string)])
 
-const { publicKey, privateKey } = await jose.generateKeyPair('RS256', {
-  modulusLength: 2048,
-})
-const keyid = uuid_v4()
-
 export class EdusharingServer {
-  private keyid = 'key'
-  private state = 'state-value'
-  private nonce = 'nonce-value'
+  private keys = jose.generateKeyPair('RS256', {
+    modulusLength: 2048,
+  })
+  private keyId = uuid_v4()
+  private state = '2452454263425'
+  private nonce = '8356345643564'
   private defaultCustom = {
     getContentApiUrl:
       'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/content',
-    fileName: 'Hello world',
+    fileName: 'Test Content',
     getDetailsSnippetUrl:
       'http://localhost:8100/edu-sharing/rest/lti/v13/details',
     dataToken:
@@ -42,16 +37,10 @@ export class EdusharingServer {
   private app = express()
   private content: unknown = kitchenSinkContent
   public savedVersions: Array<{ comment: t.TypeOf<typeof VersionComment> }> = []
+  private loginHint = uuid_v4() // TODO: Maybe make this be a fixed value for tests?
+  private contextId = uuid_v4() // TODO: Maybe make this be a fixed value for tests?
 
   constructor() {
-    // const { privateKey, publicKey } = generateKeyPairSync('rsa', {
-    //   modulusLength: 2048,
-    // })
-
-    // this.privateKey = privateKey
-    // this.publicKey = publicKey
-    // this.key = process.env.EDITOR_PRIVATE_KEY_FOR_EMBEDDING
-
     this.app.use(express.json())
     this.app.use(express.urlencoded({ extended: true }))
 
@@ -62,10 +51,8 @@ export class EdusharingServer {
         params: {
           target_link_uri: process.env.EDITOR_URL + 'lti/launch',
           iss: 'http://localhost:8100/edu-sharing',
-
-          // Test whether this is optional
-          login_hint: this.user,
-          lti_message_hint: 'd882efaa-1f84-4a0f-9bc9-4f74f19f7576',
+          login_hint: this.loginHint,
+          lti_message_hint: uuid_v4(), // TODO: Maybe make this be a fixed value for tests?
           lti_deployment_id: '1',
           client_id: 'piQ0JV8O880ZrVt',
         },
@@ -78,34 +65,33 @@ export class EdusharingServer {
         nonce: req.query['nonce'],
         iss: 'http://localhost:8100/edu-sharing',
         aud: 'piQ0JV8O880ZrVt',
-        sub: this.user,
+        sub: this.loginHint,
         'https://purl.imsglobal.org/spec/lti/claim/deployment_id': '1',
-        'https://purl.imsglobal.org/spec/lti/claim/context': {
-          id: 'd882efaa-1f84-4a0f-9bc9-4f74f19f7576',
-          label: 'Home des Unternehmens',
-        },
-        given_name: 'Administrator',
-        family_name: '',
-        email: 'admin@alfresco.com',
+        given_name: 'TestUser',
+        family_name: 'TestUser',
+        email: 'testuser@example.com',
         'https://purl.imsglobal.org/spec/lti/claim/tool_platform': {
           name: 'local',
           product_family_code: 'edu-sharing',
-          guid: 'serlo-edusharing',
+          guid: 'local',
           description: 'local',
-          version: '9999.14076175.9999',
+          version: '9.0',
         },
         'https://purl.imsglobal.org/spec/lti/claim/version': '1.3.0',
         'https://purl.imsglobal.org/spec/lti/claim/roles': [],
+        'https://purl.imsglobal.org/spec/lti/claim/context': {
+          id: this.contextId,
+          label: this.custom.user,
+        },
         'https://purl.imsglobal.org/spec/lti/claim/target_link_uri':
           process.env.EDITOR_URL + 'lti/launch',
         'https://purl.imsglobal.org/spec/lti/claim/resource_link': {
           id: '604f62c1-6463-4206-a571-8c57097a54ae',
-          title: 'Hello worldd',
+          title: 'Test Content',
         },
         'https://purl.imsglobal.org/spec/lti/claim/launch_presentation': {
           document_target: 'window',
-          return_url:
-            'http://localhost:8100/edu-sharing/components/workspace?id=d882efaa-1f84-4a0f-9bc9-4f74f19f7576&mainnav=true&displayType=0',
+          return_url: `http://localhost:8100/edu-sharing/components/workspace?id=${this.contextId}&mainnav=true&displayType=0`,
           locale: 'de_DE',
         },
         'https://purl.imsglobal.org/spec/lti/claim/message_type':
@@ -114,19 +100,10 @@ export class EdusharingServer {
       }
 
       const idToken = await new jose.SignJWT(payload)
-        .setProtectedHeader({ alg: 'RS256', kid: keyid })
-        .sign(privateKey)
-
-      // const idToken = jwt.sign(payload, this.privateKey, {
-      //   algorithm: 'RS256',
-      //   keyid: this.keyid,
-      // })
-
-      // const idToken = signJwtWithBase64Key({
-      //   payload,
-      //   keyid: this.keyid,
-      //   key: this.key,
-      // })
+        .setProtectedHeader({ alg: 'RS256', kid: this.keyId, typ: 'JWT' })
+        .setExpirationTime('10s')
+        .setIssuedAt()
+        .sign((await this.keys).privateKey)
 
       createAutoFromResponse({
         res,
@@ -140,13 +117,12 @@ export class EdusharingServer {
     })
 
     this.app.get('/edu-sharing/rest/lti/v13/jwks', async (_req, res) => {
-      console.log('Keys requested')
-      const jwk = await jose.exportJWK(publicKey)
+      const jwk = await jose.exportJWK((await this.keys).publicKey)
       res
         .json({
           keys: [
             {
-              kid: keyid,
+              kid: this.keyId,
               alg: 'RS256',
               use: 'sig',
               ...jwk,
@@ -154,29 +130,9 @@ export class EdusharingServer {
           ],
         })
         .end()
-
-      // const publicKeyPem = publicKey.export({ type: 'spki', format: 'pem' })
-      // res
-      //   .json({
-      //     keys: [
-      //       {
-      //         kid: keyid,
-      //         alg: 'RS256',
-      //         use: 'sig',
-      //         ...JSONWebKey.fromPEM(
-      //           Buffer.from(key, 'base64').toString('utf-8')
-      //         ).toJSON(),
-      //       },
-      //     ],
-      //   })
-      //   .end()
-      // createJWKSResponse({
-      //   res,
-      //   keyid: this.keyid,
-      //   key: this.publicKey,
-      // })
     })
 
+    // Currently unused
     this.app.get('/edu-sharing/rest/ltiplatform/v13/content', (_req, res) => {
       res.json(this.content).end()
     })
@@ -184,6 +140,7 @@ export class EdusharingServer {
     const storage = multer.memoryStorage()
     const upload = multer({ storage })
 
+    // Currently unused
     this.app.post(
       '/edu-sharing/rest/ltiplatform/v13/content',
       upload.single('file'),
@@ -214,8 +171,8 @@ export class EdusharingServer {
           iss: process.env.EDITOR_URL,
           target_link_uri:
             'http://localhost:8100/edu-sharing/rest/lti/v13/lti13',
-          client_id: 'editor',
-          lti_deployment_id: '2',
+          client_id: 'edusharing-mock',
+          lti_deployment_id: '1',
         }
 
         for (const [name, targetValue] of Object.entries(targetParameters)) {
@@ -229,14 +186,18 @@ export class EdusharingServer {
         createAutoFromResponse({
           res,
           method: 'GET',
-          targetUrl: process.env.EDITOR_URL + 'platform/login',
+          targetUrl: process.env.EDITOR_URL + 'edusharing-embed/login',
           params: {
-            nonce: this.nonce,
-            state: this.state,
+            scope: 'openid',
+            response_type: 'id_token',
+            client_id: 'edusharing-mock',
             login_hint: req.query['login_hint'].toString(),
+            state: this.state,
+            response_mode: 'form_post',
+            nonce: this.nonce,
+            prompt: 'none',
             redirect_uri:
               'http://localhost:8100/edu-sharing/rest/lti/v13/lti13',
-            client_id: 'editor',
           },
         })
       }
@@ -260,14 +221,14 @@ export class EdusharingServer {
       }
 
       const serloEditorJwks = jose.createRemoteJWKSet(
-        new URL(process.env.EDITOR_URL + 'platform/keys')
+        new URL(process.env.EDITOR_URL + 'edusharing-embed/keys')
       )
 
       const verifyResult = await jose.jwtVerify(
         req.body.id_token,
         serloEditorJwks,
         {
-          audience: 'editor',
+          audience: edusharingMockClientId,
           issuer: process.env.EDITOR_URL,
           subject: this.user,
         }
@@ -275,24 +236,8 @@ export class EdusharingServer {
 
       const idToken = verifyResult.payload
 
-      // const verifyResult = await verifyJwt({
-      //   keysetUrl: process.env.EDITOR_URL + 'platform/keys',
-      //   token: req.body.id_token,
-      //   verifyOptions: {
-      //     audience: process.env.EDITOR_CLIENT_ID_FOR_EMBEDDING,
-      //     issuer: process.env.EDITOR_URL,
-      //     subject: this.user,
-      //     nonce: this.nonce,
-      //   },
-      // })
-
-      // if (verifyResult.success === false) {
-      //   res.status(verifyResult.status).send(verifyResult.error)
-      //   return
-      // }
-
       const payload = {
-        iss: 'editor',
+        iss: edusharingMockClientId,
         aud: process.env.EDITOR_URL,
         nonce: this.nonce,
         azp: process.env.EDITOR_URL,
@@ -316,7 +261,7 @@ export class EdusharingServer {
               height: 'null',
             },
             type: 'ltiResourceLink',
-            title: '2020-11-13-152700_392x305_scrot.png',
+            title: 'Test Image',
             url: 'http://localhost:8100/edu-sharing/rest/lti/v13/lti13/960c48d0-5e01-45ca-aaf6-d648269f0db2',
           },
         ],
@@ -324,25 +269,16 @@ export class EdusharingServer {
 
       const jwt = await new jose.SignJWT(payload)
         .setIssuedAt()
-        .setProtectedHeader({ alg: 'RS256', kid: keyid })
-        .sign(privateKey)
+        .setProtectedHeader({ alg: 'RS256', kid: this.keyId, typ: 'JWT' })
+        .setExpirationTime('1h')
+        .sign((await this.keys).privateKey)
 
       createAutoFromResponse({
         res,
         method: 'POST',
-        targetUrl: process.env.EDITOR_URL + 'platform/done',
+        targetUrl: process.env.EDITOR_URL + 'edusharing-embed/done',
         params: {
           JWT: jwt,
-          // JWT: jwt.sign(payload, privateKey, {
-          //   algorithm: 'RS256',
-          //   keyid: this.keyid,
-          // }),
-          // JWT: signJwtWithBase64Key({
-          //   payload,
-          //   keyid: this.keyid,
-          //   key: this.key,
-          // }),
-          state: this.state,
         },
       })
     })
