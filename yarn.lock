@@ -849,16 +849,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@serlo/editor@npm:0.15.4":
-  version: 0.15.4
-  resolution: "@serlo/editor@npm:0.15.4"
+"@serlo/editor@npm:0.16.0":
+  version: 0.16.0
+  resolution: "@serlo/editor@npm:0.16.0"
   dependencies:
     "@serlo/katex-styles": "npm:1.0.1"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
     react-hot-toast: "npm:^2.4.1"
     react-resizable: "npm:^3.0.5"
-  checksum: 10/38bd3898c72c13f40fae2d0ededf76ff3a8f5800ce92166b6c215029d032a2c399a7a9b53a5f45a143c6686f10191346b373facef5443f3623cca16d5f6b7ae0
+  checksum: 10/1968f2b990a2e2d12f8bc5fce6d05ad75f51cc5b3e8f1e3917949b1191aea5c1405ab8d087aa4b4f37f10d1657963246a093e78e65b8c46b0d6f945f54feebb2
   languageName: node
   linkType: hard
 
@@ -5616,7 +5616,7 @@ __metadata:
     "@dotenvx/dotenvx": "npm:^1.14.2"
     "@eslint/compat": "npm:^1.1.1"
     "@eslint/js": "npm:^9.11.1"
-    "@serlo/editor": "npm:0.15.4"
+    "@serlo/editor": "npm:0.16.0"
     "@types/jsonwebtoken": "npm:9.0.6"
     "@types/lodash": "npm:^4"
     "@types/ltijs": "npm:4.0.11"

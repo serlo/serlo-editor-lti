@@ -1,4 +1,4 @@
-export const kitchenSinkContent = {
+export const testContent = {
   type: 'https://serlo.org/editor',
   variant: 'https://github.com/serlo/serlo-editor-for-edusharing',
   version: 0,

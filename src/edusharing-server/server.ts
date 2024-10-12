@@ -1,11 +1,15 @@
 import express, { Request, Response } from 'express'
 import multer from 'multer'
 import * as t from 'io-ts'
-import { kitchenSinkContent } from './kitchen-sink-content'
-import { createAutoFromResponse } from './server-utils'
+import { testContent } from './test-content'
 import { imageEmbedJson } from './mocked-embed-json/image'
 import { v4 as uuid_v4 } from 'uuid'
 import * as jose from 'jose'
+import urlJoin from 'url-join'
+import { readEnvVariable } from '../backend/read-env-variable'
+import { createAutoFromResponse } from '../backend/create-auto-form-response'
+
+export const editorUrl = readEnvVariable('EDITOR_URL')
 
 export const edusharingMockClientId = 'edusharing-mock'
 
@@ -35,10 +39,10 @@ export class EdusharingServer {
   private user = 'admin'
   private custom = this.defaultCustom
   private app = express()
-  private content: unknown = kitchenSinkContent
+  private content: unknown = testContent
   public savedVersions: Array<{ comment: t.TypeOf<typeof VersionComment> }> = []
-  private loginHint = uuid_v4() // TODO: Maybe make this be a fixed value for tests?
-  private contextId = uuid_v4() // TODO: Maybe make this be a fixed value for tests?
+  private loginHint = uuid_v4()
+  private contextId = uuid_v4()
 
   constructor() {
     this.app.use(express.json())
@@ -47,9 +51,9 @@ export class EdusharingServer {
     this.app.get('/', (_req, res) => {
       createAutoFromResponse({
         res,
-        targetUrl: process.env.EDITOR_URL + 'lti/login',
+        targetUrl: urlJoin(editorUrl, 'lti/login'),
         params: {
-          target_link_uri: process.env.EDITOR_URL + 'lti/launch',
+          target_link_uri: urlJoin(editorUrl, 'lti/launch'),
           iss: 'http://localhost:8100/edu-sharing',
           login_hint: this.loginHint,
           lti_message_hint: uuid_v4(), // TODO: Maybe make this be a fixed value for tests?
@@ -61,6 +65,12 @@ export class EdusharingServer {
 
     // Called during opening editor as lti tool by lti.js
     this.app.get('/edu-sharing/rest/ltiplatform/v13/auth', async (req, res) => {
+      const state = req.query['state']
+      if (!state) {
+        res.sendStatus(400).send('Query parameter state was missing').end()
+        return
+      }
+
       const payload = {
         nonce: req.query['nonce'],
         iss: 'http://localhost:8100/edu-sharing',
@@ -83,8 +93,10 @@ export class EdusharingServer {
           id: this.contextId,
           label: this.custom.user,
         },
-        'https://purl.imsglobal.org/spec/lti/claim/target_link_uri':
-          process.env.EDITOR_URL + 'lti/launch',
+        'https://purl.imsglobal.org/spec/lti/claim/target_link_uri': urlJoin(
+          editorUrl,
+          'lti/launch'
+        ),
         'https://purl.imsglobal.org/spec/lti/claim/resource_link': {
           id: '604f62c1-6463-4206-a571-8c57097a54ae',
           title: 'Test Content',
@@ -108,10 +120,10 @@ export class EdusharingServer {
       createAutoFromResponse({
         res,
         method: 'POST',
-        targetUrl: process.env.EDITOR_URL + 'lti/launch',
+        targetUrl: urlJoin(editorUrl, 'lti/launch'),
         params: {
           id_token: idToken,
-          state: req.query['state'].toString(),
+          state: state.toString(),
         },
       })
     })
@@ -146,6 +158,10 @@ export class EdusharingServer {
       upload.single('file'),
       (req, res) => {
         const comment = req.query['versionComment'] ?? null
+        if (!req.file) {
+          res.sendStatus(400).send('req.file was missing').end()
+          return
+        }
 
         if (VersionComment.is(comment)) {
           this.savedVersions.push({ comment })
@@ -167,8 +183,16 @@ export class EdusharingServer {
     this.app.get(
       '/edu-sharing/rest/lti/v13/oidc/login_initiations',
       (req, res) => {
+        if (!req.query['login_hint']) {
+          res
+            .sendStatus(400)
+            .send('Query parameter login_hint was missing')
+            .end()
+          return
+        }
+
         const targetParameters = {
-          iss: process.env.EDITOR_URL,
+          iss: editorUrl,
           target_link_uri:
             'http://localhost:8100/edu-sharing/rest/lti/v13/lti13',
           client_id: 'edusharing-mock',
@@ -186,7 +210,7 @@ export class EdusharingServer {
         createAutoFromResponse({
           res,
           method: 'GET',
-          targetUrl: process.env.EDITOR_URL + 'edusharing-embed/login',
+          targetUrl: urlJoin(editorUrl, 'edusharing-embed/login'),
           params: {
             scope: 'openid',
             response_type: 'id_token',
@@ -221,7 +245,7 @@ export class EdusharingServer {
       }
 
       const serloEditorJwks = jose.createRemoteJWKSet(
-        new URL(process.env.EDITOR_URL + 'edusharing-embed/keys')
+        new URL(urlJoin(editorUrl, 'edusharing-embed/keys'))
       )
 
       const verifyResult = await jose.jwtVerify(
@@ -229,26 +253,36 @@ export class EdusharingServer {
         serloEditorJwks,
         {
           audience: edusharingMockClientId,
-          issuer: process.env.EDITOR_URL,
+          issuer: editorUrl,
           subject: this.user,
         }
       )
 
       const idToken = verifyResult.payload
 
+      const deepLinkingSettingsClaim =
+        idToken[
+          'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings'
+        ]
+      if (!t.type({ data: t.string }).is(deepLinkingSettingsClaim)) {
+        res
+          .status(400)
+          .send('Missing deep_linking_settings claim in id token')
+          .end()
+        return
+      }
+
       const payload = {
         iss: edusharingMockClientId,
-        aud: process.env.EDITOR_URL,
+        aud: editorUrl,
         nonce: this.nonce,
-        azp: process.env.EDITOR_URL,
+        azp: editorUrl,
         'https://purl.imsglobal.org/spec/lti/claim/deployment_id': '2',
         'https://purl.imsglobal.org/spec/lti/claim/message_type':
           'LtiDeepLinkingResponse',
         'https://purl.imsglobal.org/spec/lti/claim/version': '1.3.0',
         'https://purl.imsglobal.org/spec/lti-dl/claim/data':
-          idToken[
-            'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings'
-          ].data,
+          deepLinkingSettingsClaim.data,
         'https://purl.imsglobal.org/spec/lti-dl/claim/content_items': [
           {
             custom: {
@@ -276,7 +310,7 @@ export class EdusharingServer {
       createAutoFromResponse({
         res,
         method: 'POST',
-        targetUrl: process.env.EDITOR_URL + 'edusharing-embed/done',
+        targetUrl: urlJoin(editorUrl, 'edusharing-embed/done'),
         params: {
           JWT: jwt,
         },
@@ -296,19 +330,7 @@ export class EdusharingServer {
   init() {
     this.savedVersions = []
     this.custom = { ...this.defaultCustom }
-    this.content = kitchenSinkContent
-  }
-
-  removePropertyInCustom(propertyName: string): boolean {
-    if (!(propertyName in this.custom)) {
-      return false
-    }
-
-    return delete this.custom[propertyName]
-  }
-
-  willSendContent(content: unknown) {
-    this.content = content
+    this.content = testContent
   }
 
   listen(port: number, callback: () => void) {

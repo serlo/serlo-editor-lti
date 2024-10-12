@@ -64,11 +64,12 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
         }
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [savePending])
 
   const { platformUrl } = jwtDecode(ltik) as Ltik
   const onEdusharing = platformUrl.includes('edu-sharing')
-  // Activate edusharing plugin only when launched by edu-sharing
+  // Customize available plugins when launched by edu-sharing
   const plugins = onEdusharing
     ? [
         ...defaultPlugins.filter(
@@ -79,7 +80,6 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
         ),
         EditorPluginType.EdusharingAsset,
         EditorPluginType.SerloInjection,
-        EditorPluginType.TextAreaExercise,
       ]
     : defaultPlugins
 
@@ -103,17 +103,9 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
         _ltik={ltik}
       >
         {(editor) => {
-          // customizeEditorStrings(editor.i18n)
           return <>{editor.element}</>
         }}
       </MemoSerloEditor>
     </div>
   )
 }
-
-// function customizeEditorStrings(languageData: BaseEditor['i18n']) {
-//   languageData.loggedInData.strings.editor.plugins.text.linkOverlay.placeholder =
-//     'https://example.com/'
-//   languageData.loggedInData.strings.editor.plugins.text.linkOverlay.inputLabel =
-//     "Gib eine URL inklusive 'https://' ein"
-// }

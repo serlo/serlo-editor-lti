@@ -4,41 +4,29 @@ import path from 'path'
 import jwt from 'jsonwebtoken'
 import { Pool, createPool } from 'mysql2/promise'
 import { Database } from './database'
-import { v4 as uuidv4 } from 'uuid'
+import { v4 as uuid_v4 } from 'uuid'
 import * as t from 'io-ts'
 import { Collection, MongoClient, ObjectId } from 'mongodb'
-import {
-  createAutoFromResponse,
-  DeeplinkNonce,
-  JwtDeepflowResponseDecoder,
-  LtiCustomType,
-} from './edu-sharing'
 import { readEnvVariable } from './read-env-variable'
-import {
-  createJWKSResponse,
-  signJwtWithBase64Key,
-  verifyJwt,
-} from '../edusharing-server/server-utils'
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express'
 import { createAccessToken } from './create-acccess-token'
 import {
   getEdusharingAsToolConfiguration,
   ltiRegisterPlatformsAndTools,
 } from './lti-platforms-and-tools'
-import { generateKeyPairSync } from 'crypto'
-import { createInitialContent } from './create-initial-content'
 import urlJoin from 'url-join'
+import { createAutoFromResponse } from './create-auto-form-response'
+import { verifyJwt } from './verify-jwt'
+import { createJWKSResponse } from './create-jwks-response'
+import { signJwtWithBase64Key } from './sign-jwt'
+import { edusharingEmbedKeys } from './edusharing-embed-keys'
 
 const ltijsKey = readEnvVariable('LTIJS_KEY')
 const mongodbConnectionUri = readEnvVariable('MONGODB_URI')
 const mysqlUri = readEnvVariable('MYSQL_URI')
+const editorUrl = readEnvVariable('EDITOR_URL')
 
 const edusharingAsToolDeploymentId = '1'
-
-const editorUrl =
-  process.env['ENVIRONMENT'] === 'local'
-    ? 'http://localhost:3000/'
-    : 'https://editor.serlo-staging.dev/'
 
 const mongoUri = new URL(mongodbConnectionUri)
 const mongoClient = new MongoClient(mongoUri.href)
@@ -52,16 +40,12 @@ export interface AccessToken {
 
 export interface Entity {
   id: number
-  customClaimId: string
+  custom_claim_id?: string
   content: string
   resource_link_id: string
+  edusharing_node_id?: string
+  id_token_on_creation: string
 }
-
-// Generate keys for edusharing embed
-const { privateKey, publicKey } = generateKeyPairSync('rsa', {
-  modulusLength: 2048,
-})
-const keyId = uuidv4()
 
 // Setup
 ltijs.setup(
@@ -121,7 +105,7 @@ ltijs.app.get('/entity', async (req, res) => {
       SELECT
         id,
         resource_link_id,
-        custom_claim_id as customClaimId,
+        custom_claim_id,
         content
       FROM
         lti_entity
@@ -167,7 +151,7 @@ ltijs.app.put('/entity', async (req, res) => {
 
 // Provide endpoint to start embed flow on edu-sharing
 // Called when user clicks on "embed content from edusharing"
-ltijs.app.get('/edusharing-embed/start', async (req, res, next) => {
+ltijs.app.get('/edusharing-embed/start', async (_, res) => {
   const idToken = res.locals.token as IdToken
   const issWhenEdusharingLaunchedSerloEditor = idToken.iss
 
@@ -180,7 +164,11 @@ ltijs.app.get('/edusharing-embed/start', async (req, res, next) => {
   })
 
   if (!customType.is(custom) || !custom.dataToken) {
-    return next(new Error('dataToken, nodeId or user was missing in custom'))
+    res
+      .status(400)
+      .send('dataToken, nodeId or user was missing in custom')
+      .end()
+    return
   }
 
   const { user, dataToken, nodeId } = custom
@@ -192,18 +180,25 @@ ltijs.app.get('/edusharing-embed/start', async (req, res, next) => {
     nodeId,
     iss: issWhenEdusharingLaunchedSerloEditor,
   })
-  if (!insertResult.acknowledged)
-    throw new Error('Failed to add edusharing session information to mongodb')
+  if (!insertResult.acknowledged) {
+    res
+      .status(400)
+      .send('Failed to add edusharing session information to mongodb')
+      .end()
+    return
+  }
 
   const edusharingAsToolConfiguration = getEdusharingAsToolConfiguration({
     issWhenEdusharingLaunchedSerloEditor,
   })
   if (!edusharingAsToolConfiguration) {
-    return next(
-      new Error(
+    res
+      .status(400)
+      .send(
         `Could not find endpoints for iss ${issWhenEdusharingLaunchedSerloEditor}`
       )
-    )
+      .end()
+    return
   }
 
   // Create a Third-party Initiated Login request
@@ -224,13 +219,7 @@ ltijs.app.get('/edusharing-embed/start', async (req, res, next) => {
 
 // Receives an Authentication Request in payload
 // See: https://www.imsglobal.org/spec/security/v1p0/#step-2-authentication-request
-ltijs.app.get('/edusharing-embed/login', async (req, res, next) => {
-  // const queryParameterType = t.type({ client_id: t.string })
-  // console.log(JSON.stringify(req.query)) // @@@ remove
-  // if (!queryParameterType.is(req.query)) {
-  //   throw new Error('Query params wrong')
-  // }
-
+ltijs.app.get('/edusharing-embed/login', async (req, res) => {
   const loginHint = req.query['login_hint']
   if (typeof loginHint !== 'string') {
     res.status(400).send('login_hint is not valid').end()
@@ -274,7 +263,8 @@ ltijs.app.get('/edusharing-embed/login', async (req, res, next) => {
     issWhenEdusharingLaunchedSerloEditor: iss,
   })
   if (!edusharingAsToolConfig) {
-    return next(new Error(`Could not find endpoints for LTI tool ${iss}`))
+    res.status(400).send(`Could not find endpoints for LTI tool ${iss}`).end()
+    return
   }
 
   const nonce = req.query['nonce']
@@ -301,7 +291,9 @@ ltijs.app.get('/edusharing-embed/login', async (req, res, next) => {
     nonce,
   })
 
-  const platformDoneEndpoint = new URL('/edusharing-embed/done', editorUrl)
+  const platformDoneEndpoint = new URL(
+    urlJoin(editorUrl, '/edusharing-embed/done')
+  )
 
   // Construct a Authentication Response
   // See: https://www.imsglobal.org/spec/security/v1p0/#step-3-authentication-response
@@ -341,8 +333,8 @@ ltijs.app.get('/edusharing-embed/login', async (req, res, next) => {
 
   const token = signJwtWithBase64Key({
     payload,
-    keyid: keyId,
-    privateKey: privateKey,
+    keyid: edusharingEmbedKeys.keyId,
+    privateKey: edusharingEmbedKeys.privateKey,
   })
 
   createAutoFromResponse({
@@ -356,8 +348,8 @@ ltijs.app.get('/edusharing-embed/login', async (req, res, next) => {
 ltijs.app.use('/edusharing-embed/keys', async (_req, res) => {
   createJWKSResponse({
     res,
-    keyid: keyId,
-    publicKey: publicKey,
+    keyid: edusharingEmbedKeys.keyId,
+    publicKey: edusharingEmbedKeys.publicKey,
   })
 })
 
@@ -365,7 +357,7 @@ ltijs.app.use('/edusharing-embed/keys', async (_req, res) => {
 // Receives a LTI Deep Linking Response Message in payload. Contains content_items array that specifies which resource should be embedded.
 // See: https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-message
 // See https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-example for an example response payload
-ltijs.app.post('/edusharing-embed/done', async (req, res, next) => {
+ltijs.app.post('/edusharing-embed/done', async (req, res) => {
   if (req.headers['content-type'] !== 'application/x-www-form-urlencoded') {
     res
       .status(400)
@@ -382,7 +374,8 @@ ltijs.app.post('/edusharing-embed/done', async (req, res, next) => {
   const decodedJwt = jwt.decode(req.body.JWT)
 
   if (!t.type({ iss: t.string }).is(decodedJwt)) {
-    return next(new Error(`Failed to decode jwt`))
+    res.status(400).send('Failed to decode jwt').end()
+    return
   }
 
   const edusharingClientIdOnSerloEditor = decodedJwt.iss
@@ -391,7 +384,13 @@ ltijs.app.post('/edusharing-embed/done', async (req, res, next) => {
     edusharingClientIdOnSerloEditor,
   })
   if (!edusharingAsToolConfig) {
-    return next(new Error(`Could not find endpoints for LTI tool ${iss}`))
+    res
+      .status(400)
+      .send(
+        `Could not find endpoints for LTI tool ${edusharingClientIdOnSerloEditor}`
+      )
+      .end()
+    return
   }
   const verifyResult = await verifyJwt({
     token: req.body.JWT,
@@ -432,7 +431,7 @@ ltijs.app.post('/edusharing-embed/done', async (req, res, next) => {
 
   const deeplinkNonce = findResult.value
 
-  if (!DeeplinkNonce.is(deeplinkNonce)) {
+  if (!t.type({ nonce: t.string }).is(deeplinkNonce)) {
     res.status(400).send('deeplink flow session expired').end()
     return
   }
@@ -442,7 +441,17 @@ ltijs.app.post('/edusharing-embed/done', async (req, res, next) => {
     return
   }
 
-  if (!JwtDeepflowResponseDecoder.is(decoded)) {
+  const expectedJwtType = t.type({
+    'https://purl.imsglobal.org/spec/lti-dl/claim/content_items': t.array(
+      t.type({
+        custom: t.type({
+          nodeId: t.string,
+          repositoryId: t.string,
+        }),
+      })
+    ),
+  })
+  if (!expectedJwtType.is(decoded)) {
     res.status(400).send('malformed custom claim in JWT send').end()
     return
   }
@@ -470,14 +479,17 @@ ltijs.app.post('/edusharing-embed/done', async (req, res, next) => {
     .end()
 })
 
-ltijs.app.get('/edusharing-embed/get', async (req, res, next) => {
+ltijs.app.get('/edusharing-embed/get', async (req, res) => {
   const idToken = res.locals.token
   const { iss } = idToken
   const edusharingAsToolConfig = getEdusharingAsToolConfiguration({
     issWhenEdusharingLaunchedSerloEditor: iss,
   })
   if (!edusharingAsToolConfig) {
-    return next(new Error(`Could not find endpoints for LTI tool ${iss}`))
+    res.json({
+      detailsSnippet: `<b>Could not find endpoints for LTI tool ${iss}</b>`,
+    })
+    return
   }
 
   const custom: unknown = res.locals.context.custom
@@ -489,9 +501,14 @@ ltijs.app.get('/edusharing-embed/get', async (req, res, next) => {
     return
   }
 
-  // TODO: Check
   const nodeId = req.query['nodeId']
   const repositoryId = req.query['repositoryId']
+  if (!nodeId || !repositoryId) {
+    res.json({
+      detailsSnippet: `<b>Missing nodeId or missing repositoryId</b>`,
+    })
+    return
+  }
 
   const payload = {
     aud: edusharingAsToolConfig.clientId,
@@ -506,8 +523,8 @@ ltijs.app.get('/edusharing-embed/get', async (req, res, next) => {
 
   const message = signJwtWithBase64Key({
     payload,
-    keyid: keyId,
-    privateKey: privateKey,
+    keyid: edusharingEmbedKeys.keyId,
+    privateKey: edusharingEmbedKeys.privateKey,
   })
 
   const url = new URL(
@@ -539,35 +556,52 @@ ltijs.app.get('/edusharing-embed/get', async (req, res, next) => {
 
 // Successful LTI resource link launch
 // @ts-expect-error @types/ltijs
-ltijs.onConnect(async (idToken, req, res, next) => {
+ltijs.onConnect(async (idToken, req, res) => {
   if (
     idToken.iss ===
       'https://repository.staging.cloud.schulcampus-rlp.de/edu-sharing' ||
     idToken.iss === 'http://localhost:8100/edu-sharing'
   ) {
-    await onConnectEdusharing(idToken, req, res, next)
+    await onConnectEdusharing(idToken, req, res)
   } else {
-    onConnectDefault(idToken, req, res, next)
+    onConnectDefault(idToken, req, res)
   }
 }, {})
 
 async function onConnectEdusharing(
   idToken: IdToken,
-  req: Request,
-  res: Response,
-  next: NextFunction
+  _: Request,
+  res: Response
 ) {
   // @ts-expect-error @types/ltijs
   const resourceLinkId: string = idToken.platformContext.resource.id
   // @ts-expect-error @types/ltijs
   const custom: unknown = idToken.platformContext.custom
 
-  if (!LtiCustomType.is(custom)) {
-    return next(
-      new Error(
+  const expectedCustomType = t.intersection([
+    t.type({
+      getContentApiUrl: t.string,
+      appId: t.string,
+      dataToken: t.string,
+      nodeId: t.string,
+      user: t.string,
+    }),
+    t.partial({
+      fileName: t.string,
+      /** Is set when editor was opened in edit mode */
+      postContentApiUrl: t.string,
+      version: t.string,
+    }),
+  ])
+
+  if (!expectedCustomType.is(custom)) {
+    res
+      .status(400)
+      .send(
         `Unexpected type of LTI 'custom' claim. Got ${JSON.stringify(custom)}`
       )
-    )
+      .end()
+    return
   }
 
   const entityId = await getEntityId(custom.nodeId)
@@ -590,13 +624,8 @@ async function onConnectEdusharing(
     }
     // If there is no existing entity, create one
     const insertedEntity = await mysqlDatabase.mutate(
-      'INSERT INTO lti_entity (edusharing_node_id, content, id_token_on_creation, resource_link_id) values (?, ?, ?, ?)',
-      [
-        edusharingNodeId,
-        JSON.stringify(createInitialContent()),
-        JSON.stringify(idToken),
-        resourceLinkId,
-      ]
+      'INSERT INTO lti_entity (edusharing_node_id, id_token_on_creation, resource_link_id) values (?, ?, ?)',
+      [edusharingNodeId, JSON.stringify(idToken), resourceLinkId]
     )
     return insertedEntity.insertId
   }
@@ -617,12 +646,7 @@ async function onConnectEdusharing(
   return ltijs.redirect(res, `/app?${searchParams}`)
 }
 
-async function onConnectDefault(
-  idToken: IdToken,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+async function onConnectDefault(idToken: IdToken, req: Request, res: Response) {
   // Get customId from lti custom claim or alternatively search query parameters
   // Using search query params is suggested by ltijs, see: https://github.com/Cvmcosta/ltijs/issues/100#issuecomment-832284300
   // @ts-expect-error @types/ltijs
@@ -642,7 +666,7 @@ async function onConnectDefault(
       SELECT
         id,
         resource_link_id,
-        custom_claim_id as customClaimId,
+        custom_claim_id,
         content
       FROM
         lti_entity
@@ -711,28 +735,18 @@ async function onConnectDefault(
 ltijs.onDeepLinking(async (idToken, __, res) => {
   const mysqlDatabase = getMysqlDatabase()
 
-  const isLocalEnvironment = process.env['ENVIRONMENT'] === 'local'
-
-  const ltiCustomClaimId = uuidv4()
+  const ltiCustomClaimId = uuid_v4()
 
   // Create new entity in database
   const { insertId: entityId } = await mysqlDatabase.mutate(
-    'INSERT INTO lti_entity (custom_claim_id, content, id_token_on_creation) values (?, ?, ?)',
-    [
-      ltiCustomClaimId,
-      JSON.stringify(createInitialContent()),
-      JSON.stringify(idToken),
-    ]
+    'INSERT INTO lti_entity (custom_claim_id, id_token_on_creation) values (?, ?)',
+    [ltiCustomClaimId, JSON.stringify(idToken)]
   )
 
   console.log('entityId: ', entityId)
 
-  const url = new URL(
-    isLocalEnvironment
-      ? 'http://localhost:3000'
-      : 'https://editor.serlo-staging.dev'
-  )
-  url.pathname = '/lti/launch'
+  const url = new URL(urlJoin(editorUrl, '/lti/launch'))
+
   // https://www.imsglobal.org/spec/lti-dl/v2p0#lti-resource-link
   const items = [
     {
@@ -807,6 +821,7 @@ const setup = async () => {
   await ltiRegisterPlatformsAndTools()
 
   const database = getMysqlDatabase()
+  // TODO: Remove duplication. See setup_uberspace.sh
   await database.mutate(
     `
     CREATE TABLE IF NOT EXISTS lti_entity (
@@ -814,7 +829,7 @@ const setup = async () => {
       resource_link_id varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, 
       custom_claim_id varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
       edusharing_node_id varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, 
-      content longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, 
+      content longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, 
       id_token_on_creation text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, 
       
       PRIMARY KEY (id), KEY idx_lti_entity_custom_claim_id (custom_claim_id) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
@@ -829,7 +844,7 @@ const setup = async () => {
       SELECT
         id,
         resource_link_id,
-        custom_claim_id as customClaimId,
+        custom_claim_id,
         content
       FROM
         lti_entity
@@ -840,12 +855,8 @@ const setup = async () => {
     )
     if (!entity) {
       await database.mutate(
-        'INSERT INTO lti_entity (custom_claim_id, content, id_token_on_creation) values (?, ?, ?)',
-        [
-          '00000000-0000-0000-0000-000000000000',
-          JSON.stringify(createInitialContent()),
-          JSON.stringify({}),
-        ]
+        'INSERT INTO lti_entity (custom_claim_id, id_token_on_creation) values (?, ?)',
+        ['00000000-0000-0000-0000-000000000000', JSON.stringify({})]
       )
     }
   }
@@ -860,7 +871,6 @@ function getMysqlDatabase() {
   return new Database(pool)
 }
 
-// TODO: Understand
 function parseObjectId(objectId: string): ObjectId | null {
   try {
     return new ObjectId(objectId)

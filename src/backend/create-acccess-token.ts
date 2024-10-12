@@ -10,7 +10,7 @@ export function createAccessToken(
       entityId: entityId,
       accessRight: editorMode,
     },
-    signingKey, // Reuse the symmetric HS256 key used by ltijs to sign ltik and database entries
+    signingKey,
     { expiresIn: '3 days' }
   )
 }

@@ -12,7 +12,7 @@ fi
 uberspace web header suppress / X-Frame-Options
 
 # Create MySQL table
-mysql -e 'USE '$USER'; CREATE TABLE IF NOT EXISTS `lti_entity` ( `id` bigint NOT NULL AUTO_INCREMENT, `resource_link_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, `custom_claim_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,`edusharing_node_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, `id_token_on_creation` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, PRIMARY KEY (`id`), KEY `idx_lti_entity_custom_claim_id` (`custom_claim_id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;'
+mysql -e 'USE '$USER'; CREATE TABLE IF NOT EXISTS `lti_entity` ( `id` bigint NOT NULL AUTO_INCREMENT, `resource_link_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, `custom_claim_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,`edusharing_node_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, `id_token_on_creation` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, PRIMARY KEY (`id`), KEY `idx_lti_entity_custom_claim_id` (`custom_claim_id`) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;'
 echo 'MySQL table created successfully (or existed already)'
 
 # Generate mongodb password

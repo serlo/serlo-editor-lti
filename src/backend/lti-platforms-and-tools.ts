@@ -11,7 +11,7 @@ const edusharingAsToolConfigs: {
 }[] = []
 
 /** Gets the endpoints and clientId for an edu-sharing instance used as an LTI tool during embed of edu-sharing content
- * TODO: Explain why two inputs are necessary
+ * Function accepts issWhenEdusharingLaunchedSerloEditor or edusharingClientIdOnSerloEditor because during the LTI flow we have either one or the other available to us.
  */
 export function getEdusharingAsToolConfiguration(
   entryToFind:
@@ -70,7 +70,7 @@ export async function ltiRegisterPlatformsAndTools() {
       },
     })
     if (platform) {
-      console.log(`Registered platform: ${platform.platformUrl}`)
+      console.log('Registered platform: itslearning')
     }
   }
 
@@ -108,7 +108,7 @@ export async function ltiRegisterPlatformsAndTools() {
         detailsEndpoint: process.env.EDUSHARING_RLP_DETAILS_ENDPOINT,
         keysetEndpoint: process.env.EDUSHARING_RLP_KEYSET_ENDPOINT,
       })
-      console.log(`Registered platform: ${platform.platformUrl}`)
+      console.log('Registered platform: edu-sharing (RLP)')
     }
   }
 
