@@ -1,5 +1,4 @@
 import { IdToken, Provider as ltijs } from 'ltijs'
-import 'dotenv/config'
 import path from 'path'
 import jwt from 'jsonwebtoken'
 import { Pool, createPool } from 'mysql2/promise'
