@@ -19,6 +19,7 @@ import { verifyJwt } from './verify-jwt'
 import { createJWKSResponse } from './create-jwks-response'
 import { signJwtWithBase64Key } from './sign-jwt'
 import { edusharingEmbedKeys } from './edusharing-embed-keys'
+import { getPresignedUrl, isValidMimeType } from './get-presigned-url'
 
 const ltijsKey = readEnvVariable('LTIJS_KEY')
 const mongodbConnectionUri = readEnvVariable('MONGODB_URI')
@@ -73,7 +74,8 @@ ltijs.setup(
 ltijs.whitelist(
   '/edusharing-embed/login',
   '/edusharing-embed/done',
-  '/edusharing-embed/keys'
+  '/edusharing-embed/keys',
+  '/presigned-url'
 )
 
 // Disable COEP
@@ -146,6 +148,19 @@ ltijs.app.put('/entity', async (req, res) => {
   )
 
   return res.send('Success')
+})
+
+ltijs.app.get('/presigned-url', async (req, res) => {
+  const mimeType = String(req.query.mimeType)
+
+  if (!isValidMimeType(mimeType)) {
+    return res.send(
+      'Missing or invalid query parameter mimeType. Please provide one of: gif, jpeg, png, svg+xml, webp'
+    )
+  }
+
+  const response = await getPresignedUrl(mimeType)
+  res.send(response)
 })
 
 // Provide endpoint to start embed flow on edu-sharing
