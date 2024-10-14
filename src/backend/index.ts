@@ -821,7 +821,6 @@ const setup = async () => {
   await ltiRegisterPlatformsAndTools()
 
   const database = getMysqlDatabase()
-  // TODO: Remove duplication. See setup_uberspace.sh
   await database.mutate(
     `
     CREATE TABLE IF NOT EXISTS lti_entity (
