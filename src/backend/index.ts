@@ -830,7 +830,10 @@ const setup = async () => {
       content longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, 
       id_token_on_creation text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, 
       
-      PRIMARY KEY (id), KEY idx_lti_entity_custom_claim_id (custom_claim_id) ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
+      PRIMARY KEY (id), 
+      KEY idx_lti_entity_custom_claim_id (custom_claim_id),
+      KEY idx_lti_entity_edusharing_node_id (edusharing_node_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
     `
   )
 
