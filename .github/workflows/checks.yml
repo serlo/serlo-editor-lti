@@ -27,3 +27,30 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
       - run: yarn lint:tsc
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - run: yarn build
+
+  # TODO: this is just a basic check to see if it is set up and running
+  # change for real tests later
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - run: cp .env-template .env
+      - run: docker compose up mysql mongo -d
+      - run: sleep 30
+      - run:
+          yarn mysql -e "CREATE TABLE lti_entity ( id bigint, resource_link_id
+          varchar(255), custom_claim_id varchar(255), content longtext,
+          id_token_on_creation text )"
+      - run: yarn build
+      - run: docker compose up express -d
+      - run: sleep 2
+      - run: yarn playwright install
+      - run: HEADLESS=true yarn test
