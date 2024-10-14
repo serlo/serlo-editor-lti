@@ -4,7 +4,7 @@ Prototype: Serlo editor as LTI tool
 
 Requirements:
 
-- Docker & Docker Compose
+- Docker 26.0.0 or later
 
 1. Create local `.env` file and add required env values
 2. `yarn` to install dependencies
