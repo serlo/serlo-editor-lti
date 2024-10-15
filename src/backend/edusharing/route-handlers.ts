@@ -1,18 +1,17 @@
 import { IdToken } from 'ltijs'
-import express from 'express'
 import jwt from 'jsonwebtoken'
 import * as t from 'io-ts'
 import { readEnvVariable } from '../read-env-variable'
-import { getEdusharingAsToolConfiguration } from '../lti-platforms-and-tools'
 import urlJoin from 'url-join'
-import { createAutoFromResponse } from '../create-auto-form-response'
-import { verifyJwt } from '../verify-jwt'
-import { createJWKSResponse } from '../create-jwks-response'
-import { signJwtWithBase64Key } from '../sign-jwt'
-import { edusharingEmbedKeys } from '../edusharing-embed-keys'
+import { createAutoFromResponse } from './create-auto-form-response'
+import { verifyJwt } from './verify-jwt'
+import { createJWKSResponse } from './create-jwks-response'
+import { signJwtWithBase64Key } from './sign-jwt'
+import { edusharingEmbedKeys } from './edusharing-embed-keys'
 import { Collection, ObjectId } from 'mongodb'
 
-export const edusharingRouter = express.Router()
+import { Request, Response } from 'express'
+import { getEdusharingAsToolConfiguration } from './get-edusharing-as-tool-configuration'
 
 const editorUrl = readEnvVariable('EDITOR_URL')
 
@@ -21,13 +20,11 @@ const edusharingAsToolDeploymentId = '1'
 let edusharingEmbedNonces: Collection
 let edusharingEmbedSessions: Collection
 
-// Provide endpoint to start embed flow on edu-sharing
-// Called when user clicks on "embed content from edusharing"
-edusharingRouter.get('/edusharing-embed/start', async (_, res) => {
+export async function edusharingStart(_: Request, res: Response) {
   const idToken = res.locals.token as IdToken
   const issWhenEdusharingLaunchedSerloEditor = idToken.iss
 
-  const custom: unknown = res.locals.context.custom
+  const custom: unknown = res.locals.context?.custom
 
   const customType = t.type({
     dataToken: t.string,
@@ -87,11 +84,9 @@ edusharingRouter.get('/edusharing-embed/start', async (_, res) => {
       lti_deployment_id: edusharingAsToolDeploymentId,
     },
   })
-})
+}
 
-// Receives an Authentication Request in payload
-// See: https://www.imsglobal.org/spec/security/v1p0/#step-2-authentication-request
-edusharingRouter.get('/edusharing-embed/login', async (req, res) => {
+export async function edusharingLogin(req: Request, res: Response) {
   const loginHint = req.query['login_hint']
   if (typeof loginHint !== 'string') {
     res.status(400).send('login_hint is not valid').end()
@@ -163,9 +158,7 @@ edusharingRouter.get('/edusharing-embed/login', async (req, res) => {
     nonce,
   })
 
-  const platformDoneEndpoint = new URL(
-    urlJoin(editorUrl, '/edusharing-embed/done')
-  )
+  const platformDoneEndpoint = new URL(urlJoin(editorUrl, '/done'))
 
   // Construct a Authentication Response
   // See: https://www.imsglobal.org/spec/security/v1p0/#step-3-authentication-response
@@ -215,21 +208,15 @@ edusharingRouter.get('/edusharing-embed/login', async (req, res) => {
     targetUrl: edusharingAsToolConfig.launchEndpoint,
     params: { id_token: token, state },
   })
-})
-
-edusharingRouter.use('/edusharing-embed/keys', async (_req, res) => {
+}
+export async function edusharingKeys(_: Request, res: Response) {
   createJWKSResponse({
     res,
     keyid: edusharingEmbedKeys.keyId,
     publicKey: edusharingEmbedKeys.publicKey,
   })
-})
-
-// Called after the resource selection on Edusharing (within iframe) when user selected what resource to embed.
-// Receives a LTI Deep Linking Response Message in payload. Contains content_items array that specifies which resource should be embedded.
-// See: https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-message
-// See https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-example for an example response payload
-edusharingRouter.post('/edusharing-embed/done', async (req, res) => {
+}
+export async function edusharingDone(req: Request, res: Response) {
   if (req.headers['content-type'] !== 'application/x-www-form-urlencoded') {
     res
       .status(400)
@@ -349,10 +336,15 @@ edusharingRouter.post('/edusharing-embed/done', async (req, res) => {
           `
     )
     .end()
-})
-
-edusharingRouter.get('/edusharing-embed/get', async (req, res) => {
+}
+export async function edusharingGet(req: Request, res: Response) {
   const idToken = res.locals.token
+  if (!idToken) {
+    res.json({
+      detailsSnippet: `<b>No IdToken provided</b>`,
+    })
+    return
+  }
   const { iss } = idToken
   const edusharingAsToolConfig = getEdusharingAsToolConfiguration({
     issWhenEdusharingLaunchedSerloEditor: iss,
@@ -364,7 +356,7 @@ edusharingRouter.get('/edusharing-embed/get', async (req, res) => {
     return
   }
 
-  const custom: unknown = res.locals.context.custom
+  const custom: unknown = res.locals.context?.custom
 
   if (!t.type({ dataToken: t.string }).is(custom)) {
     res.json({
@@ -424,7 +416,7 @@ edusharingRouter.get('/edusharing-embed/get', async (req, res) => {
   } else {
     res.json(await response.json())
   }
-})
+}
 
 function parseObjectId(objectId: string): ObjectId | null {
   try {

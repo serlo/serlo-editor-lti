@@ -1,8 +1,6 @@
 import { IdToken, Provider as ltijs } from 'ltijs'
 import path from 'path'
-import jwt from 'jsonwebtoken'
-import { Pool, createPool } from 'mysql2/promise'
-import { Database } from './database'
+
 import { v4 as uuid_v4 } from 'uuid'
 import * as t from 'io-ts'
 import { Collection, MongoClient } from 'mongodb'
@@ -11,17 +9,26 @@ import { Request, Response } from 'express'
 import { createAccessToken } from './create-acccess-token'
 import { ltiRegisterPlatformsAndTools } from './lti-platforms-and-tools'
 import urlJoin from 'url-join'
-import { edusharingRouter } from './routes/edusharing-routes'
+import {
+  edusharingDone,
+  edusharingGet,
+  edusharingKeys,
+  edusharingLogin,
+  edusharingStart,
+} from './edusharing/route-handlers'
+import {
+  editorApp,
+  editorGetEntity,
+  editorPutEntity,
+} from './editor-route-handlers'
+import { getMysqlDatabase } from './database'
 
 const ltijsKey = readEnvVariable('LTIJS_KEY')
 const mongodbConnectionUri = readEnvVariable('MONGODB_URI')
-const mysqlUri = readEnvVariable('MYSQL_URI')
 const editorUrl = readEnvVariable('EDITOR_URL')
 
 const mongoUri = new URL(mongodbConnectionUri)
 const mongoClient = new MongoClient(mongoUri.href)
-
-let pool: Pool | null = null
 
 export interface AccessToken {
   entityId: string
@@ -74,72 +81,31 @@ ltijs.app.use((_, res, next) => {
 })
 
 // Opens Serlo editor
-ltijs.app.get('/app', async (_, res) => {
-  return res.sendFile(path.join(__dirname, '../../dist/frontend/index.html'))
-})
+ltijs.app.get('/app', editorApp)
 
 // Endpoint to get content
-ltijs.app.get('/entity', async (req, res) => {
-  const database = getMysqlDatabase()
-
-  const accessToken = req.query.accessToken
-  if (typeof accessToken !== 'string') {
-    return res.send('Missing or invalid access token')
-  }
-
-  const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccessToken
-
-  // Get json from database with decodedAccessToken.entityId
-  const entity = await database.fetchOptional<Entity | null>(
-    `
-      SELECT
-        id,
-        resource_link_id,
-        custom_claim_id,
-        content
-      FROM
-        lti_entity
-      WHERE
-        id = ?
-    `,
-    [String(decodedAccessToken.entityId)]
-  )
-
-  console.log('entity: ', entity)
-
-  res.json(entity)
-})
+ltijs.app.get('/entity', editorGetEntity)
 
 // Endpoint to save content
-ltijs.app.put('/entity', async (req, res) => {
-  const database = getMysqlDatabase()
+ltijs.app.put('/entity', editorPutEntity)
 
-  const accessToken = req.body.accessToken
-  if (typeof accessToken !== 'string') {
-    return res.send('Missing or invalid access token')
-  }
+// Provide endpoint to start embed flow on edu-sharing
+// Called when user clicks on "embed content from edusharing"
+ltijs.app.get('/edusharing-embed/start', edusharingStart)
 
-  const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccessToken
+// Receives an Authentication Request in payload
+// See: https://www.imsglobal.org/spec/security/v1p0/#step-2-authentication-request
+ltijs.app.get('/edusharing-embed/login', edusharingLogin)
 
-  if (decodedAccessToken.accessRight !== 'write') {
-    return res.send('Access token grants no right to modify content')
-  }
+ltijs.app.use('/edusharing-embed/keys', edusharingKeys)
 
-  // Modify entity with decodedAccessToken.entityId in database
-  await database.mutate('UPDATE lti_entity SET content = ? WHERE id = ?', [
-    req.body.editorState,
-    decodedAccessToken.entityId,
-  ])
-  console.log(
-    `Entity ${
-      decodedAccessToken.entityId
-    } modified in database. New state:\n${req.body.editorState}`
-  )
+// Called after the resource selection on Edusharing (within iframe) when user selected what resource to embed.
+// Receives a LTI Deep Linking Response Message in payload. Contains content_items array that specifies which resource should be embedded.
+// See: https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-message
+// See https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-example for an example response payload
+ltijs.app.post('/edusharing-embed/done', edusharingDone)
 
-  return res.send('Success')
-})
-
-ltijs.app.use('/edusharing-embed', edusharingRouter)
+ltijs.app.get('/edusharing-embed/get', edusharingGet)
 
 // Successful LTI resource link launch
 // @ts-expect-error @types/ltijs
@@ -452,10 +418,3 @@ const setup = async () => {
 }
 
 setup()
-
-function getMysqlDatabase() {
-  if (pool === null) {
-    pool = createPool(mysqlUri)
-  }
-  return new Database(pool)
-}
