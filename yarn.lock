@@ -2825,16 +2825,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jsonwebtoken@npm:9.0.6":
-  version: 9.0.6
-  resolution: "@types/jsonwebtoken@npm:9.0.6"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10/1f2145222f62da1b3dbfc586160c4f9685782a671f4a4f4a72151c773945fe25807fd88ed1c270536b76f49053ed932c5dbf714ea0ed77f785665abb75beef05
-  languageName: node
-  linkType: hard
-
-"@types/jsonwebtoken@npm:^9.0.2":
+"@types/jsonwebtoken@npm:9.0.7, @types/jsonwebtoken@npm:^9.0.2":
   version: 9.0.7
   resolution: "@types/jsonwebtoken@npm:9.0.7"
   dependencies:
@@ -11851,7 +11842,7 @@ __metadata:
     "@eslint/compat": "npm:^1.1.1"
     "@eslint/js": "npm:^9.12.0"
     "@serlo/editor": "npm:0.16.0"
-    "@types/jsonwebtoken": "npm:9.0.6"
+    "@types/jsonwebtoken": "npm:9.0.7"
     "@types/lodash": "npm:^4"
     "@types/ltijs": "npm:4.0.11"
     "@types/multer": "npm:^1"

@@ -42,7 +42,7 @@
     "@dotenvx/dotenvx": "^1.14.2",
     "@eslint/compat": "^1.1.1",
     "@eslint/js": "^9.12.0",
-    "@types/jsonwebtoken": "9.0.6",
+    "@types/jsonwebtoken": "9.0.7",
     "@types/lodash": "^4",
     "@types/ltijs": "4.0.11",
     "@types/multer": "^1",
