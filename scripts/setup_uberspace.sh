@@ -4,7 +4,7 @@ set -e
 
 # Check if .env file exists in the current directory
 if [ ! -f .env ]; then
-  echo "Error: Please create and .env file based on one of the templates you find in this repo and add missing secret values."
+  echo "Error: Please create an .env file based on one of the templates you find in this repo and add missing secret values."
   exit 1
 fi
 
