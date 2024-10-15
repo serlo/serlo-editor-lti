@@ -639,7 +639,7 @@ async function onConnectEdusharing(
   searchParams.append('ltik', res.locals.ltik)
   searchParams.append(
     'testingSecret',
-    readEnvVariable('SERLO_EDITOR_TESTING_SECRET')
+    process.env.SERLO_EDITOR_TESTING_SECRET ?? ''
   )
 
   return ltijs.redirect(res, `/app?${searchParams}`)
@@ -723,7 +723,7 @@ async function onConnectDefault(idToken: IdToken, req: Request, res: Response) {
   searchParams.append('resourceLinkId', resourceLinkId)
   searchParams.append(
     'testingSecret',
-    readEnvVariable('SERLO_EDITOR_TESTING_SECRET')
+    process.env.SERLO_EDITOR_TESTING_SECRET ?? ''
   )
 
   return ltijs.redirect(res, `/app?${searchParams}`)

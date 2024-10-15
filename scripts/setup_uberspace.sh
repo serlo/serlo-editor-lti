@@ -4,7 +4,7 @@ set -e
 
 # Check if .env file exists in the current directory
 if [ ! -f .env ]; then
-  echo "Error: Please create and .env file containing the values obtained from 1password and rerun this script."
+  echo "Error: Please create and .env file based on one of the templates you find in this repo and add missing secret values."
   exit 1
 fi
 

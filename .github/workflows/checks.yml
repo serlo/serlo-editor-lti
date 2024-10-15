@@ -42,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
-      - run: cp .env-template .env
+      - run: cp .env.local.template .env
       - run: docker compose up mysql mongo -d
       - run: sleep 30
       - run:
