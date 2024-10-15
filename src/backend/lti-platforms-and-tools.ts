@@ -1,5 +1,5 @@
 import { Provider as ltijs } from 'ltijs'
-import { edusharingMockClientId } from '../edusharing-server/server'
+import { edusharingMockClientId } from '../edusharing-mock/server'
 
 const edusharingAsToolConfigs: {
   issWhenEdusharingLaunchedSerloEditor: string
