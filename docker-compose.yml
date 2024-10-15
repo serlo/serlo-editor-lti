@@ -1,4 +1,4 @@
-# Shared network 'express-mongo-mysql' makes service 'mongo' & 'mysql' available to service 'express'. You can connect using the service name in MONGODB_URI like this: mongodb://[SERVICE_NAME]:27017/
+# Shared network 'express-mongo-mariadb' makes service 'mongo' & 'mariadb' available to service 'express'. You can connect using the service name in MONGODB_URI like this: mongodb://[SERVICE_NAME]:27017/
 
 services:
   express:
@@ -9,10 +9,10 @@ services:
     depends_on:
       mongo:
         condition: service_started
-      mysql:
+      mariadb:
         condition: service_healthy
     networks:
-      - express-mongo-mysql
+      - express-mongo-mariadb
     expose:
       - 3000
     ports:
@@ -24,13 +24,13 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
   mongo:
-    image: mongo:7.0.11
+    image: mongo:6
     networks:
-      - express-mongo-mysql
+      - express-mongo-mariadb
     expose:
       - 27017
-  mysql:
-    image: mariadb:lts
+  mariadb:
+    image: mariadb:10 # Match major version on Uberspace
     environment:
       - MARIADB_DATABASE=serlo
       - MARIADB_PASSWORD=secret
@@ -43,6 +43,6 @@ services:
       timeout: 5s
       retries: 3
     networks:
-      - express-mongo-mysql
+      - express-mongo-mariadb
 networks:
-  express-mongo-mysql:
+  express-mongo-mariadb:
