@@ -1,20 +1,37 @@
-import { BaseEditor, SerloEditor, type SerloEditorProps } from '@serlo/editor'
+import {
+  defaultPlugins,
+  EditorPluginType,
+  SerloEditor,
+  type SerloEditorProps,
+} from '@serlo/editor'
+import { jwtDecode } from 'jwt-decode'
 import React, { useEffect, useRef, useState } from 'react'
 
 interface SerloContentProps {
   initialState: SerloEditorProps['initialState']
+  ltik: string
+}
+
+interface Ltik {
+  platformUrl: string
+  clientId: string
+  deploymentId: string
+  platformCode: string
+  contextId: string
+  user: string
+  s: string
+  iat: number
 }
 
 // HACK: Skip rerendering SerloEditor. It leads to slate error (not finding DOM node) and resets the cursor position. But, I don't think we need to support rerendering currently. There is probably a better way to do this but the way `initialState` and `onChange` works makes it tricky.
 const MemoSerloEditor = React.memo(SerloEditor, () => true)
 
 export default function SerloEditorWrapper(props: SerloContentProps) {
-  const { initialState } = props
+  const { initialState, ltik } = props
   const queryString = window.location.search
   const urlParams = new URLSearchParams(queryString)
   const testingSecret = urlParams.get('testingSecret')
   const accessToken = urlParams.get('accessToken')
-  const ltik = urlParams.get('ltik')
 
   const [editorState, setEditorState] = useState<string>(
     JSON.stringify(props.initialState)
@@ -47,7 +64,24 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
         }
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [savePending])
+
+  const { platformUrl } = jwtDecode(ltik) as Ltik
+  const onEdusharing = platformUrl.includes('edu-sharing')
+  // Customize available plugins when launched by edu-sharing
+  const plugins = onEdusharing
+    ? [
+        ...defaultPlugins.filter(
+          (plugin) =>
+            plugin !== EditorPluginType.Image &&
+            plugin !== EditorPluginType.DropzoneImage &&
+            plugin !== EditorPluginType.ImageGallery
+        ),
+        EditorPluginType.EdusharingAsset,
+        EditorPluginType.SerloInjection,
+      ]
+    : defaultPlugins
 
   return (
     <div
@@ -65,19 +99,13 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
         }}
         editorVariant="lti-tool"
         _testingSecret={testingSecret}
+        plugins={plugins}
+        _ltik={ltik}
       >
         {(editor) => {
-          customizeEditorStrings(editor.i18n)
           return <>{editor.element}</>
         }}
       </MemoSerloEditor>
     </div>
   )
-}
-
-function customizeEditorStrings(languageData: BaseEditor['i18n']) {
-  languageData.loggedInData.strings.editor.plugins.text.linkOverlay.placeholder =
-    'https://example.com/'
-  languageData.loggedInData.strings.editor.plugins.text.linkOverlay.inputLabel =
-    "Gib eine URL inklusive 'https://' ein"
 }
