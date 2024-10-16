@@ -1,7 +1,7 @@
 import { Helper } from 'codeceptjs'
 import { Server } from 'http'
 
-import { EdusharingServer } from '../../src/edusharing-server/server'
+import { EdusharingServer } from '../../src/edusharing-mock/server'
 
 export default class EdusharingHelper extends Helper {
   private serverMock: EdusharingServer
