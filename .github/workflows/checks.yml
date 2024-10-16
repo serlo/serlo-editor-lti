@@ -27,3 +27,24 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
       - run: yarn lint:tsc
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - run: yarn build
+
+  # TODO: this is just a basic check to see if it is set up and running
+  # change for real tests later
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node
+      - run: cp .env.local.template .env
+      - run: yarn dev -d
+      - run: yarn build
+      - run: sleep 15
+      - run: yarn playwright install
+      - run: HEADLESS=true yarn test

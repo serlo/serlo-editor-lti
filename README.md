@@ -1,24 +1,34 @@
-Serlo editor as LTI tool Status: Early prototype
+Prototype: Serlo editor as LTI tool
 
 # Local dev setup
 
 Requirements:
 
-- Docker & Docker Compose
+- Docker 26.0.0 or later
 
-1. Create file `.env` and copy content from `.env-template`
-2. `yarn` to install dependencies
-3. `yarn dev` to start docker containers (hot reload)
-4. Go to https://saltire.lti.app/platform, sign in, navigate to "Advanced
+1. Create a copy of `.env.local.template` as `.env`
+2. (optional) Add secret values to `.env`
+3. `yarn` to install dependencies
+4. `yarn dev` to start docker containers
+
+Now, the editor is running locally. It will automatically restart when files get
+modified.
+
+## Launch through Saltire
+
+1. Go to https://saltire.lti.app/platform, sign in, navigate to "Advanced
    options" and upload file `saltire-platform_[TYPE].config` of the
    [`saltire-configs/`](./saltire-configs) directory. `TYPE=LTIDeepLinking`
    shows flow of creating a new Serlo Editor element.
    `TYPE=LTIResourceLink_Instructor` shows flow of opening an existing Serlo
    Editor element as Instructor (editable). `TYPE=LTIResourceLink_Learner` shows
    flow of opening an existing Serlo Editor element as Learner (non-editable).
-5. Click "Connect"
+2. Click "Connect"
 
-The editor should open in a new tab.
+## Launch through edu-sharing mock
+
+1. `yarn dev:edusharing` to start the edu-sharing mock
+2. Open `http://localhost:8100`
 
 # Technical details
 

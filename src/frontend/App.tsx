@@ -14,7 +14,7 @@ export type AppState =
   | { type: 'fetching-content' }
   | AppStateError
   | { type: 'editor'; content: SerloEditorProps['initialState'] }
-  | { type: 'static-renderer'; content: SerloRendererProps['document'] }
+  | { type: 'static-renderer'; content: SerloRendererProps['state'] }
 
 export type AppStateError = {
   type: 'error'
@@ -82,7 +82,7 @@ function App() {
         }
 
         const content = JSON.parse(entity.content)
-        console.log('content: ', content)
+        // console.log('content: ', content)
         setAppState({
           type: mode === 'write' ? 'editor' : 'static-renderer',
           content,
@@ -110,7 +110,7 @@ function App() {
             if (res.status !== 200) reject()
 
             const entity = (await res.json()) as Entity
-            console.log('entity: ', entity)
+            // console.log('entity: ', entity)
             resolve(entity)
           })
           .catch(() => {
@@ -118,6 +118,7 @@ function App() {
           })
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   if (appState.type === 'fetching-content') return null
@@ -127,12 +128,21 @@ function App() {
       <div
         style={{ padding: '1rem', backgroundColor: 'white', minWidth: '600px' }}
       >
-        <SerloRenderer document={appState.content} />
+        <SerloRenderer
+          state={appState.content}
+          editorVariant="lti-tool"
+          _ltik={ltik as string}
+        />
       </div>
     )
   }
   if (appState.type === 'editor') {
-    return <SerloEditorWrapper initialState={appState.content} />
+    return (
+      <SerloEditorWrapper
+        initialState={appState.content}
+        ltik={ltik as string}
+      />
+    )
   }
 
   return <div>Invalid app state: {appState}</div>

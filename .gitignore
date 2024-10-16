@@ -1,4 +1,7 @@
-# .env - Should not be added because it contains private keys used for encryption
+# output folder of e2e tests
+output
+
+# .env - Should not be added because they might contain secrets
 .env
 
 # Logs
