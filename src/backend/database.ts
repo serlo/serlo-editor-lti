@@ -3,7 +3,21 @@ import {
   type PoolConnection,
   type RowDataPacket,
   type ResultSetHeader,
+  createPool,
 } from 'mysql2/promise'
+
+import { readEnvVariable } from './read-env-variable'
+
+const mysqlUri = readEnvVariable('MYSQL_URI')
+
+let pool: Pool | null = null
+
+export function getMysqlDatabase() {
+  if (pool === null) {
+    pool = createPool(mysqlUri)
+  }
+  return new Database(pool)
+}
 
 export class Database {
   private state: DatabaseState
