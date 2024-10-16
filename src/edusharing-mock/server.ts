@@ -7,7 +7,7 @@ import { v4 as uuid_v4 } from 'uuid'
 import * as jose from 'jose'
 import urlJoin from 'url-join'
 import { readEnvVariable } from '../backend/read-env-variable'
-import { createAutoFromResponse } from '../backend/create-auto-form-response'
+import { createAutoFromResponse } from '../backend/edusharing/create-auto-form-response'
 
 export const editorUrl = readEnvVariable('EDITOR_URL')
 

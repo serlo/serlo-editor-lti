@@ -9,7 +9,7 @@
     "build:backend": "esbuild ./src/backend/index.ts --bundle --platform=node --outfile=dist/backend/index.cjs",
     "build:frontend": "vite build",
     "dev": "docker compose up --watch --build",
-    "dev:edusharing": "dotenvx run --env-file=.env -- tsx --watch src/edusharing-server/start-server.ts",
+    "dev:edusharing": "dotenvx run --env-file=.env -- tsx --watch src/edusharing-mock/start-server.ts",
     "format": "npm-run-all --sequential --continue-on-error \"format:*\"",
     "format:eslint": "eslint --fix",
     "format:prettier": "prettier . --write",
