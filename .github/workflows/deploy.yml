@@ -33,7 +33,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/${{ env.REMOTE_USER }}/serlo-editor-as-lti-tool/
-            git checkout ${{ github.ref_name }}
+            git checkout --force ${{ github.ref_name }}
             git pull
             yarn
             yarn build
