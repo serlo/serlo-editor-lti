@@ -1,5 +1,6 @@
 /// <reference types='codeceptjs' />
 type steps_file = typeof import('./steps_file')
+type EdusharingHelper = import('./helpers/edusharing-helper')
 
 declare namespace CodeceptJS {
   interface SupportObject {
@@ -7,10 +8,8 @@ declare namespace CodeceptJS {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     current: any
   }
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface Methods extends Playwright {}
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface I extends ReturnType<steps_file> {}
+  interface Methods extends Playwright, EdusharingHelper {}
+  interface I extends ReturnType<steps_file>, WithTranslation<Methods> {}
   namespace Translation {
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     interface Actions {}

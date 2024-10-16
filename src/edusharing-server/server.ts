@@ -333,8 +333,16 @@ export class EdusharingServer {
     this.content = testContent
   }
 
+  removePropertyInCustom(propertyName: string): boolean {
+    if (!(propertyName in this.custom)) {
+      return false
+    }
+
+    return delete this.custom[propertyName as keyof typeof this.custom]
+  }
+
   listen(port: number, callback: () => void) {
-    this.app.listen(port, callback)
+    return this.app.listen(port, callback)
   }
 }
 
