@@ -19,10 +19,11 @@
     "lint:prettier": "prettier --check .",
     "lint:tsc": "tsc --noEmit",
     "start:dev": "tsx --watch src/backend/index.ts",
-    "start": "node dist/backend/index.cjs",
+    "start": "dotenvx run --env-file=.env -- node dist/backend/index.cjs",
     "test": "codeceptjs run"
   },
   "dependencies": {
+    "@dotenvx/dotenvx": "^1.14.2",
     "@serlo/editor": "0.16.0",
     "express": "^4.19.2",
     "fp-ts": "2.16.9",
@@ -39,7 +40,6 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "@dotenvx/dotenvx": "^1.14.2",
     "@eslint/compat": "^1.1.1",
     "@eslint/js": "^9.12.0",
     "@types/jsonwebtoken": "9.0.7",
