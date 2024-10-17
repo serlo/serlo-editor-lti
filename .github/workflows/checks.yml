@@ -45,7 +45,7 @@ jobs:
       - run: cp .env.local.template .env
       - run: yarn install
       - run: yarn build
-      - run: yarn dev-prep:databases -d
+      - run: yarn dev:databases -d
       - run: |
           nohup yarn start &
           echo $! > app.pid

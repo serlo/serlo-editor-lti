@@ -9,8 +9,8 @@ Requirements:
 1. Create a copy of `.env.local.template` as `.env`
 2. (optional) Add secret values to `.env`
 3. `yarn` to install dependencies
-4. `yarn dev-prep` to start the databases (docker) and frontend build
-5. `yarn dev` to start the lti express server
+4. `yarn dev` to start the databases and the express backend & build the
+   frontend
 
 Now, the editor is running locally. On code changes the express server will
 restart and the frontend will be rebuild.
