@@ -8,6 +8,7 @@ import * as jose from 'jose'
 import urlJoin from 'url-join'
 import { readEnvVariable } from '../backend/read-env-variable'
 import { createAutoFromResponse } from '../backend/edusharing/create-auto-form-response'
+import { serverLog } from '../utils/server-log'
 
 export const editorUrl = readEnvVariable('EDITOR_URL')
 
@@ -164,7 +165,7 @@ export class EdusharingServer {
         if (VersionComment.is(comment)) {
           this.savedVersions.push({ comment })
           this.content = JSON.parse(req.file.buffer.toString())
-          console.log(
+          serverLog(
             `[${new Date().toISOString()}]: Save registered with comment ${
               req.query['versionComment']
             }`
@@ -314,7 +315,7 @@ export class EdusharingServer {
     })
 
     this.app.all('*', (req, res) => {
-      console.error(`${req.method} call to ${req.url} registered`)
+      serverLog(`${req.method} call to ${req.url} registered`)
       res.sendStatus(404).end()
     })
   }
