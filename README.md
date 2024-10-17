@@ -4,15 +4,16 @@ Prototype: Serlo editor as LTI tool
 
 Requirements:
 
-- Docker 26.0.0 or later
+- Docker 24.0.0 or later
 
 1. Create a copy of `.env.local.template` as `.env`
 2. (optional) Add secret values to `.env`
 3. `yarn` to install dependencies
-4. `yarn dev` to start docker containers
+4. `yarn dev-prep` to start the databases (docker) and frontend build
+5. `yarn dev` to start the lti express server
 
-Now, the editor is running locally. It will automatically restart when files get
-modified.
+Now, the editor is running locally. On code changes the express server will
+restart and the frontend will be rebuild.
 
 ## Launch through Saltire
 
@@ -27,7 +28,7 @@ modified.
 
 ## Launch through edu-sharing mock
 
-1. `yarn dev:edusharing` to start the edu-sharing mock
+1. `yarn dev-edusharing` to start the edu-sharing mock
 2. Open `http://localhost:8100`
 
 # Technical details
