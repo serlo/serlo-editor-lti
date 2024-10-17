@@ -3,7 +3,6 @@ import path from 'path'
 
 import { v4 as uuid_v4 } from 'uuid'
 import * as t from 'io-ts'
-import { Collection, MongoClient } from 'mongodb'
 import { readEnvVariable } from './read-env-variable'
 import { Request, Response } from 'express'
 import { createAccessToken } from './create-acccess-token'
@@ -12,6 +11,7 @@ import urlJoin from 'url-join'
 import {
   edusharingDone,
   edusharingGet,
+  edusharingInit,
   edusharingKeys,
   edusharingLogin,
   edusharingStart,
@@ -26,9 +26,6 @@ import { getMysqlDatabase } from './database'
 const ltijsKey = readEnvVariable('LTIJS_KEY')
 const mongodbConnectionUri = readEnvVariable('MONGODB_URI')
 const editorUrl = readEnvVariable('EDITOR_URL')
-
-const mongoUri = new URL(mongodbConnectionUri)
-const mongoClient = new MongoClient(mongoUri.href)
 
 export interface AccessToken {
   entityId: string
@@ -335,32 +332,11 @@ ltijs.onDeepLinking(async (idToken, __, res) => {
   return res.send(form)
 })
 
-let edusharingEmbedNonces: Collection
-let edusharingEmbedSessions: Collection
-
 // Setup function
 const setup = async () => {
   await ltijs.deploy()
-  await mongoClient.connect()
 
-  edusharingEmbedNonces = mongoClient.db().collection('edusharing_embed_nonce')
-  edusharingEmbedSessions = mongoClient
-    .db()
-    .collection('edusharing_embed_session')
-
-  const sevenDaysInSeconds = 604800
-  await edusharingEmbedNonces.createIndex(
-    { createdAt: 1 },
-    // The nonce is generated and stored in the database when the user clicks "embed content from edu sharing". It needs to stay valid until the user selects & embeds a content from edu-sharing within the iframe. But it should not exist indefinitely and the database should be cleared from old nonce values at some point. So we make them expire after 7 days.
-    // https://www.mongodb.com/docs/manual/tutorial/expire-data/
-    { expireAfterSeconds: sevenDaysInSeconds }
-  )
-  await edusharingEmbedSessions.createIndex(
-    { createdAt: 1 },
-    // Since edusharing should directly redirect the user to our page a small
-    // max age should be fine her
-    { expireAfterSeconds: 20 }
-  )
+  edusharingInit()
 
   // If you encounter error message `bad decrypt` or changed the ltijs encryption key this might help. See: https://github.com/Cvmcosta/ltijs/issues/119#issuecomment-882898770
   // const platforms = await ltijs.getAllPlatforms()

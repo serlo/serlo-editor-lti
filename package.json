@@ -22,7 +22,8 @@
     "lint:prettier": "prettier --check .",
     "lint:tsc": "tsc --noEmit",
     "start": "dotenvx run -- node dist/backend/index.cjs",
-    "test": "codeceptjs run"
+    "test": "dotenvx run --env-file=.env -- codeceptjs run --config e2e/codecept.conf.ts",
+    "wait-for-server": "timeout 120 bash -c 'until curl http://localhost:3000/lti/keys; do sleep 3; done'"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.14.2",
@@ -38,7 +39,7 @@
     "mysql2": "^3.11.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "url-join": "^5.0.0",
+    "url-join": "4.0.1",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
@@ -51,6 +52,7 @@
     "@types/node": "^22.7.5",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
+    "@types/url-join": "^4.0.3",
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react-swc": "^3.7.1",
     "codeceptjs": "^3.6.7",
