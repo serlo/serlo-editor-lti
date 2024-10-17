@@ -46,7 +46,7 @@ jobs:
       - run: yarn install
       - run: yarn build
       - run: yarn dev-prep:databases -d
-      - run: yarn start &
+      - run: yarn start-ci
       - run: yarn playwright install
       - run: yarn wait-for-server
       - run: HEADLESS=true yarn test
