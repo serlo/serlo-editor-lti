@@ -71,38 +71,40 @@ ltijs.whitelist(
   '/edusharing-embed/keys'
 )
 
+const { app } = ltijs
+
 // Disable COEP
-ltijs.app.use((_, res, next) => {
+app.use((_, res, next) => {
   res.removeHeader('Cross-Origin-Embedder-Policy')
   next()
 })
 
 // Opens Serlo editor
-ltijs.app.get('/app', editorApp)
+app.get('/app', editorApp)
 
 // Endpoint to get content
-ltijs.app.get('/entity', editorGetEntity)
+app.get('/entity', editorGetEntity)
 
 // Endpoint to save content
-ltijs.app.put('/entity', editorPutEntity)
+app.put('/entity', editorPutEntity)
 
 // Provide endpoint to start embed flow on edu-sharing
 // Called when user clicks on "embed content from edusharing"
-ltijs.app.get('/edusharing-embed/start', edusharingStart)
+app.get('/edusharing-embed/start', edusharingStart)
 
 // Receives an Authentication Request in payload
 // See: https://www.imsglobal.org/spec/security/v1p0/#step-2-authentication-request
-ltijs.app.get('/edusharing-embed/login', edusharingLogin)
+app.get('/edusharing-embed/login', edusharingLogin)
 
-ltijs.app.use('/edusharing-embed/keys', edusharingKeys)
+app.use('/edusharing-embed/keys', edusharingKeys)
 
 // Called after the resource selection on Edusharing (within iframe) when user selected what resource to embed.
 // Receives a LTI Deep Linking Response Message in payload. Contains content_items array that specifies which resource should be embedded.
 // See: https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-message
 // See https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-example for an example response payload
-ltijs.app.post('/edusharing-embed/done', edusharingDone)
+app.post('/edusharing-embed/done', edusharingDone)
 
-ltijs.app.get('/edusharing-embed/get', edusharingGet)
+app.get('/edusharing-embed/get', edusharingGet)
 
 // Successful LTI resource link launch
 // @ts-expect-error @types/ltijs
