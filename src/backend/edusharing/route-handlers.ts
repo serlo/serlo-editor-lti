@@ -8,7 +8,7 @@ import { verifyJwt } from './verify-jwt'
 import { createJWKSResponse } from './create-jwks-response'
 import { signJwtWithBase64Key } from './sign-jwt'
 import { edusharingEmbedKeys } from './edusharing-embed-keys'
-import { Collection, ObjectId } from 'mongodb'
+import { Collection, MongoClient, ObjectId } from 'mongodb'
 
 import { Request, Response } from 'express'
 import { getEdusharingAsToolConfiguration } from './get-edusharing-as-tool-configuration'
@@ -17,8 +17,35 @@ const editorUrl = readEnvVariable('EDITOR_URL')
 
 const edusharingAsToolDeploymentId = '1'
 
+const mongodbConnectionUri = readEnvVariable('MONGODB_URI')
+const mongoUri = new URL(mongodbConnectionUri)
+const mongoClient = new MongoClient(mongoUri.href)
+
 let edusharingEmbedNonces: Collection
 let edusharingEmbedSessions: Collection
+
+export async function edusharingInit() {
+  await mongoClient.connect()
+
+  edusharingEmbedNonces = mongoClient.db().collection('edusharing_embed_nonce')
+  edusharingEmbedSessions = mongoClient
+    .db()
+    .collection('edusharing_embed_session')
+
+  const sevenDaysInSeconds = 604800
+  await edusharingEmbedNonces.createIndex(
+    { createdAt: 1 },
+    // The nonce is generated and stored in the database when the user clicks "embed content from edu sharing". It needs to stay valid until the user selects & embeds a content from edu-sharing within the iframe. But it should not exist indefinitely and the database should be cleared from old nonce values at some point. So we make them expire after 7 days.
+    // https://www.mongodb.com/docs/manual/tutorial/expire-data/
+    { expireAfterSeconds: sevenDaysInSeconds }
+  )
+  await edusharingEmbedSessions.createIndex(
+    { createdAt: 1 },
+    // Since edusharing should directly redirect the user to our page a small
+    // max age should be fine her
+    { expireAfterSeconds: 20 }
+  )
+}
 
 export async function edusharingStart(_: Request, res: Response) {
   const idToken = res.locals.token as IdToken
