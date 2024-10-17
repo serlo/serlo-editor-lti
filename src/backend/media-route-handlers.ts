@@ -83,11 +83,16 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
     Bucket: bucketName,
     ContentType: mimeType,
     Metadata: { 'Content-Type': mimeType },
-    // Tagging: `editorVariant=${editorVariant}&editorHost=${req.headers.host}`,
+    Tagging: `editorVariant=${editorVariant}&editorHost=${req.headers.host}`,
   }
 
   const command = new PutObjectCommand(params)
   const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 })
+
+  if (!signedUrl) {
+    res.status(500).send('Could not generate signed URL')
+    return
+  }
 
   const imgUrl = new URL(readEnvVariable('MEDIA_BASE_URL'))
   imgUrl.pathname = '/media/' + fileName
