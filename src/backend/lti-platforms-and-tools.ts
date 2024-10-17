@@ -95,7 +95,7 @@ export async function ltiRegisterPlatformsAndTools() {
         'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/token',
       authConfig: {
         method: 'JWK_SET',
-        key: 'http://host.docker.internal:8100/edu-sharing/rest/lti/v13/jwks',
+        key: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
       },
     })
     edusharingAsToolConfigs.push({
@@ -104,10 +104,8 @@ export async function ltiRegisterPlatformsAndTools() {
         'http://localhost:8100/edu-sharing/rest/lti/v13/oidc/login_initiations',
       launchEndpoint: 'http://localhost:8100/edu-sharing/rest/lti/v13/lti13',
       clientId: edusharingMockClientId,
-      detailsEndpoint:
-        'http://host.docker.internal:8100/edu-sharing/rest/lti/v13/details',
-      keysetEndpoint:
-        'http://host.docker.internal:8100/edu-sharing/rest/lti/v13/jwks',
+      detailsEndpoint: 'http://localhost:8100/edu-sharing/rest/lti/v13/details',
+      keysetEndpoint: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
     })
     if (platform) {
       console.log(`Registered platform: edusharing-mock`)
@@ -126,7 +124,7 @@ export async function ltiRegisterPlatformsAndTools() {
   //       'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/token',
   //     authConfig: {
   //       method: 'JWK_SET',
-  //       // key: 'http://host.docker.internal:8100/edu-sharing/rest/lti/v13/jwks',
+  //       // key: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
   //       key: 'https://serlo-edusharing_repository-service_1:8080/edu-sharing/rest/lti/v13/jwks',
   //       // key: 'http://repository-service:8080/edu-sharing/rest/lti/v13/jwks',
   //     },
