@@ -6,12 +6,6 @@ import pluginReactHooks from 'eslint-plugin-react-hooks'
 import pluginReactRefresh from 'eslint-plugin-react-refresh'
 import { fixupConfigRules, fixupPluginRules } from '@eslint/compat'
 
-const ourCustomConfig = {
-  rules: {
-    'no-console': 'warn',
-  },
-}
-
 export default [
   // General settings
   { files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'] },
@@ -41,7 +35,4 @@ export default [
   },
 
   { ignores: ['dist/**'] },
-
-  // Our custom rules
-  ourCustomConfig,
 ]

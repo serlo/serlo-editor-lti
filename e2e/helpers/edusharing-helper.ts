@@ -15,7 +15,6 @@ export default class EdusharingHelper extends Helper {
 
   _init(): void {
     this.server = this.serverMock.listen(8100, () => {
-      // eslint-disable-next-line no-console
       console.log('INFO: Mocked version of edusharing is ready.')
     })
   }
