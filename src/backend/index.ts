@@ -4,7 +4,7 @@ import path from 'path'
 import { v4 as uuid_v4 } from 'uuid'
 import * as t from 'io-ts'
 import { readEnvVariable } from './read-env-variable'
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { createAccessToken } from './create-acccess-token'
 import { ltiRegisterPlatformsAndTools } from './lti-platforms-and-tools'
 import urlJoin from 'url-join'
@@ -22,6 +22,7 @@ import {
   editorPutEntity,
 } from './editor-route-handlers'
 import { getMysqlDatabase } from './database'
+import { mediaProxy } from './media-route-handlers'
 
 const ltijsKey = readEnvVariable('LTIJS_KEY')
 const mongodbConnectionUri = readEnvVariable('MONGODB_URI')
@@ -71,6 +72,18 @@ ltijs.whitelist(
   '/edusharing-embed/keys'
 )
 
+// since whitelist is not allowing wildcards we ignore the invalidToken event for selected routes
+// @ts-expect-error types probably outdated
+ltijs.onInvalidToken(
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (req.path.startsWith('/media/')) {
+      next()
+      return
+    }
+    return res.status(401).send(res.locals.err)
+  }
+)
+
 const { app } = ltijs
 
 // Disable COEP
@@ -105,6 +118,8 @@ app.use('/edusharing-embed/keys', edusharingKeys)
 app.post('/edusharing-embed/done', edusharingDone)
 
 app.get('/edusharing-embed/get', edusharingGet)
+
+app.use(mediaProxy)
 
 // Successful LTI resource link launch
 // @ts-expect-error @types/ltijs
