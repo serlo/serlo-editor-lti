@@ -46,7 +46,13 @@ jobs:
       - run: yarn install
       - run: yarn build
       - run: yarn dev-prep:databases -d
-      - run: yarn start-ci
+      - run: |
+          nohup yarn start &
+          echo $! > app.pid
       - run: yarn playwright install
       - run: yarn wait-for-server
       - run: HEADLESS=true yarn test
+      - run: |
+          if [ -f app.pid ]; then
+            kill -9 $(cat app.pid) || echo "App already stopped"
+          fi
