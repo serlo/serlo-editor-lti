@@ -45,7 +45,8 @@ jobs:
       - run: cp .env.local.template .env
       - run: yarn install
       - run: yarn build
-      - run: yarn dev -d
-      - run: yarn wait-for-server
+      - run: yarn dev-prep:databases -d
+      - run: yarn start -d
       - run: yarn playwright install
+      - run: yarn wait-for-server
       - run: HEADLESS=true yarn test
