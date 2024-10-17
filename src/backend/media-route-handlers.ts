@@ -1,9 +1,8 @@
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import { readEnvVariable } from './read-env-variable'
 
-const targetUrl = new URL(
-  readEnvVariable('S3_ENDPOINT') + readEnvVariable('BUCKET_NAME')
-).href
+const target = new URL(readEnvVariable('S3_ENDPOINT'))
+target.pathname = readEnvVariable('BUCKET_NAME')
 
 /**
  * Minimal proxy implementation for media assets.
@@ -12,7 +11,7 @@ const targetUrl = new URL(
  * It could also allow us to setup additional restictions in the future.
  */
 export const mediaProxy = createProxyMiddleware({
-  target: targetUrl,
+  target: target.href,
   changeOrigin: true,
   pathFilter: (path) => path.startsWith('/media'),
   pathRewrite: { '^/media': '' },
