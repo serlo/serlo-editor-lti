@@ -9,7 +9,6 @@ import { jwtDecode } from 'jwt-decode'
 import { type AccessToken, type Entity } from '../backend'
 import copyPluginToClipboardImage from './assets/copy-plugin-to-clipboard.png'
 import Error from './Error'
-import { UploadTest } from './UploadTest'
 
 export type AppState =
   | { type: 'fetching-content' }
@@ -121,10 +120,6 @@ function App() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  if (urlParams.get('uploadTest')) {
-    return <UploadTest />
-  }
 
   if (appState.type === 'fetching-content') return null
   if (appState.type === 'error') return <Error appState={appState} />
