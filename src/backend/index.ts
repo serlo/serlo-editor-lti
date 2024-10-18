@@ -22,7 +22,7 @@ import {
   editorPutEntity,
 } from './editor-route-handlers'
 import { getMysqlDatabase, initMysqlDatabase } from './mysql-database'
-import { mediaProxy } from './media-route-handlers'
+import { mediaPresignedUrl, mediaProxy } from './media-route-handlers'
 
 const ltijsKey = readEnvVariable('LTIJS_KEY')
 const mongodbConnectionUri = readEnvVariable('MONGODB_URI')
@@ -128,6 +128,7 @@ const setup = async () => {
 
   app.get('/edusharing-embed/get', edusharingGet)
 
+  app.get('/media/presigned-url', mediaPresignedUrl)
   app.use(mediaProxy)
 
   // Successful LTI resource link launch
