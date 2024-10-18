@@ -5,15 +5,16 @@ Prototype: Serlo editor as LTI tool
 Requirements:
 
 - Docker 24.0.0 or later
+- Node LTS
 
-1. Create a copy of `.env.local.template` as `.env`
+1. Create a copy of `.env.template` as `.env`
 2. (optional) Add secret values to `.env`
 3. `yarn` to install dependencies
 4. `yarn dev` to start the databases and the express backend & build the
    frontend
 
 Now, the editor is running locally. On code changes the express server will
-restart and the frontend will be rebuild.
+restart and the frontend will be rebuilt.
 
 ## Launch through Saltire
 
