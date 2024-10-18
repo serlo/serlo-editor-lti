@@ -30,7 +30,7 @@ export const mediaProxy = createProxyMiddleware({
   pathRewrite: { '^/media': '' },
   on: {
     proxyRes: (proxyRes) => {
-      proxyRes.headers['Cross-Origin-Rresource-Policy'] = 'cross-origin'
+      proxyRes.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
       proxyRes.headers['Access-Control-Allow-Origin'] = '*'
     },
   },
