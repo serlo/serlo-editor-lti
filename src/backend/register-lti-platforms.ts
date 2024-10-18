@@ -2,7 +2,7 @@ import { Provider as ltijs } from 'ltijs'
 import { edusharingMockClientId } from '../edusharing-mock/server'
 import { edusharingAsToolConfigs } from './edusharing/get-edusharing-as-tool-configuration'
 
-export async function ltiRegisterPlatformsAndTools() {
+export async function registerLtiPlatforms() {
   // Register platform: saltire
   if (process.env.ALLOW_SALTIRE === 'true') {
     await ltijs.registerPlatform({

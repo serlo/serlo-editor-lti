@@ -6,7 +6,7 @@ import * as t from 'io-ts'
 import { readEnvVariable } from './read-env-variable'
 import { Request, Response } from 'express'
 import { createAccessToken } from './create-acccess-token'
-import { ltiRegisterPlatformsAndTools } from './lti-platforms-and-tools'
+import { registerLtiPlatforms } from './register-lti-platforms'
 import urlJoin from 'url-join'
 import {
   edusharingDone,
@@ -21,7 +21,7 @@ import {
   editorGetEntity,
   editorPutEntity,
 } from './editor-route-handlers'
-import { getMysqlDatabase } from './database'
+import { getMysqlDatabase, initMysqlDatabase } from './mysql-database'
 
 const ltijsKey = readEnvVariable('LTIJS_KEY')
 const mongodbConnectionUri = readEnvVariable('MONGODB_URI')
@@ -64,7 +64,7 @@ ltijs.setup(
   }
 )
 
-// Disable authentication using ltik for some endpoints in edusharing embed flow. The
+// Disable authentication using ltik for some endpoints in edusharing embed flow.
 ltijs.whitelist(
   '/edusharing-embed/login',
   '/edusharing-embed/done',
@@ -336,61 +336,14 @@ ltijs.onDeepLinking(async (idToken, __, res) => {
 const setup = async () => {
   await ltijs.deploy()
 
-  edusharingInit()
+  // Start independent tasks in parallel and wait for them to finish
+  await Promise.allSettled([
+    registerLtiPlatforms(),
+    edusharingInit(),
+    initMysqlDatabase(),
+  ])
 
-  // If you encounter error message `bad decrypt` or changed the ltijs encryption key this might help. See: https://github.com/Cvmcosta/ltijs/issues/119#issuecomment-882898770
-  // const platforms = await ltijs.getAllPlatforms()
-  // if (platforms) {
-  //   for (const platform of platforms) {
-  //     // @ts-expect-error @types/ltijs is missing this
-  //     await platform.delete()
-  //   }
-  // }
-
-  await ltiRegisterPlatformsAndTools()
-
-  const database = getMysqlDatabase()
-  await database.mutate(
-    `
-    CREATE TABLE IF NOT EXISTS lti_entity (
-      id bigint NOT NULL AUTO_INCREMENT, 
-      resource_link_id varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, 
-      custom_claim_id varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-      edusharing_node_id varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, 
-      content longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, 
-      id_token_on_creation text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, 
-      
-      PRIMARY KEY (id), 
-      KEY idx_lti_entity_custom_claim_id (custom_claim_id),
-      KEY idx_lti_entity_edusharing_node_id (edusharing_node_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
-    `
-  )
-
-  if (process.env['ENVIRONMENT'] === 'local') {
-    // Make sure there is an entity with a fixed ID in database to simplify local development
-
-    const entity = await database.fetchOptional<Entity | null>(
-      `
-      SELECT
-        id,
-        resource_link_id,
-        custom_claim_id,
-        content
-      FROM
-        lti_entity
-      WHERE
-        custom_claim_id = ?
-    `,
-      ['00000000-0000-0000-0000-000000000000']
-    )
-    if (!entity) {
-      await database.mutate(
-        'INSERT INTO lti_entity (custom_claim_id, id_token_on_creation) values (?, ?)',
-        ['00000000-0000-0000-0000-000000000000', JSON.stringify({})]
-      )
-    }
-  }
+  // TODO: Register endpoints (in a followup PR)
 }
 
 setup()
