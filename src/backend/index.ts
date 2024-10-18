@@ -168,7 +168,6 @@ async function onConnectEdusharing(
       .send(
         `Unexpected type of LTI 'custom' claim. Got ${JSON.stringify(custom)}`
       )
-      .end()
     return
   }
 
