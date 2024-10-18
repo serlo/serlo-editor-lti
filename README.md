@@ -43,3 +43,17 @@ express.
 
 On a successful LTI launch the server returns a signed `accessToken` jwt that
 the client can then later use to authenticate saving content.
+
+# Management of Env Vars of the Deployments
+
+To use CLI to update any environment variable of the development, staging and
+production environments, follow these steps:
+
+1. Ask the admin to include you into the IONOS contract and update to policy of
+   the corresponding bucket. Alternatively, you can use the credentials of the
+   dev or admin user.
+2. Install a s3 client CLI (we recommend `s3cmd`) and configure it accordingly.
+3. Download the file, update it and upload it.
+
+Alternatively, if you have the permissions, you can login into IONOS and manage
+there using the UI.
