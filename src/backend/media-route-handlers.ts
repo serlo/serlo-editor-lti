@@ -28,6 +28,12 @@ export const mediaProxy = createProxyMiddleware({
   changeOrigin: true,
   pathFilter: (path) => path.startsWith('/media'),
   pathRewrite: { '^/media': '' },
+  on: {
+    proxyRes: (proxyRes) => {
+      proxyRes.headers['Cross-Origin-Rresource-Policy'] = 'cross-origin'
+      proxyRes.headers['Access-Control-Allow-Origin'] = '*'
+    },
+  },
 })
 
 const s3Client = new S3Client({
