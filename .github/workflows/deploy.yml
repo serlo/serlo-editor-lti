@@ -31,14 +31,7 @@ jobs:
           host: ${{  env.REMOTE_HOST }}
           username: ${{ env.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home/${{ env.REMOTE_USER }}/serlo-editor-as-lti-tool/
-            git checkout --force ${{ github.ref_name }}
-            git pull
-            yarn
-            yarn build
-            s3cmd get s3://edtr-env/${{ env.REMOTE_USER }}/.env . --force
-            supervisorctl restart serlo-app
+          script: ./scripts/deploy.sh
 
       - name: Test deployment successful
         run: sleep 2 && curl ${{ env.DOMAIN }} | grep NO_LTIK_OR_IDTOKEN_FOUND
