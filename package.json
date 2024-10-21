@@ -47,7 +47,7 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "@eslint/compat": "^1.1.1",
+    "@eslint/compat": "^1.2.1",
     "@eslint/js": "^9.12.0",
     "@types/jsonwebtoken": "9.0.7",
     "@types/lodash": "^4",

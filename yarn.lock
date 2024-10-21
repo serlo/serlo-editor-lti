@@ -2290,10 +2290,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/compat@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "@eslint/compat@npm:1.1.1"
-  checksum: 10/9004697701e9e9a7749d9e37452ee965af3620af46796ac0ee196478bbda490c780d17686c2888353c2a12d764837fa71c027c3ca18b1c3af6136105caa93642
+"@eslint/compat@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "@eslint/compat@npm:1.2.1"
+  peerDependencies:
+    eslint: ^9.10.0
+  peerDependenciesMeta:
+    eslint:
+      optional: true
+  checksum: 10/c2a451c0fa412ba8d2063b2f6e27d023ad919785f977229dfe29eca523186ebf43430fe5d874bcacf964237b663d9b190d789da2a304acbe653c9903386a2791
   languageName: node
   linkType: hard
 
@@ -13255,7 +13260,7 @@ __metadata:
     "@aws-sdk/client-s3": "npm:^3.674.0"
     "@aws-sdk/s3-request-presigner": "npm:^3.674.0"
     "@dotenvx/dotenvx": "npm:^1.20.0"
-    "@eslint/compat": "npm:^1.1.1"
+    "@eslint/compat": "npm:^1.2.1"
     "@eslint/js": "npm:^9.12.0"
     "@paralleldrive/cuid2": "npm:^2.2.2"
     "@serlo/editor": "npm:0.16.0"
