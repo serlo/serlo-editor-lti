@@ -38,7 +38,7 @@ jobs:
             git pull
             yarn
             yarn build
-            s3cmd cp s3://edtr-env/${{ env.REMOTE_USER }}/.env .
+            s3cmd get s3://edtr-env/${{ env.REMOTE_USER }}/.env .
             supervisorctl restart serlo-app
 
       - name: Test deployment successful

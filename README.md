@@ -63,8 +63,8 @@ production environments, follow these steps:
    ```
 
 3. Download the file you want to modify, v.g.
-   `s3cmd cp s3://edtr-env/edtrdev/.env .env.edtrdev` update it and upload it
-   v.g. `s3cmd cp .env.edtrdev s3://edtr-env/edtrdev/.env`.
+   `s3cmd get s3://edtr-env/edtrdev/.env .env.edtrdev` update it and upload it
+   v.g. `s3cmd put .env.edtrdev s3://edtr-env/edtrdev/.env`.
 
 Alternatively, if you have the permissions, you can login into IONOS and manage
 the .env files there using the UI.
