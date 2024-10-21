@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - staging
-      - development
+      - ci-deploy-refactor
 
 jobs:
   build:
@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Set environment variables for development
-        if: ${{ github.ref_name == 'development' }}
+        if: ${{ github.ref_name == 'ci-deploy-refactor' }}
         run: |
           echo "REMOTE_HOST=${{ secrets.REMOTE_HOST_DEV }}" >> $GITHUB_ENV
           echo "REMOTE_USER=${{ secrets.REMOTE_USER_DEV }}" >> $GITHUB_ENV
