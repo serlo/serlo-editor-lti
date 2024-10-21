@@ -305,7 +305,7 @@ export async function edusharingDone(req: Request, res: Response) {
   const findResult = await edusharingEmbedNonces.findOneAndDelete({
     _id: nonceId,
   })
-  if (!findResult.ok) {
+  if (!findResult?.ok) {
     res.status(400).send('No entry found in deeplinkNonces')
     return
   }
