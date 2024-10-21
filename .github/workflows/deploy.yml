@@ -5,7 +5,6 @@ on:
     branches:
       - staging
       - development
-      - env-management
 
 jobs:
   build:
@@ -13,7 +12,7 @@ jobs:
 
     steps:
       - name: Set environment variables for development
-        if: ${{ github.ref_name == 'env-management' }}
+        if: ${{ github.ref_name == 'development' }}
         run: |
           echo "REMOTE_HOST=${{ secrets.REMOTE_HOST_DEV }}" >> $GITHUB_ENV
           echo "REMOTE_USER=${{ secrets.REMOTE_USER_DEV }}" >> $GITHUB_ENV
