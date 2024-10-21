@@ -53,7 +53,18 @@ production environments, follow these steps:
    the corresponding bucket. Alternatively, you can use the credentials of the
    dev or admin user.
 2. Install a s3 client CLI (we recommend `s3cmd`) and configure it accordingly.
-3. Download the file, update it and upload it.
+   For access and secret keys go to
+   https://dcd.ionos.com/latest/#/key-management. Some other info:
+
+   ```
+   Default Region: eu-central-3
+   S3 Endpoint: s3.eu-central-3.ionoscloud.com
+   DNS-style: s3.eu-central-3.ionoscloud.com
+   ```
+
+3. Download the file you want to modify, v.g.
+   `s3cmd cp s3://edtr-env/edtrdev/.env .env.edtrdev` update it and upload it
+   v.g. `s3cmd cp .env.edtrdev s3://edtr-env/edtrdev/.env`.
 
 Alternatively, if you have the permissions, you can login into IONOS and manage
-there using the UI.
+the .env files there using the UI.
