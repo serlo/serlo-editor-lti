@@ -70,10 +70,10 @@ B. CLI:
 1. Ask the admin to include you into the IONOS contract and update to policy of
    the corresponding bucket. Alternatively, you can use the credentials of the
    dev or admin user.
-2. Install a S3 client CLI (we recommend `s3cmd`) and configure it accordingly.
-   For access and secret keys go to
-   https://dcd.ionos.com/latest/#/key-management at "contract-owned buckets".
-   Some other info:
+2. Install a S3 client CLI (we recommend `s3cmd`,
+   https://docs.ionos.com/cloud/storage-and-backup/s3-object-storage/s3-tools/s3cmd)
+   and configure it accordingly. For access and secret keys go to
+   https://dcd.ionos.com/latest/#/key-management. Some other info:
 
    ```
    Default Region: eu-central-3
