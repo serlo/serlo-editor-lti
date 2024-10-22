@@ -47,7 +47,7 @@ the client can then later use to authenticate saving content.
 # Management of .env files of deployment environments
 
 The easiest way to update the `.env` of the development, staging and production
-environments is do it directly in them.
+environments is to do it directly in them.
 
 1. Ssh into the environment, v.g. `ssh edtrdev@editor.serlo.dev` if you need to
    change the development environment.
@@ -63,7 +63,7 @@ If you prefer or need to do the changes in your local machine, you have two
 options:
 
 A. UI: If you have the permissions, you can login into IONOS and manage the
-`.env` files there using the UI. You need to dowload, modify and upload them.
+`.env` files there using the UI. You need to download, modify and upload them.
 
 B. CLI:
 
