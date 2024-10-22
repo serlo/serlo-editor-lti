@@ -9,7 +9,7 @@ import urlJoin from 'url-join'
 import { readEnvVariable } from '../backend/read-env-variable'
 import { createAutoFromResponse } from '../backend/edusharing/create-auto-form-response'
 
-export const editorUrl = readEnvVariable('EDITOR_URL')
+const editorUrl = readEnvVariable('EDITOR_URL')
 
 export const edusharingMockClientId = 'edusharing-mock'
 
@@ -195,7 +195,7 @@ export class EdusharingServer {
           iss: editorUrl,
           target_link_uri:
             'http://localhost:8100/edu-sharing/rest/lti/v13/lti13',
-          client_id: 'edusharing-mock',
+          client_id: edusharingMockClientId,
           lti_deployment_id: '1',
         }
 
@@ -214,7 +214,7 @@ export class EdusharingServer {
           params: {
             scope: 'openid',
             response_type: 'id_token',
-            client_id: 'edusharing-mock',
+            client_id: edusharingMockClientId,
             login_hint: req.query['login_hint'].toString(),
             state: this.state,
             response_mode: 'form_post',
