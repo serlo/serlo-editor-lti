@@ -1,3 +1,6 @@
+import jwt from 'jsonwebtoken'
+import { AccessToken } from '../../src/backend'
+
 Feature('Edusharing integration')
 
 Scenario('The editor can be called via the LTI Workflow', ({ I }) => {
@@ -48,6 +51,54 @@ Scenario(
     I.see('Test title')
   }
 )
+
+Scenario(
+  "Can't save using an `accessToken` token with invalid `entityId`",
+  async ({ I }) => {
+    openSerloEditorWithLTI(I)
+
+    const urlString = await I.grabCurrentUrl()
+    const url = new URL(urlString)
+    const originalAccessToken = url.searchParams.get('accessToken')
+    const parsedOriginalAccessToken = jwt.decode(
+      originalAccessToken
+    ) as AccessToken
+    const newParsedAccessToken = {
+      ...parsedOriginalAccessToken,
+      entityId: '123',
+    }
+    const newAccessToken = jwt.sign(
+      newParsedAccessToken,
+      url.searchParams.get('ltik')
+    )
+    url.searchParams.set('accessToken', newAccessToken)
+
+    I.amOnPage(url.toString())
+
+    I.see('Fehler: Bitte öffne den Inhalt erneut.')
+  }
+)
+
+Scenario("Can't save using an expired `accessToken`", async ({ I }) => {
+  openSerloEditorWithLTI(I)
+
+  const urlString = await I.grabCurrentUrl()
+  const url = new URL(urlString)
+  const originalAccessToken = url.searchParams.get('accessToken')
+  const { entityId, accessRight } = jwt.decode(
+    originalAccessToken
+  ) as AccessToken
+  const newAccessToken = jwt.sign(
+    { entityId, accessRight },
+    url.searchParams.get('ltik'),
+    { expiresIn: '-1s' }
+  )
+  url.searchParams.set('accessToken', newAccessToken)
+
+  I.amOnPage(url.toString())
+
+  I.see('Fehler: Bitte öffne den Inhalt erneut.')
+})
 
 Scenario('Assets from edu-sharing can be included', ({ I }) => {
   openSerloEditorWithLTI(I)
