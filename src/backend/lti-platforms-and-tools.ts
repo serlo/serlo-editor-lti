@@ -112,6 +112,25 @@ export async function ltiRegisterPlatformsAndTools() {
     }
   }
 
+  // Register platform: itslearning mock
+  if (process.env.ALLOW_ITSLEARNING_MOCK) {
+    const platform = await ltijs.registerPlatform({
+      url: 'http://localhost:8100/itslearning', // LTI iss
+      name: 'itslearning-mock',
+      clientId: 'mock-itslearning-id',
+      authenticationEndpoint:
+        'http://localhost:8100/itslearning/connect/authorize',
+      accesstokenEndpoint: 'http://localhost:8100/itslearning/connect/token',
+      authConfig: {
+        method: 'JWK_SET',
+        key: 'http://localhost:8100/itslearning/.well-known/openid-configuration/jwks',
+      },
+    })
+    if (platform) {
+      console.log('Registered platform: itslearning-mock')
+    }
+  }
+
   // Register platform: edusharing (local docker)
   // if (process.env.ALLOW_LOCAL_EDUSHARING) {
   //   const platform = await ltijs.registerPlatform({
