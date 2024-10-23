@@ -7,7 +7,7 @@ import { v4 as uuid_v4 } from 'uuid'
 import * as jose from 'jose'
 import urlJoin from 'url-join'
 import { readEnvVariable } from '../backend/read-env-variable'
-import { createAutoFromResponse } from '../backend/edusharing/create-auto-form-response'
+import { createAutoFormResponse } from '../backend/edusharing/create-auto-form-response'
 
 const editorUrl = readEnvVariable('EDITOR_URL')
 
@@ -49,7 +49,7 @@ export class EdusharingServer {
     this.app.use(express.urlencoded({ extended: true }))
 
     this.app.get('/', (_req, res) => {
-      createAutoFromResponse({
+      createAutoFormResponse({
         res,
         targetUrl: urlJoin(editorUrl, 'lti/login'),
         params: {
@@ -117,7 +117,7 @@ export class EdusharingServer {
         .setIssuedAt()
         .sign((await this.keys).privateKey)
 
-      createAutoFromResponse({
+      createAutoFormResponse({
         res,
         method: 'POST',
         targetUrl: urlJoin(editorUrl, 'lti/launch'),
@@ -207,7 +207,7 @@ export class EdusharingServer {
           }
         }
 
-        createAutoFromResponse({
+        createAutoFormResponse({
           res,
           method: 'GET',
           targetUrl: urlJoin(editorUrl, 'edusharing-embed/login'),
@@ -307,7 +307,7 @@ export class EdusharingServer {
         .setExpirationTime('1h')
         .sign((await this.keys).privateKey)
 
-      createAutoFromResponse({
+      createAutoFormResponse({
         res,
         method: 'POST',
         targetUrl: urlJoin(editorUrl, 'edusharing-embed/done'),
