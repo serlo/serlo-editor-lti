@@ -2,8 +2,7 @@ import express from 'express'
 import { v4 as uuid_v4 } from 'uuid'
 import * as jose from 'jose'
 import urlJoin from 'url-join'
-// TODO: Move to a common dir
-import { createAutoFormResponse } from '../backend/edusharing/create-auto-form-response'
+import { createAutoFormResponse } from '../backend/util/create-auto-form-response'
 import { readEnvVariable } from '../backend/read-env-variable'
 
 const itslearningMockDeploymentId = '1'
@@ -18,8 +17,6 @@ export class ItslearningServer {
     modulusLength: 2048,
   })
   private keyId = uuid_v4()
-  private state = '2452454263425'
-  private nonce = '8356345643564'
   private app = express()
 
   constructor() {
@@ -34,7 +31,7 @@ export class ItslearningServer {
           target_link_uri: urlJoin(editorUrl, 'lti/launch'),
           iss: itslearningMockIssuer,
           login_hint: itslearningMockIssuer,
-          lti_message_hint: uuid_v4(), // TODO: Maybe make this be a fixed value for tests?
+          lti_message_hint: uuid_v4(),
           lti_deployment_id: itslearningMockDeploymentId,
           client_id: itslearningMockAudience,
         },
