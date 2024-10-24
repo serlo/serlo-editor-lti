@@ -1,5 +1,7 @@
-import jwt from 'jsonwebtoken'
-import { AccessToken } from '../../src/backend'
+import {
+  expireAccessToken,
+  modifyAccessTokenEntityId,
+} from '../utils/access-token'
 
 Feature('Edusharing integration')
 
@@ -59,19 +61,8 @@ Scenario(
 
     const urlString = await I.grabCurrentUrl()
     const url = new URL(urlString)
-    const originalAccessToken = url.searchParams.get('accessToken')
-    const parsedOriginalAccessToken = jwt.decode(
-      originalAccessToken
-    ) as AccessToken
-    const newParsedAccessToken = {
-      ...parsedOriginalAccessToken,
-      entityId: '123',
-    }
-    const newAccessToken = jwt.sign(
-      newParsedAccessToken,
-      url.searchParams.get('ltik')
-    )
-    url.searchParams.set('accessToken', newAccessToken)
+    const modifiedAccessToken = modifyAccessTokenEntityId(url)
+    url.searchParams.set('accessToken', modifiedAccessToken)
 
     I.amOnPage(url.toString())
 
@@ -84,16 +75,8 @@ Scenario("Can't save using an expired `accessToken`", async ({ I }) => {
 
   const urlString = await I.grabCurrentUrl()
   const url = new URL(urlString)
-  const originalAccessToken = url.searchParams.get('accessToken')
-  const { entityId, accessRight } = jwt.decode(
-    originalAccessToken
-  ) as AccessToken
-  const newAccessToken = jwt.sign(
-    { entityId, accessRight },
-    url.searchParams.get('ltik'),
-    { expiresIn: '-1s' }
-  )
-  url.searchParams.set('accessToken', newAccessToken)
+  const expiredAccessToken = expireAccessToken(url)
+  url.searchParams.set('accessToken', expiredAccessToken)
 
   I.amOnPage(url.toString())
 
