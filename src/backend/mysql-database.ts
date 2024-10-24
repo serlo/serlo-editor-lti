@@ -9,14 +9,13 @@ import {
 import { type Entity } from '.'
 import config from '../utils/config'
 
-const mysqlUri = config.MYSQL_URI
 const editorUrl = config.EDITOR_URL
 
 let database: Database | null = null
 
 export function getMysqlDatabase() {
   if (database === null) {
-    database = new Database(createPool(mysqlUri))
+    database = new Database(createPool(config.MYSQL_URI))
   }
   return database
 }

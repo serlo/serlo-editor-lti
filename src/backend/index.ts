@@ -25,8 +25,6 @@ import { getMysqlDatabase, initMysqlDatabase } from './mysql-database'
 import { mediaPresignedUrl, mediaProxy } from './media-route-handlers'
 
 const ltijsKey = config.LTIJS_KEY
-const mongodbConnectionUri = config.MONGODB_URI
-const editorUrl = config.EDITOR_URL
 
 export interface AccessToken {
   entityId: string
@@ -46,7 +44,7 @@ const setup = async () => {
   ltijs.setup(
     ltijsKey,
     {
-      url: mongodbConnectionUri,
+      url: config.MONGODB_URI,
       // @ts-expect-error @types/ltijs
       connection: {
         useNewUrlParser: true,
@@ -319,7 +317,7 @@ const setup = async () => {
 
     console.log('entityId: ', entityId)
 
-    const url = new URL(urlJoin(editorUrl, '/lti/launch'))
+    const url = new URL(urlJoin(config.EDITOR_URL, '/lti/launch'))
 
     // https://www.imsglobal.org/spec/lti-dl/v2p0#lti-resource-link
     const items = [

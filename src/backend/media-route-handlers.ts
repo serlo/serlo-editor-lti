@@ -12,7 +12,6 @@ import config from '../utils/config'
 
 const endpoint = config.S3_ENDPOINT
 const bucketName = config.BUCKET_NAME
-const region = config.BUCKET_REGION
 
 const target = new URL(endpoint)
 target.pathname = bucketName
@@ -37,7 +36,7 @@ export const mediaProxy = createProxyMiddleware({
 })
 
 const s3Client = new S3Client({
-  region,
+  region: config.BUCKET_REGION,
   credentials: {
     accessKeyId: config.BUCKET_ACCESS_KEY_ID,
     secretAccessKey: config.BUCKET_SECRET_ACCESS_KEY,
