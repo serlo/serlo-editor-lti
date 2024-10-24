@@ -3,7 +3,7 @@ import { Server } from 'http'
 
 import { EdusharingServer } from '../../src/edusharing-mock/server'
 
-export default class EdusharingHelper extends Helper {
+class EdusharingHelper extends Helper {
   private edusharingMock: EdusharingServer
   private serverMock: Server
 
@@ -32,3 +32,5 @@ export default class EdusharingHelper extends Helper {
     this.edusharingMock.removePropertyInCustom(propertyName)
   }
 }
+
+export = EdusharingHelper

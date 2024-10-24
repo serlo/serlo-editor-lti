@@ -3,7 +3,7 @@ import { Server } from 'http'
 
 import { ItslearningServer } from '../../src/itslearning-mock/server'
 
-export default class ItslearningHelper extends Helper {
+class ItslearningHelper extends Helper {
   private itslearningMock: ItslearningServer
   private serverMock: Server
 
@@ -32,3 +32,5 @@ export default class ItslearningHelper extends Helper {
     this.itslearningMock.setLearnerRole()
   }
 }
+
+export = ItslearningHelper
