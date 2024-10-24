@@ -115,7 +115,7 @@ export async function registerLtiPlatforms() {
   }
 
   // Register platform: edusharing (local docker)
-  // if (process.env.ALLOW_LOCAL_EDUSHARING) {
+  // if (config.ALLOW_LOCAL_EDUSHARING) {
   //   const platform = await ltijs.registerPlatform({
   //     url: 'http://localhost:8100/edu-sharing', // LTI iss
   //     name: 'Platform', // TODO: Change

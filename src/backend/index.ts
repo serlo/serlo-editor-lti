@@ -214,10 +214,7 @@ const setup = async () => {
     searchParams.append('accessToken', accessToken)
     searchParams.append('resourceLinkId', resourceLinkId)
     searchParams.append('ltik', res.locals.ltik)
-    searchParams.append(
-      'testingSecret',
-      process.env.SERLO_EDITOR_TESTING_SECRET ?? ''
-    )
+    searchParams.append('testingSecret', config.SERLO_EDITOR_TESTING_SECRET)
 
     return ltijs.redirect(res, `/app?${searchParams}`)
   }
@@ -302,10 +299,7 @@ const setup = async () => {
     const searchParams = new URLSearchParams()
     searchParams.append('accessToken', accessToken)
     searchParams.append('resourceLinkId', resourceLinkId)
-    searchParams.append(
-      'testingSecret',
-      process.env.SERLO_EDITOR_TESTING_SECRET ?? ''
-    )
+    searchParams.append('testingSecret', config.SERLO_EDITOR_TESTING_SECRET)
 
     return ltijs.redirect(res, `/app?${searchParams}`)
   }

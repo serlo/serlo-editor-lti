@@ -39,9 +39,8 @@ export const mediaProxy = createProxyMiddleware({
 const s3Client = new S3Client({
   region,
   credentials: {
-    // fallback to '' for now so it does not fail in CI
-    accessKeyId: process.env.BUCKET_ACCESS_KEY_ID ?? '',
-    secretAccessKey: process.env.BUCKET_SECRET_ACCESS_KEY ?? '',
+    accessKeyId: config.BUCKET_ACCESS_KEY_ID,
+    secretAccessKey: config.BUCKET_SECRET_ACCESS_KEY,
   },
   endpoint,
   forcePathStyle: true, // test, maybe only set on dev

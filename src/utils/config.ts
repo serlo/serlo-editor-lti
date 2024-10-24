@@ -17,21 +17,40 @@ const StringOrUndefinedToBoolean = new t.Type<boolean, string, unknown>(
   String
 )
 
+const NonEmptyString = new t.Type<string, string, unknown>(
+  'NonEmptyString',
+  t.string.is,
+  (input, context) => {
+    if (t.string.is(input) && input.length > 0) {
+      return t.success(input)
+    }
+    return t.failure(input, context)
+  },
+  String
+)
+
 const IOEnv = t.type({
-  ENVIRONMENT: t.string,
-  EDITOR_URL: t.string,
+  ENVIRONMENT: t.union([
+    t.literal('local'),
+    t.literal('development'),
+    t.literal('staging'),
+    t.literal('production'),
+  ]),
+  EDITOR_URL: NonEmptyString,
   SERLO_EDITOR_TESTING_SECRET: t.string,
-  LTIJS_KEY: t.string,
-  MYSQL_URI: t.string,
-  MONGODB_URI: t.string,
+  LTIJS_KEY: NonEmptyString,
+  MYSQL_URI: NonEmptyString,
+  MONGODB_URI: NonEmptyString,
   ALLOW_SALTIRE: StringOrUndefinedToBoolean,
   ALLOW_EDUSHARING_MOCK: StringOrUndefinedToBoolean,
-  S3_ENDPOINT: t.string,
-  BUCKET_NAME: t.string,
-  BUCKET_REGION: t.string,
+  S3_ENDPOINT: NonEmptyString,
+  BUCKET_NAME: NonEmptyString,
+  BUCKET_REGION: NonEmptyString,
+  // fallback to '' for now so it does not fail in CI
   BUCKET_ACCESS_KEY_ID: t.string,
+  // fallback to '' for now so it does not fail in CI
   BUCKET_SECRET_ACCESS_KEY: t.string,
-  MEDIA_BASE_URL: t.string,
+  MEDIA_BASE_URL: NonEmptyString,
 })
 
 const decodedConfig = IOEnv.decode(process.env)
