@@ -29,8 +29,5 @@ export const config: CodeceptJS.MainConfig = {
       attribute: 'data-qa',
     },
   },
-  include: {
-    I: './steps_file',
-  },
   name: 'serlo-editor-as-lti-tool',
 }
