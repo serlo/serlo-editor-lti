@@ -1,4 +1,4 @@
-Prototype: Serlo editor as LTI tool
+Serlo editor as LTI tool
 
 # Local dev setup
 
