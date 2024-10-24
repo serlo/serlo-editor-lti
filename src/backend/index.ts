@@ -57,8 +57,8 @@ const setup = async () => {
       dynRegRoute: '/lti/register',
       staticPath: path.join(__dirname, './../../dist/frontend'), // Path to static files
       cookies: {
-        secure: process.env['ENVIRONMENT'] === 'local' ? false : true, // Set secure to true if the testing platform is in a different domain and https is being used
-        sameSite: process.env['ENVIRONMENT'] === 'local' ? '' : 'None', // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
+        secure: config.ENVIRONMENT === 'local' ? false : true, // Set secure to true if the testing platform is in a different domain and https is being used
+        sameSite: config.ENVIRONMENT === 'local' ? '' : 'None', // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
       },
     }
   )

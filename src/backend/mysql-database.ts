@@ -42,7 +42,7 @@ export async function initMysqlDatabase() {
   )
 
   const notProductionEnvironment =
-    process.env['ENVIRONMENT'] === 'local' ||
+    config.ENVIRONMENT === 'local' ||
     editorUrl === 'https://editor.serlo-staging.dev/' ||
     editorUrl === 'https://editor.serlo.dev/'
 
