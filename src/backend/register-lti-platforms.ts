@@ -25,21 +25,20 @@ export async function registerLtiPlatforms() {
   // Register platform: itslearning
   if (
     process.env.ITSLEARNING_URL &&
-    process.env.ITSLEARNING_NAME &&
-    process.env.SERLO_EDITOR_CLIENT_ID_ON_ITSLEARNING &&
-    process.env.ITSLEARNING_AUTHENTICATION_ENDPOINT &&
-    process.env.ITSLEARNING_ACCESS_TOKEN_ENDPOINT &&
-    process.env.ITSLEARNING_KEYSET_ENDPOINT
+    process.env.SERLO_EDITOR_CLIENT_ID_ON_ITSLEARNING
   ) {
     const platform = await ltijs.registerPlatform({
       url: process.env.ITSLEARNING_URL, // LTI iss
-      name: process.env.ITSLEARNING_NAME,
+      name: 'itslearning.com',
       clientId: process.env.SERLO_EDITOR_CLIENT_ID_ON_ITSLEARNING,
-      authenticationEndpoint: process.env.ITSLEARNING_AUTHENTICATION_ENDPOINT,
-      accesstokenEndpoint: process.env.ITSLEARNING_ACCESS_TOKEN_ENDPOINT,
+      authenticationEndpoint:
+        process.env.ITSLEARNING_URL + '/connect/authorize',
+      accesstokenEndpoint: process.env.ITSLEARNING_URL + '/connect/token',
       authConfig: {
         method: 'JWK_SET',
-        key: process.env.ITSLEARNING_KEYSET_ENDPOINT,
+        key:
+          process.env.ITSLEARNING_URL +
+          '/.well-known/openid-configuration/jwks',
       },
     })
     if (platform) {
