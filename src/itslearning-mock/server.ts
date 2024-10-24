@@ -6,7 +6,7 @@ import { createAutoFormResponse } from '../backend/util/create-auto-form-respons
 import { readEnvVariable } from '../backend/read-env-variable'
 
 const itslearningMockDeploymentId = '1'
-const itslearningMockIssuer = 'http://localhost:8100/itslearning'
+const itslearningMockIssuer = 'http://localhost:8101/itslearning'
 const itslearningMockAudience = 'mock-itslearning-id'
 const itslearningMockContextId = '3061-99'
 
@@ -17,6 +17,7 @@ export class ItslearningServer {
     modulusLength: 2048,
   })
   private keyId = uuid_v4()
+  private roles: string[] = []
   private app = express()
 
   constructor() {
@@ -62,10 +63,7 @@ export class ItslearningServer {
           product_family_code: 'itslearning',
         },
         'https://purl.imsglobal.org/spec/lti/claim/version': '1.3.0',
-        'https://purl.imsglobal.org/spec/lti/claim/roles': [
-          'http://purl.imsglobal.org/vocab/lis/v2/institution/person#Staff',
-          'http://purl.imsglobal.org/vocab/lis/v2/membership#Instructor',
-        ], // TODO: This is important for tests
+        'https://purl.imsglobal.org/spec/lti/claim/roles': this.roles,
         'https://purl.imsglobal.org/spec/lti/claim/context': {
           id: itslearningMockContextId,
           title: 'Serlo',
@@ -121,6 +119,16 @@ export class ItslearningServer {
           .end()
       }
     )
+  }
+
+  setInstructorRole() {
+    this.roles = [
+      'http://purl.imsglobal.org/vocab/lis/v2/membership#Instructor',
+    ]
+  }
+
+  setLearnerRole() {
+    this.roles = ['http://purl.imsglobal.org/vocab/lis/v2/membership#Learner']
   }
 
   listen(port: number, callback: () => void) {

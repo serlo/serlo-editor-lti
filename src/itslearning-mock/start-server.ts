@@ -1,6 +1,6 @@
 import { ItslearningServer } from './server'
 
-const itslearningPort = 8100
+const itslearningPort = 8101
 const itslearningServer = new ItslearningServer()
 
 itslearningServer.listen(itslearningPort, () => {

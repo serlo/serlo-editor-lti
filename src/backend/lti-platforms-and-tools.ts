@@ -115,15 +115,15 @@ export async function ltiRegisterPlatformsAndTools() {
   // Register platform: itslearning mock
   if (process.env.ALLOW_ITSLEARNING_MOCK) {
     const platform = await ltijs.registerPlatform({
-      url: 'http://localhost:8100/itslearning', // LTI iss
+      url: 'http://localhost:8101/itslearning', // LTI iss
       name: 'itslearning-mock',
       clientId: 'mock-itslearning-id',
       authenticationEndpoint:
-        'http://localhost:8100/itslearning/connect/authorize',
-      accesstokenEndpoint: 'http://localhost:8100/itslearning/connect/token',
+        'http://localhost:8101/itslearning/connect/authorize',
+      accesstokenEndpoint: 'http://localhost:8101/itslearning/connect/token',
       authConfig: {
         method: 'JWK_SET',
-        key: 'http://localhost:8100/itslearning/.well-known/openid-configuration/jwks',
+        key: 'http://localhost:8101/itslearning/.well-known/openid-configuration/jwks',
       },
     })
     if (platform) {
