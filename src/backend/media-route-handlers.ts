@@ -7,12 +7,12 @@ import {
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { createProxyMiddleware } from 'http-proxy-middleware'
-import { readEnvVariable } from './read-env-variable'
 import type { Request, Response } from 'express'
+import config from '../utils/config'
 
-const endpoint = readEnvVariable('S3_ENDPOINT')
-const bucketName = readEnvVariable('BUCKET_NAME')
-const region = readEnvVariable('BUCKET_REGION')
+const endpoint = config.S3_ENDPOINT
+const bucketName = config.BUCKET_NAME
+const region = config.BUCKET_REGION
 
 const target = new URL(endpoint)
 target.pathname = bucketName
@@ -100,7 +100,7 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
     return
   }
 
-  const imgUrl = new URL(readEnvVariable('MEDIA_BASE_URL'))
+  const imgUrl = new URL(config.MEDIA_BASE_URL)
   imgUrl.pathname = '/media/' + fileName
 
   res.json({ signedUrl, imgSrc: imgUrl.href })

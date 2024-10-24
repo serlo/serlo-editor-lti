@@ -3,11 +3,11 @@ import path from 'path'
 
 import { v4 as uuid_v4 } from 'uuid'
 import * as t from 'io-ts'
-import { readEnvVariable } from './read-env-variable'
 import { NextFunction, Request, Response } from 'express'
 import { createAccessToken } from './create-acccess-token'
 import { registerLtiPlatforms } from './register-lti-platforms'
 import urlJoin from 'url-join'
+import config from '../utils/config'
 import {
   edusharingDone,
   edusharingGet,
@@ -24,9 +24,9 @@ import {
 import { getMysqlDatabase, initMysqlDatabase } from './mysql-database'
 import { mediaPresignedUrl, mediaProxy } from './media-route-handlers'
 
-const ltijsKey = readEnvVariable('LTIJS_KEY')
-const mongodbConnectionUri = readEnvVariable('MONGODB_URI')
-const editorUrl = readEnvVariable('EDITOR_URL')
+const ltijsKey = config.LTIJS_KEY
+const mongodbConnectionUri = config.MONGODB_URI
+const editorUrl = config.EDITOR_URL
 
 export interface AccessToken {
   entityId: string

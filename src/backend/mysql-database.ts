@@ -6,11 +6,11 @@ import {
   createPool,
 } from 'mysql2/promise'
 
-import { readEnvVariable } from './read-env-variable'
 import { type Entity } from '.'
+import config from '../utils/config'
 
-const mysqlUri = readEnvVariable('MYSQL_URI')
-const editorUrl = readEnvVariable('EDITOR_URL')
+const mysqlUri = config.MYSQL_URI
+const editorUrl = config.EDITOR_URL
 
 let database: Database | null = null
 
