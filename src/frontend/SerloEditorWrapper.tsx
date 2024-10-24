@@ -67,21 +67,38 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [savePending])
 
-  const { platformUrl } = jwtDecode(ltik) as Ltik
-  const onEdusharing = platformUrl.includes('edu-sharing')
-  // Customize available plugins when launched by edu-sharing
-  const plugins = onEdusharing
-    ? [
+  const plugins = getPlugins(ltik)
+  function getPlugins(ltik: string) {
+    const { platformUrl } = jwtDecode(ltik) as Ltik
+    const onEdusharing = platformUrl.includes('edu-sharing')
+    if (!onEdusharing) {
+      return defaultPlugins
+    }
+
+    // Customize available plugins when launched by edu-sharing
+    const origin = window.location.origin
+    const isDevEnv =
+      origin.includes('editor.serlo.dev') || origin.includes('localhost')
+    if (isDevEnv) {
+      return [
+        ...defaultPlugins,
+        EditorPluginType.EdusharingAsset,
+        EditorPluginType.SerloInjection,
+      ]
+    } else {
+      return [
         ...defaultPlugins.filter(
           (plugin) =>
             plugin !== EditorPluginType.Image &&
             plugin !== EditorPluginType.DropzoneImage &&
-            plugin !== EditorPluginType.ImageGallery
+            plugin !== EditorPluginType.ImageGallery &&
+            plugin !== EditorPluginType.Video
         ),
         EditorPluginType.EdusharingAsset,
         EditorPluginType.SerloInjection,
       ]
-    : defaultPlugins
+    }
+  }
 
   return (
     <div

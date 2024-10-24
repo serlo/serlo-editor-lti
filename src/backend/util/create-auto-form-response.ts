@@ -36,5 +36,4 @@ export function createAutoFormResponse({
      </html>
     `.trim()
   )
-  res.end()
 }
