@@ -21,7 +21,7 @@ import {
   editorGetEntity,
   editorPutEntity,
 } from './editor-route-handlers'
-import { getMysqlDatabase } from './mysql-database'
+import { getMysqlDatabase } from './mariadb'
 import { mediaPresignedUrl, mediaProxy } from './media-route-handlers'
 
 const ltijsKey = readEnvVariable('LTIJS_KEY')

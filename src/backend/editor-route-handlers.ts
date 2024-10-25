@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import path from 'path'
 import { readEnvVariable } from './read-env-variable'
 import { AccessToken, Entity } from '.'
-import { getMysqlDatabase } from './mysql-database'
+import { getMysqlDatabase } from './mariadb'
 
 const ltijsKey = readEnvVariable('LTIJS_KEY')
 
