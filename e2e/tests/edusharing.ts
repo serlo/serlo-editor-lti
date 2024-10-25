@@ -2,6 +2,7 @@ import {
   expireAccessToken,
   modifyAccessTokenEntityId,
 } from '../utils/access-token'
+import { expectEditorModeRead } from '../utils/editor-mode'
 
 Feature('Edusharing integration')
 
@@ -29,9 +30,7 @@ Scenario(
 
     openSerloEditorWithLTI(I)
 
-    I.dontSee('Schreibe etwas')
-    I.dontSeeElement('$add-new-plugin-row-button')
-    I.seeElementInDOM('#serlo-root')
+    expectEditorModeRead(I)
   }
 )
 
