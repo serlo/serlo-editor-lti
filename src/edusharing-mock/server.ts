@@ -322,7 +322,10 @@ export class EdusharingServer {
 
   init() {
     this.savedVersions = []
-    this.custom = { ...this.defaultCustom }
+    this.custom = {
+      ...this.defaultCustom,
+      nodeId: uuid_v4(),
+    }
     this.content = testContent
   }
 
