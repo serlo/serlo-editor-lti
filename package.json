@@ -17,7 +17,7 @@
     "format:eslint": "eslint --fix",
     "format:prettier": "prettier . --write",
     "mariadb": "docker compose exec mariadb mariadb serlo -psecret",
-    "mariadb:dump": "docker compose exec -T mariadb mariadb-dump -psecret --databases serlo > docker-entrypoint-initdb.d/001-init.sql",
+    "mariadb-dump": "docker compose exec -T mariadb mariadb-dump -psecret --databases serlo > docker-entrypoint-initdb.d/001-init.sql",
     "lint": "npm-run-all --parallel \"lint:*\"",
     "lint:eslint": "eslint",
     "lint:prettier": "prettier --check .",
