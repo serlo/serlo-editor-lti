@@ -92,10 +92,10 @@ MariaDB, you can first add the content, and then dump it with and commit the
 result in `docker-entrypoint-initdb.d`.
 
 ```console
-$ docker compose down -v # with '-v' you are sure the database will be in the initial state in the next step
-$ docker compose up mariadb -d
+$ yarn mariadb-reset # that way you are sure the database will be in the initial state in the next step
 $ yarn mariadb # Go to the database and change whatever you need. Alternatively you can write a migration script.
 $ yarn mariadb-dump # That way you don't need to change ./docker-entrypoint-initdb.d/001-init.sql by hand
 $ git add ./docker-entrypoint-initdb.d
 $ git commit
+$ git push
 ```
