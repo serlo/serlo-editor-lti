@@ -7,10 +7,10 @@ import { v4 as uuid_v4 } from 'uuid'
 import * as jose from 'jose'
 import urlJoin from 'url-join'
 import { readEnvVariable } from '../backend/read-env-variable'
-import { createAutoFromResponse } from '../backend/edusharing/create-auto-form-response'
+import { createAutoFormResponse } from '../backend/util/create-auto-form-response'
 import { serverLog } from '../utils/server-log'
 
-export const editorUrl = readEnvVariable('EDITOR_URL')
+const editorUrl = readEnvVariable('EDITOR_URL')
 
 export const edusharingMockClientId = 'edusharing-mock'
 
@@ -34,7 +34,7 @@ export class EdusharingServer {
     postContentApiUrl:
       'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/content',
     appId: 'qsa2DgKBJ2WgoJO1',
-    nodeId: '604f62c1-6463-4206-a571-8c57097a54ae',
+    nodeId: uuid_v4(),
     user: 'admin',
   }
   private user = 'admin'
@@ -50,7 +50,7 @@ export class EdusharingServer {
     this.app.use(express.urlencoded({ extended: true }))
 
     this.app.get('/', (_req, res) => {
-      createAutoFromResponse({
+      createAutoFormResponse({
         res,
         targetUrl: urlJoin(editorUrl, 'lti/login'),
         params: {
@@ -99,7 +99,7 @@ export class EdusharingServer {
           'lti/launch'
         ),
         'https://purl.imsglobal.org/spec/lti/claim/resource_link': {
-          id: '604f62c1-6463-4206-a571-8c57097a54ae',
+          id: this.custom.nodeId,
           title: 'Test Content',
         },
         'https://purl.imsglobal.org/spec/lti/claim/launch_presentation': {
@@ -118,7 +118,7 @@ export class EdusharingServer {
         .setIssuedAt()
         .sign((await this.keys).privateKey)
 
-      createAutoFromResponse({
+      createAutoFormResponse({
         res,
         method: 'POST',
         targetUrl: urlJoin(editorUrl, 'lti/launch'),
@@ -191,7 +191,7 @@ export class EdusharingServer {
           iss: editorUrl,
           target_link_uri:
             'http://localhost:8100/edu-sharing/rest/lti/v13/lti13',
-          client_id: 'edusharing-mock',
+          client_id: edusharingMockClientId,
           lti_deployment_id: '1',
         }
 
@@ -203,14 +203,14 @@ export class EdusharingServer {
           }
         }
 
-        createAutoFromResponse({
+        createAutoFormResponse({
           res,
           method: 'GET',
           targetUrl: urlJoin(editorUrl, 'edusharing-embed/login'),
           params: {
             scope: 'openid',
             response_type: 'id_token',
-            client_id: 'edusharing-mock',
+            client_id: edusharingMockClientId,
             login_hint: req.query['login_hint'].toString(),
             state: this.state,
             response_mode: 'form_post',
@@ -300,7 +300,7 @@ export class EdusharingServer {
         .setExpirationTime('1h')
         .sign((await this.keys).privateKey)
 
-      createAutoFromResponse({
+      createAutoFormResponse({
         res,
         method: 'POST',
         targetUrl: urlJoin(editorUrl, 'edusharing-embed/done'),
