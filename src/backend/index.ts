@@ -23,6 +23,7 @@ import {
 } from './editor-route-handlers'
 import { getMariaDB } from './mariadb'
 import { mediaPresignedUrl, mediaProxy } from './media-route-handlers'
+import { serverLog } from '../utils/server-log'
 
 const ltijsKey = readEnvVariable('LTIJS_KEY')
 const mongodbConnectionUri = readEnvVariable('MONGODB_URI')
@@ -65,11 +66,10 @@ const setup = async () => {
     }
   )
 
-  // Start independent tasks in parallel and wait for them to finish
-  const setupTaskResults = await Promise.allSettled([edusharingInit()])
-  if (setupTaskResults.some((task) => task.status === 'rejected')) {
+  await edusharingInit().catch((error) => {
+    serverLog(`Setup failed: ${error}`)
     throw new Error('Setup failed!')
-  }
+  })
 
   // Disable authentication using ltik for some endpoints in edusharing embed flow.
   ltijs.whitelist(
