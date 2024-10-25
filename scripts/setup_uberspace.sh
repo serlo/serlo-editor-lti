@@ -33,6 +33,11 @@ source .env
 echo 'Setting up initial data for MariaDB'
 mariadb < docker-entrypoint-initdb.d/001-init.sql
 
+if [ "$ENVIRONMENT" = 'production' ]; then
+  echo 'Making data empty in the MariaDB table lti_entity'
+  mariadb serlo -e 'TRUCATE table lti_entity'
+fi
+
 # Set up MongoDB
 if ! $(uberspace tools version show mongodb | grep -q '6.0'); then
   uberspace tools version use mongodb 6.0
