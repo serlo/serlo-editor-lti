@@ -61,6 +61,7 @@ const StagingSpecificEnv = t.type({
   EDUSHARING_RLP_CLIENT_ID_ON_SERLO_EDITOR: NonEmptyString,
 })
 
+// If any env var is necessary for a certain environment, add it here for runtime type checking
 const IOEnv = t.union([
   t.intersection([BaseEnv, t.type({ ENVIRONMENT: t.literal('local') })]),
   t.intersection([BaseEnv, t.type({ ENVIRONMENT: t.literal('development') })]),
@@ -73,8 +74,6 @@ const IOEnv = t.union([
 ])
 
 export const decodedConfig = IOEnv.decode(process.env)
-
-export type ConfigType = t.TypeOf<typeof IOEnv>
 
 if (decodedConfig._tag === 'Left') {
   throw new Error(
