@@ -7,10 +7,8 @@ import {
 } from 'mysql2/promise'
 
 import { readEnvVariable } from './read-env-variable'
-import { type Entity } from '.'
 
 const mysqlUri = readEnvVariable('MYSQL_URI')
-const editorUrl = readEnvVariable('EDITOR_URL')
 
 let database: Database | null = null
 
