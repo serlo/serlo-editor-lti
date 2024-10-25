@@ -2,11 +2,11 @@ import { Request, Response } from 'express'
 
 import jwt from 'jsonwebtoken'
 import path from 'path'
-import { readEnvVariable } from './read-env-variable'
 import { AccessToken, Entity } from '.'
 import { getMariaDB } from './mariadb'
+import config from '../utils/config'
 
-const ltijsKey = readEnvVariable('LTIJS_KEY')
+const ltijsKey = config.LTIJS_KEY
 
 export async function editorApp(_: Request, res: Response) {
   return res.sendFile(path.join(__dirname, '../../dist/frontend/index.html'))
@@ -20,7 +20,13 @@ export async function editorGetEntity(req: Request, res: Response) {
     return res.send('Missing or invalid access token')
   }
 
-  const decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccessToken
+  let decodedAccessToken
+  try {
+    decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccessToken
+  } catch (error) {
+    console.error(error)
+    return res.json({ content: 'Invalid access token' })
+  }
 
   // Get json from database with decodedAccessToken.entityId
   const entity = await database.fetchOptional<Entity | null>(

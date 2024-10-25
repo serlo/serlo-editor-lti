@@ -1,9 +1,8 @@
 import { IdToken } from 'ltijs'
 import jwt from 'jsonwebtoken'
 import * as t from 'io-ts'
-import { readEnvVariable } from '../read-env-variable'
 import urlJoin from 'url-join'
-import { createAutoFromResponse } from './create-auto-form-response'
+import { createAutoFormResponse } from '../util/create-auto-form-response'
 import { verifyJwt } from './verify-jwt'
 import { createJWKSResponse } from './create-jwks-response'
 import { signJwtWithBase64Key } from './sign-jwt'
@@ -12,12 +11,13 @@ import { Collection, MongoClient, ObjectId } from 'mongodb'
 
 import { Request, Response } from 'express'
 import { getEdusharingAsToolConfiguration } from './get-edusharing-as-tool-configuration'
+import config from '../../utils/config'
 
-const editorUrl = readEnvVariable('EDITOR_URL')
+const editorUrl = config.EDITOR_URL
 
 const edusharingAsToolDeploymentId = '1'
 
-const mongodbConnectionUri = readEnvVariable('MONGODB_URI')
+const mongodbConnectionUri = config.MONGODB_URI
 const mongoUri = new URL(mongodbConnectionUri)
 const mongoClient = new MongoClient(mongoUri.href)
 
@@ -94,7 +94,7 @@ export async function edusharingStart(_: Request, res: Response) {
 
   // Create a Third-party Initiated Login request
   // See: https://www.imsglobal.org/spec/security/v1p0/#step-1-third-party-initiated-login
-  createAutoFromResponse({
+  createAutoFormResponse({
     res,
     method: 'GET',
     targetUrl: edusharingAsToolConfiguration.loginEndpoint,
@@ -224,7 +224,7 @@ export async function edusharingLogin(req: Request, res: Response) {
     privateKey: edusharingEmbedKeys.privateKey,
   })
 
-  createAutoFromResponse({
+  createAutoFormResponse({
     res,
     method: 'POST',
     targetUrl: edusharingAsToolConfig.launchEndpoint,

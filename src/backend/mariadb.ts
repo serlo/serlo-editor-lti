@@ -5,16 +5,13 @@ import {
   type ResultSetHeader,
   createPool,
 } from 'mysql2/promise'
-
-import { readEnvVariable } from './read-env-variable'
-
-const mariadbUri = readEnvVariable('MYSQL_URI')
+import config from '../utils/config'
 
 let database: Database | null = null
 
 export function getMariaDB() {
   if (database === null) {
-    database = new Database(createPool(mariadbUri))
+    database = new Database(createPool(config.MYSQL_URI))
   }
   return database
 }
