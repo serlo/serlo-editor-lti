@@ -34,7 +34,7 @@ export class EdusharingServer {
     postContentApiUrl:
       'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/content',
     appId: 'qsa2DgKBJ2WgoJO1',
-    nodeId: '604f62c1-6463-4206-a571-8c57097a54ae',
+    nodeId: uuid_v4(),
     user: 'admin',
   }
   private user = 'admin'
@@ -99,7 +99,7 @@ export class EdusharingServer {
           'lti/launch'
         ),
         'https://purl.imsglobal.org/spec/lti/claim/resource_link': {
-          id: '604f62c1-6463-4206-a571-8c57097a54ae',
+          id: this.custom.nodeId,
           title: 'Test Content',
         },
         'https://purl.imsglobal.org/spec/lti/claim/launch_presentation': {
