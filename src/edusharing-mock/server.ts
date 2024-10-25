@@ -6,11 +6,11 @@ import { imageEmbedJson } from './mocked-embed-json/image'
 import { v4 as uuid_v4 } from 'uuid'
 import * as jose from 'jose'
 import urlJoin from 'url-join'
-import { readEnvVariable } from '../backend/read-env-variable'
 import { createAutoFormResponse } from '../backend/util/create-auto-form-response'
 import { serverLog } from '../utils/server-log'
+import config from '../utils/config'
 
-const editorUrl = readEnvVariable('EDITOR_URL')
+export const editorUrl = config.EDITOR_URL
 
 export const edusharingMockClientId = 'edusharing-mock'
 
