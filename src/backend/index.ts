@@ -21,7 +21,7 @@ import {
   editorGetEntity,
   editorPutEntity,
 } from './editor-route-handlers'
-import { getMysqlDatabase, initMysqlDatabase } from './mysql-database'
+import { getMysqlDatabase } from './mysql-database'
 import { mediaPresignedUrl, mediaProxy } from './media-route-handlers'
 
 const ltijsKey = readEnvVariable('LTIJS_KEY')
@@ -66,10 +66,7 @@ const setup = async () => {
   )
 
   // Start independent tasks in parallel and wait for them to finish
-  const setupTaskResults = await Promise.allSettled([
-    edusharingInit(),
-    initMysqlDatabase(),
-  ])
+  const setupTaskResults = await Promise.allSettled([edusharingInit()])
   if (setupTaskResults.some((task) => task.status === 'rejected')) {
     throw new Error('Setup failed!')
   }
