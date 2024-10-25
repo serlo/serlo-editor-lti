@@ -2,12 +2,6 @@
 
 set -e
 
-# Check if .env file exists in the current directory
-if [ ! -f .env ]; then
-  echo "Error: Please create an .env file based on one of the templates you find in this repo and add missing secret values."
-  exit 1
-fi
-
 # Set Node.js version
 if ! $(uberspace tools version show node | grep -q '20'); then
   uberspace tools version use node 20
