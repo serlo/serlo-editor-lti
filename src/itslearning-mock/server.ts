@@ -3,14 +3,14 @@ import { v4 as uuid_v4 } from 'uuid'
 import * as jose from 'jose'
 import urlJoin from 'url-join'
 import { createAutoFormResponse } from '../backend/util/create-auto-form-response'
-import { readEnvVariable } from '../backend/read-env-variable'
+import config from '../utils/config'
 
 const itslearningMockDeploymentId = '1'
 const itslearningMockIssuer = 'http://localhost:8101/itslearning'
 const itslearningMockAudience = 'mock-itslearning-id'
 const itslearningMockContextId = '3061-99'
 
-const editorUrl = readEnvVariable('EDITOR_URL')
+const editorUrl = config.EDITOR_URL
 
 export class ItslearningServer {
   private keys = jose.generateKeyPair('RS256', {
