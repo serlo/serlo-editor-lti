@@ -84,3 +84,14 @@ B. CLI:
 3. Download the file you want to modify, v.g.
    `s3cmd get s3://edtr-env/edtrdev/.env .env.edtrdev`, change it and upload it
    v.g. `s3cmd put .env.edtrdev s3://edtr-env/edtrdev/.env`.
+
+# MariaDB Dump
+
+If it is important for development to have something already existent in the
+MariaDB, you can first add the content, and then dump it with
+
+```shell
+yarn mariadb:dump
+```
+
+Afterwards, commit the result in `docker-entrypoint-initdb.d`.
