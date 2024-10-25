@@ -2,6 +2,10 @@ import {
   expireAccessToken,
   modifyAccessTokenEntityId,
 } from '../utils/access-token'
+import {
+  expectEditorModeRead,
+  expectEditorModeWrite,
+} from '../utils/editor-mode'
 
 Feature('Itslearning integration')
 
@@ -10,9 +14,7 @@ Scenario('Instructors have write access', ({ I }) => {
 
   openSerloEditorWithLTI(I)
 
-  I.see('Schreibe etwas')
-  I.seeElement('$add-new-plugin-row-button')
-  I.seeElementInDOM('#serlo-root')
+  expectEditorModeWrite(I)
 })
 
 Scenario('Learners only have read access', ({ I }) => {
@@ -20,9 +22,7 @@ Scenario('Learners only have read access', ({ I }) => {
 
   openSerloEditorWithLTI(I)
 
-  I.dontSee('Schreibe etwas')
-  I.dontSeeElement('$add-new-plugin-row-button')
-  I.seeElementInDOM('#serlo-root')
+  expectEditorModeRead(I)
 })
 
 Scenario(
