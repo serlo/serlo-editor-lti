@@ -8,13 +8,13 @@ import {
 
 import { readEnvVariable } from './read-env-variable'
 
-const mysqlUri = readEnvVariable('MYSQL_URI')
+const mariadbUri = readEnvVariable('MYSQL_URI')
 
 let database: Database | null = null
 
-export function getMysqlDatabase() {
+export function getMariaDB() {
   if (database === null) {
-    database = new Database(createPool(mysqlUri))
+    database = new Database(createPool(mariadbUri))
   }
   return database
 }
@@ -174,7 +174,7 @@ export class Database {
       }
     }
     throw new Error(
-      `Failed to execute command in mysql database after ${numberOfTries} tries.`
+      `Failed to execute command in mariadb database after ${numberOfTries} tries.`
     )
   }
 }

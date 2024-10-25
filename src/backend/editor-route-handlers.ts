@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import path from 'path'
 import { readEnvVariable } from './read-env-variable'
 import { AccessToken, Entity } from '.'
-import { getMysqlDatabase } from './mariadb'
+import { getMariaDB } from './mariadb'
 
 const ltijsKey = readEnvVariable('LTIJS_KEY')
 
@@ -13,7 +13,7 @@ export async function editorApp(_: Request, res: Response) {
 }
 
 export async function editorGetEntity(req: Request, res: Response) {
-  const database = getMysqlDatabase()
+  const database = getMariaDB()
 
   const accessToken = req.query.accessToken
   if (typeof accessToken !== 'string') {
@@ -44,7 +44,7 @@ export async function editorGetEntity(req: Request, res: Response) {
 }
 
 export async function editorPutEntity(req: Request, res: Response) {
-  const database = getMysqlDatabase()
+  const database = getMariaDB()
 
   const accessToken = req.body.accessToken
   if (typeof accessToken !== 'string') {
