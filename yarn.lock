@@ -13312,7 +13312,7 @@ __metadata:
     typescript: "npm:^5.6.3"
     typescript-eslint: "npm:^8.8.0"
     url-join: "npm:4.0.1"
-    uuid: "npm:^10.0.0"
+    uuid: "npm:^11.0.1"
     vite: "npm:^5.4.3"
   languageName: unknown
   linkType: soft
@@ -14687,6 +14687,15 @@ __metadata:
   bin:
     uuid: dist/bin/uuid
   checksum: 10/9d0b6adb72b736e36f2b1b53da0d559125ba3e39d913b6072f6f033e0c87835b414f0836b45bcfaf2bdf698f92297fea1c3cc19b0b258bc182c9c43cc0fab9f2
+  languageName: node
+  linkType: hard
+
+"uuid@npm:^11.0.1":
+  version: 11.0.1
+  resolution: "uuid@npm:11.0.1"
+  bin:
+    uuid: dist/esm/bin/uuid
+  checksum: 10/8f2a93ce747613ab63531796fdd383123ad85bd6592808e7035b6975688ef7f01d9279ef66903fcfba6649b1583d77b88f9512b339c93f9a515964f79203a493
   languageName: node
   linkType: hard
 
