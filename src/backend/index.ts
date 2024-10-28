@@ -21,8 +21,9 @@ import {
   editorGetEntity,
   editorPutEntity,
 } from './editor-route-handlers'
-import { getMysqlDatabase, initMysqlDatabase } from './mysql-database'
+import { getMariaDB } from './mariadb'
 import { mediaPresignedUrl, mediaProxy } from './media-route-handlers'
+import { serverLog } from '../utils/server-log'
 
 const ltijsKey = config.LTIJS_KEY
 
@@ -63,14 +64,10 @@ const setup = async () => {
     }
   )
 
-  // Start independent tasks in parallel and wait for them to finish
-  const setupTaskResults = await Promise.allSettled([
-    edusharingInit(),
-    initMysqlDatabase(),
-  ])
-  if (setupTaskResults.some((task) => task.status === 'rejected')) {
+  await edusharingInit().catch((error) => {
+    serverLog(`Setup failed: ${error}`)
     throw new Error('Setup failed!')
-  }
+  })
 
   // Disable authentication using ltik for some endpoints in edusharing embed flow.
   ltijs.whitelist(
@@ -180,9 +177,9 @@ const setup = async () => {
 
     const entityId = await getEntityId(custom.nodeId)
     async function getEntityId(edusharingNodeId: string) {
-      const mysqlDatabase = getMysqlDatabase()
+      const mariaDB = getMariaDB()
       // Check if there is already a database entry with edusharing_node_id
-      const existingEntity = await mysqlDatabase.fetchOptional<Entity | null>(
+      const existingEntity = await mariaDB.fetchOptional<Entity | null>(
         `
       SELECT
           id
@@ -197,7 +194,7 @@ const setup = async () => {
         return existingEntity.id
       }
       // If there is no existing entity, create one
-      const insertedEntity = await mysqlDatabase.mutate(
+      const insertedEntity = await mariaDB.mutate(
         'INSERT INTO lti_entity (edusharing_node_id, id_token_on_creation, resource_link_id) values (?, ?, ?)',
         [edusharingNodeId, JSON.stringify(idToken), resourceLinkId]
       )
@@ -233,10 +230,10 @@ const setup = async () => {
 
     console.log('ltijs.onConnect -> idToken: ', idToken)
 
-    const mysqlDatabase = getMysqlDatabase()
+    const mariaDB = getMariaDB()
 
     // Future: Might need to fetch multiple once we create new entries with the same custom_claim_id
-    const entity = await mysqlDatabase.fetchOptional<Entity | null>(
+    const entity = await mariaDB.fetchOptional<Entity | null>(
       `
       SELECT
         id,
@@ -288,7 +285,7 @@ const setup = async () => {
 
     if (!entity.resource_link_id) {
       // Set resource_link_id in database
-      await mysqlDatabase.mutate(
+      await mariaDB.mutate(
         'UPDATE lti_entity SET resource_link_id = ? WHERE id = ?',
         [resourceLinkId, entity.id]
       )
@@ -305,12 +302,12 @@ const setup = async () => {
   // Successful LTI deep linking launch
   // @ts-expect-error @types/ltijs
   ltijs.onDeepLinking(async (idToken, __, res) => {
-    const mysqlDatabase = getMysqlDatabase()
+    const mariaDB = getMariaDB()
 
     const ltiCustomClaimId = uuid_v4()
 
     // Create new entity in database
-    const { insertId: entityId } = await mysqlDatabase.mutate(
+    const { insertId: entityId } = await mariaDB.mutate(
       'INSERT INTO lti_entity (custom_claim_id, id_token_on_creation) values (?, ?)',
       [ltiCustomClaimId, JSON.stringify(idToken)]
     )

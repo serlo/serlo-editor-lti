@@ -11,7 +11,7 @@ fi
 # TODO: X-Frame-Options is deprecated anyway. Maybe restrict embedding only on allowed domains using new headers? See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options instead
 uberspace web header suppress / X-Frame-Options
 
-echo 'Configure IONOS S3 Client for Management'
+echo 'Configure IONOS S3 Client to manage buckets'
 s3cmd --configure
 
 echo 'Downloading the .env file'
@@ -23,6 +23,9 @@ fi
 
 # Pull env into current shell
 source .env
+
+echo 'Setting up initial data for MariaDB'
+mariadb < docker-entrypoint-initdb.d/001-init.sql
 
 # Set up MongoDB
 if ! $(uberspace tools version show mongodb | grep -q '6.0'); then

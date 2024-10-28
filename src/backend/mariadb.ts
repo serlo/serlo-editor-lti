@@ -5,70 +5,15 @@ import {
   type ResultSetHeader,
   createPool,
 } from 'mysql2/promise'
-
-import { type Entity } from '.'
 import config from '../utils/config'
-
-const editorUrl = config.EDITOR_URL
 
 let database: Database | null = null
 
-export function getMysqlDatabase() {
+export function getMariaDB() {
   if (database === null) {
     database = new Database(createPool(config.MYSQL_URI))
   }
   return database
-}
-
-export async function initMysqlDatabase() {
-  const database = getMysqlDatabase()
-
-  // Create table if necessary
-  await database.mutate(
-    `
-    CREATE TABLE IF NOT EXISTS lti_entity (
-      id bigint NOT NULL AUTO_INCREMENT, 
-      resource_link_id varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, 
-      custom_claim_id varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
-      edusharing_node_id varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, 
-      content longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci DEFAULT NULL, 
-      id_token_on_creation text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL, 
-      
-      PRIMARY KEY (id), 
-      KEY idx_lti_entity_custom_claim_id (custom_claim_id),
-      KEY idx_lti_entity_edusharing_node_id (edusharing_node_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
-    `
-  )
-
-  const notProductionEnvironment =
-    config.ENVIRONMENT === 'local' ||
-    editorUrl === 'https://editor.serlo-staging.dev/' ||
-    editorUrl === 'https://editor.serlo.dev/'
-
-  if (notProductionEnvironment) {
-    // Make sure there is an entity with a fixed ID in database to simplify development
-    const entity = await database.fetchOptional<Entity | null>(
-      `
-      SELECT
-        id,
-        resource_link_id,
-        custom_claim_id,
-        content
-      FROM
-        lti_entity
-      WHERE
-        custom_claim_id = ?
-    `,
-      ['00000000-0000-0000-0000-000000000000']
-    )
-    if (!entity) {
-      await database.mutate(
-        'INSERT INTO lti_entity (custom_claim_id, id_token_on_creation) values (?, ?)',
-        ['00000000-0000-0000-0000-000000000000', JSON.stringify({})]
-      )
-    }
-  }
 }
 
 export class Database {
@@ -226,7 +171,7 @@ export class Database {
       }
     }
     throw new Error(
-      `Failed to execute command in mysql database after ${numberOfTries} tries.`
+      `Failed to execute command in mariadb database after ${numberOfTries} tries.`
     )
   }
 }

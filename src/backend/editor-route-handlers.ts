@@ -3,7 +3,7 @@ import { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import path from 'path'
 import { AccessToken, Entity } from '.'
-import { getMysqlDatabase } from './mysql-database'
+import { getMariaDB } from './mariadb'
 import config from '../utils/config'
 
 const ltijsKey = config.LTIJS_KEY
@@ -13,7 +13,7 @@ export async function editorApp(_: Request, res: Response) {
 }
 
 export async function editorGetEntity(req: Request, res: Response) {
-  const database = getMysqlDatabase()
+  const database = getMariaDB()
 
   const accessToken = req.query.accessToken
   if (typeof accessToken !== 'string') {
@@ -50,7 +50,7 @@ export async function editorGetEntity(req: Request, res: Response) {
 }
 
 export async function editorPutEntity(req: Request, res: Response) {
-  const database = getMysqlDatabase()
+  const database = getMariaDB()
 
   const accessToken = req.body.accessToken
   if (typeof accessToken !== 'string') {
