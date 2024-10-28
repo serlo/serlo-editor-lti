@@ -3199,16 +3199,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@serlo/editor@npm:0.16.0":
-  version: 0.16.0
-  resolution: "@serlo/editor@npm:0.16.0"
+"@serlo/editor@npm:0.17.0":
+  version: 0.17.0
+  resolution: "@serlo/editor@npm:0.17.0"
   dependencies:
     "@serlo/katex-styles": "npm:1.0.1"
+    dompurify: "npm:^3.1.7"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
     react-hot-toast: "npm:^2.4.1"
     react-resizable: "npm:^3.0.5"
-  checksum: 10/1968f2b990a2e2d12f8bc5fce6d05ad75f51cc5b3e8f1e3917949b1191aea5c1405ab8d087aa4b4f37f10d1657963246a093e78e65b8c46b0d6f945f54feebb2
+  checksum: 10/ddd274653274107754087fb2e7adad9b2b72fc8c4ca39db5b0de1fa74e6fe37167290b043df992db933a10a6fbe72e99505c3416251b7f1fcbf66f075b3f70ae
   languageName: node
   linkType: hard
 
@@ -6741,6 +6742,13 @@ __metadata:
   dependencies:
     esutils: "npm:^2.0.2"
   checksum: 10/555684f77e791b17173ea86e2eea45ef26c22219cb64670669c4f4bebd26dbc95cd90ec1f4159e9349a6bb9eb892ce4dde8cd0139e77bedd8bf4518238618474
+  languageName: node
+  linkType: hard
+
+"dompurify@npm:^3.1.7":
+  version: 3.1.7
+  resolution: "dompurify@npm:3.1.7"
+  checksum: 10/dc637a064306f83cf911caa267ffe1f973552047602020e3b6723c90f67962813edf8a65a0b62e8c9bc13fcd173a2691212a3719bc116226967f46bcd6181277
   languageName: node
   linkType: hard
 
@@ -13270,7 +13278,7 @@ __metadata:
     "@eslint/compat": "npm:^1.2.1"
     "@eslint/js": "npm:^9.12.0"
     "@paralleldrive/cuid2": "npm:^2.2.2"
-    "@serlo/editor": "npm:0.16.0"
+    "@serlo/editor": "npm:0.17.0"
     "@types/jsonwebtoken": "npm:9.0.7"
     "@types/lodash": "npm:^4"
     "@types/ltijs": "npm:4.0.11"

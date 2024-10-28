@@ -89,7 +89,7 @@ Scenario('Assets from edu-sharing can be included', ({ I }) => {
 
   embedEdusharingAsset(I)
 
-  I.seeElement('img[title="Serlo Testbild"]')
+  I.seeElement('div[data-embed-type="image"]')
 })
 
 function embedEdusharingAsset(I: CodeceptJS.I) {
