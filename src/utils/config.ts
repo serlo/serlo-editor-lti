@@ -29,13 +29,7 @@ const NonEmptyString = new t.Type<string, string, unknown>(
   String
 )
 
-const BaseEnv = t.type({
-  ENVIRONMENT: t.union([
-    t.literal('local'),
-    t.literal('development'),
-    t.literal('staging'),
-    t.literal('production'),
-  ]),
+const BaseEnv = {
   EDITOR_URL: NonEmptyString,
   SERLO_EDITOR_TESTING_SECRET: t.string,
   LTIJS_KEY: NonEmptyString,
@@ -51,9 +45,21 @@ const BaseEnv = t.type({
   // fallback to '' for now so it does not fail in CI
   BUCKET_SECRET_ACCESS_KEY: t.string,
   MEDIA_BASE_URL: NonEmptyString,
+}
+
+const LocalEnvType = t.type({
+  ...BaseEnv,
+  ENVIRONMENT: t.literal('local'),
 })
 
-const StagingSpecificEnv = t.type({
+const DevelopmentEnvType = t.type({
+  ...BaseEnv,
+  ENVIRONMENT: t.literal('development'),
+})
+
+const StagingEnvType = t.type({
+  ...BaseEnv,
+  ENVIRONMENT: t.literal('staging'),
   ITSLEARNING_NAME: NonEmptyString,
   ITSLEARNING_URL: NonEmptyString,
   ITSLEARNING_AUTHENTICATION_ENDPOINT: NonEmptyString,
@@ -72,16 +78,16 @@ const StagingSpecificEnv = t.type({
   EDUSHARING_RLP_CLIENT_ID_ON_SERLO_EDITOR: NonEmptyString,
 })
 
-// If any env var is necessary for a certain environment, add it here for runtime type checking
+const ProductionEnvType = t.type({
+  ...BaseEnv,
+  ENVIRONMENT: t.literal('production'),
+})
+
 const IOEnv = t.union([
-  t.intersection([BaseEnv, t.type({ ENVIRONMENT: t.literal('local') })]),
-  t.intersection([BaseEnv, t.type({ ENVIRONMENT: t.literal('development') })]),
-  t.intersection([
-    BaseEnv,
-    t.type({ ENVIRONMENT: t.literal('staging') }),
-    StagingSpecificEnv,
-  ]),
-  t.intersection([BaseEnv, t.type({ ENVIRONMENT: t.literal('production') })]),
+  LocalEnvType,
+  DevelopmentEnvType,
+  StagingEnvType,
+  ProductionEnvType,
 ])
 
 export const decodedConfig = IOEnv.decode(process.env)
