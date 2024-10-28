@@ -63,7 +63,7 @@
     "codeceptjs": "^3.6.7",
     "esbuild": "^0.24.0",
     "eslint": "^9.13.0",
-    "eslint-plugin-react": "^7.37.1",
+    "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.12",
     "globals": "^15.10.0",
