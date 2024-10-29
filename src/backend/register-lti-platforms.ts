@@ -22,64 +22,43 @@ export async function registerLtiPlatforms() {
     serverLog(`Registered platform: saltire`)
   }
 
-  // Register platform: itslearning
-  if (
-    process.env.ITSLEARNING_URL &&
-    process.env.ITSLEARNING_NAME &&
-    process.env.SERLO_EDITOR_CLIENT_ID_ON_ITSLEARNING &&
-    process.env.ITSLEARNING_AUTHENTICATION_ENDPOINT &&
-    process.env.ITSLEARNING_ACCESS_TOKEN_ENDPOINT &&
-    process.env.ITSLEARNING_KEYSET_ENDPOINT
-  ) {
-    const platform = await ltijs.registerPlatform({
-      url: process.env.ITSLEARNING_URL, // LTI iss
-      name: process.env.ITSLEARNING_NAME,
-      clientId: process.env.SERLO_EDITOR_CLIENT_ID_ON_ITSLEARNING,
-      authenticationEndpoint: process.env.ITSLEARNING_AUTHENTICATION_ENDPOINT,
-      accesstokenEndpoint: process.env.ITSLEARNING_ACCESS_TOKEN_ENDPOINT,
+  if (config.ENVIRONMENT === 'staging') {
+    // Register platform: itslearning
+    const itsLearningPlatform = await ltijs.registerPlatform({
+      url: config.ITSLEARNING_URL, // LTI iss
+      name: config.ITSLEARNING_NAME,
+      clientId: config.SERLO_EDITOR_CLIENT_ID_ON_ITSLEARNING,
+      authenticationEndpoint: config.ITSLEARNING_AUTHENTICATION_ENDPOINT,
+      accesstokenEndpoint: config.ITSLEARNING_ACCESS_TOKEN_ENDPOINT,
       authConfig: {
         method: 'JWK_SET',
-        key: process.env.ITSLEARNING_KEYSET_ENDPOINT,
+        key: config.ITSLEARNING_KEYSET_ENDPOINT,
       },
     })
-    if (platform) {
+    if (itsLearningPlatform) {
       serverLog('Registered platform: itslearning')
     }
-  }
 
-  // Register platform: edu-sharing (RLP)
-  if (
-    process.env.EDUSHARING_RLP_URL &&
-    process.env.EDUSHARING_RLP_NAME &&
-    process.env.SERLO_EDITOR_CLIENT_ID_ON_EDUSHARING_RLP &&
-    process.env.EDUSHARING_RLP_AUTHENTICATION_ENDPOINT &&
-    process.env.EDUSHARING_RLP_ACCESS_TOKEN_ENDPOINT &&
-    process.env.EDUSHARING_RLP_KEYSET_ENDPOINT &&
-    process.env.EDUSHARING_RLP_LOGIN_ENDPOINT &&
-    process.env.EDUSHARING_RLP_LAUNCH_ENDPOINT &&
-    process.env.EDUSHARING_RLP_CLIENT_ID_ON_SERLO_EDITOR &&
-    process.env.EDUSHARING_RLP_DETAILS_ENDPOINT
-  ) {
-    const platform = await ltijs.registerPlatform({
-      url: process.env.EDUSHARING_RLP_URL, // LTI iss
-      name: process.env.EDUSHARING_RLP_NAME,
-      clientId: process.env.SERLO_EDITOR_CLIENT_ID_ON_EDUSHARING_RLP,
-      authenticationEndpoint:
-        process.env.EDUSHARING_RLP_AUTHENTICATION_ENDPOINT,
-      accesstokenEndpoint: process.env.EDUSHARING_RLP_ACCESS_TOKEN_ENDPOINT,
+    // Register platform: edu-sharing (RLP)
+    const eduSharingPlatform = await ltijs.registerPlatform({
+      url: config.EDUSHARING_RLP_URL, // LTI iss
+      name: config.EDUSHARING_RLP_NAME,
+      clientId: config.SERLO_EDITOR_CLIENT_ID_ON_EDUSHARING_RLP,
+      authenticationEndpoint: config.EDUSHARING_RLP_AUTHENTICATION_ENDPOINT,
+      accesstokenEndpoint: config.EDUSHARING_RLP_ACCESS_TOKEN_ENDPOINT,
       authConfig: {
         method: 'JWK_SET',
-        key: process.env.EDUSHARING_RLP_KEYSET_ENDPOINT,
+        key: config.EDUSHARING_RLP_KEYSET_ENDPOINT,
       },
     })
-    if (platform) {
+    if (eduSharingPlatform) {
       edusharingAsToolConfigs.push({
-        issWhenEdusharingLaunchedSerloEditor: process.env.EDUSHARING_RLP_URL,
-        loginEndpoint: process.env.EDUSHARING_RLP_LOGIN_ENDPOINT,
-        launchEndpoint: process.env.EDUSHARING_RLP_LAUNCH_ENDPOINT,
-        clientId: process.env.EDUSHARING_RLP_CLIENT_ID_ON_SERLO_EDITOR,
-        detailsEndpoint: process.env.EDUSHARING_RLP_DETAILS_ENDPOINT,
-        keysetEndpoint: process.env.EDUSHARING_RLP_KEYSET_ENDPOINT,
+        issWhenEdusharingLaunchedSerloEditor: config.EDUSHARING_RLP_URL,
+        loginEndpoint: config.EDUSHARING_RLP_LOGIN_ENDPOINT,
+        launchEndpoint: config.EDUSHARING_RLP_LAUNCH_ENDPOINT,
+        clientId: config.EDUSHARING_RLP_CLIENT_ID_ON_SERLO_EDITOR,
+        detailsEndpoint: config.EDUSHARING_RLP_DETAILS_ENDPOINT,
+        keysetEndpoint: config.EDUSHARING_RLP_KEYSET_ENDPOINT,
       })
       serverLog('Registered platform: edu-sharing (RLP)')
     }
