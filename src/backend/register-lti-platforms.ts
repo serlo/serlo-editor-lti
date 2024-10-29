@@ -22,8 +22,8 @@ export async function registerLtiPlatforms() {
     serverLog(`Registered platform: saltire`)
   }
 
-  // Register platform: itslearning
   if (config.ENVIRONMENT === 'staging') {
+    // Register platform: itslearning
     const itsLearningPlatform = await ltijs.registerPlatform({
       url: config.ITSLEARNING_URL, // LTI iss
       name: config.ITSLEARNING_NAME,
