@@ -10,6 +10,8 @@ import { type AccessToken, type Entity } from '../backend'
 import copyPluginToClipboardImage from './assets/copy-plugin-to-clipboard.png'
 import Error from './Error'
 
+import '@serlo/editor/dist/style.css'
+
 export type AppState =
   | { type: 'fetching-content' }
   | AppStateError
