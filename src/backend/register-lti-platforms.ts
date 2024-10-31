@@ -39,21 +39,22 @@ async function registerPlatform({
   }
 }
 
-export async function registerLtiPlatforms() {
-  if (config.ALLOW_SALTIRE) {
-    // Register platform: saltire
-    await registerPlatform({
-      url: 'https://saltire.lti.app/platform', // LTI iss
-      name: 'saltire.lti.app',
-      clientId: 'saltire.lti.app',
-      authenticationEndpoint: 'https://saltire.lti.app/platform/auth',
-      accesstokenEndpoint:
-        'https://saltire.lti.app/platform/token/sc24671cd70c6e45554e6c405a2f5d966',
-      key: 'https://saltire.lti.app/platform/jwks/sc24671cd70c6e45554e6c405a2f5d966',
-    })
-  }
+async function registerSaltire() {
+  return registerPlatform({
+    url: 'https://saltire.lti.app/platform', // LTI iss
+    name: 'saltire.lti.app',
+    clientId: 'saltire.lti.app',
+    authenticationEndpoint: 'https://saltire.lti.app/platform/auth',
+    accesstokenEndpoint:
+      'https://saltire.lti.app/platform/token/sc24671cd70c6e45554e6c405a2f5d966',
+    key: 'https://saltire.lti.app/platform/jwks/sc24671cd70c6e45554e6c405a2f5d966',
+  })
+}
 
+export async function registerLtiPlatforms() {
   if (config.ENVIRONMENT === 'staging') {
+    await registerSaltire()
+
     // Register platform: itslearning
     await registerPlatform({
       url: config.ITSLEARNING_URL, // LTI iss
