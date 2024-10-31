@@ -255,15 +255,27 @@ export class EdusharingServer {
       )
 
       const idToken = verifyResult.payload
+      const idTokenType = t.type({
+        'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings':
+          t.type({
+            data: t.string,
+            deep_link_return_url: t.string,
+          }),
+      })
 
-      const deepLinkingSettingsClaim =
-        idToken[
-          'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings'
-        ]
-      if (!t.type({ data: t.string }).is(deepLinkingSettingsClaim)) {
-        res.status(400).send('Missing deep_linking_settings claim in id token')
+      if (!idTokenType.is(idToken)) {
+        res.status(400).send('Missing property in id token')
         return
       }
+
+      const deeplinkReturnUrl =
+        idToken[
+          'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings'
+        ].deep_link_return_url
+      const data =
+        idToken[
+          'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings'
+        ].data
 
       const payload = {
         iss: edusharingMockClientId,
@@ -274,8 +286,7 @@ export class EdusharingServer {
         'https://purl.imsglobal.org/spec/lti/claim/message_type':
           'LtiDeepLinkingResponse',
         'https://purl.imsglobal.org/spec/lti/claim/version': '1.3.0',
-        'https://purl.imsglobal.org/spec/lti-dl/claim/data':
-          deepLinkingSettingsClaim.data,
+        'https://purl.imsglobal.org/spec/lti-dl/claim/data': data,
         'https://purl.imsglobal.org/spec/lti-dl/claim/content_items': [
           {
             custom: {
@@ -303,7 +314,7 @@ export class EdusharingServer {
       createAutoFormResponse({
         res,
         method: 'POST',
-        targetUrl: urlJoin(editorUrl, 'edusharing-embed/done'),
+        targetUrl: deeplinkReturnUrl,
         params: {
           JWT: jwt,
         },

@@ -180,7 +180,9 @@ export async function edusharingLogin(req: Request, res: Response) {
     nonce,
   })
 
-  const platformDoneEndpoint = new URL(urlJoin(editorUrl, '/done'))
+  const platformDoneEndpoint = new URL(
+    urlJoin(editorUrl, '/edusharing-embed/done')
+  )
 
   // Construct a Authentication Response
   // See: https://www.imsglobal.org/spec/security/v1p0/#step-3-authentication-response
