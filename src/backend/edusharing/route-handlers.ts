@@ -4,7 +4,6 @@ import * as t from 'io-ts'
 import urlJoin from 'url-join'
 import { createAutoFormResponse } from '../util/create-auto-form-response'
 import { verifyJwt, signJwtWithBase64Key } from './jwt-helpers'
-import { createJWKSResponse } from './create-jwks-response'
 import { edusharingEmbedKeys } from './edusharing-embed-keys'
 import { Collection, MongoClient, ObjectId } from 'mongodb'
 
@@ -233,10 +232,15 @@ export async function login(req: Request, res: Response) {
   })
 }
 export async function keys(_: Request, res: Response) {
-  createJWKSResponse({
-    res,
-    keyid: edusharingEmbedKeys.keyId,
-    publicKey: edusharingEmbedKeys.publicKey,
+  res.json({
+    keys: [
+      {
+        kid: edusharingEmbedKeys.keyId,
+        alg: 'RS256',
+        use: 'sig',
+        ...edusharingEmbedKeys.publicKey.export({ format: 'jwk' }),
+      },
+    ],
   })
 }
 export async function done(req: Request, res: Response) {

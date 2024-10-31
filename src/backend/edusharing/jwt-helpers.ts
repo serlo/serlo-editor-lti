@@ -78,8 +78,6 @@ export function verifyJwt(args: {
   })
 }
 
-const defaultExpireAfterSeconds = 15
-
 export function signJwtWithBase64Key({
   payload,
   keyid,
@@ -91,31 +89,14 @@ export function signJwtWithBase64Key({
   privateKey: KeyObject
   expireAfterSeconds?: number
 }) {
-  return signJwt({
-    payload,
-    keyid,
-    privateKey,
-    expireAfterSeconds,
-  })
-}
+  const defaultExpireAfterSeconds = 15
 
-function signJwt({
-  payload,
-  keyid,
-  privateKey,
-  expireAfterSeconds = defaultExpireAfterSeconds,
-}: {
-  payload: Omit<jwt.JwtPayload, 'iat'>
-  keyid: string
-  privateKey: KeyObject
-  expireAfterSeconds?: number
-}) {
   return jwt.sign(
     { ...payload, iat: Math.floor(Date.now() / 1000) },
     privateKey,
     {
       algorithm: 'RS256',
-      expiresIn: expireAfterSeconds,
+      expiresIn: expireAfterSeconds || defaultExpireAfterSeconds,
       keyid,
     }
   )
