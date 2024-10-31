@@ -2589,6 +2589,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@lit-labs/ssr-dom-shim@npm:^1.2.0":
+  version: 1.2.1
+  resolution: "@lit-labs/ssr-dom-shim@npm:1.2.1"
+  checksum: 10/48e28c1f132eb1d5b385454dd23db2837bf913d108a0908e73816ceb594b1b09db34e05ccb86a18fb9c02fc100d62bbab350b6ec88e2c175f2c21c5f0220bfdd
+  languageName: node
+  linkType: hard
+
+"@lit/reactive-element@npm:^2.0.4":
+  version: 2.0.4
+  resolution: "@lit/reactive-element@npm:2.0.4"
+  dependencies:
+    "@lit-labs/ssr-dom-shim": "npm:^1.2.0"
+  checksum: 10/16aa5a8d917bce24d6c7cb5979f0a978e91f6205b4d9a8ebea2baf965e7a8215dab581b83b331123b04190612f4992ecc7b219cf00cf9b82f53403b08b1b6d49
+  languageName: node
+  linkType: hard
+
 "@mongodb-js/saslprep@npm:^1.1.0":
   version: 1.1.7
   resolution: "@mongodb-js/saslprep@npm:1.1.7"
@@ -3199,17 +3215,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@serlo/editor@npm:0.17.0":
-  version: 0.17.0
-  resolution: "@serlo/editor@npm:0.17.0"
+"@serlo/editor@npm:0.19.0":
+  version: 0.19.0
+  resolution: "@serlo/editor@npm:0.19.0"
   dependencies:
     "@serlo/katex-styles": "npm:1.0.1"
     dompurify: "npm:^3.1.7"
+    lit: "npm:^3.2.1"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
     react-hot-toast: "npm:^2.4.1"
     react-resizable: "npm:^3.0.5"
-  checksum: 10/ddd274653274107754087fb2e7adad9b2b72fc8c4ca39db5b0de1fa74e6fe37167290b043df992db933a10a6fbe72e99505c3416251b7f1fcbf66f075b3f70ae
+  checksum: 10/6ba1ab3de3284a3ef41a65a138c01ef7d8a91f21844682f036152cd6c9bec78a329bb521d2d01fed68ec1fe4fbd2edc91070fca8f44e3b8bf5a43b8340b2591c
   languageName: node
   linkType: hard
 
@@ -4332,6 +4349,13 @@ __metadata:
   version: 2.0.3
   resolution: "@types/stack-utils@npm:2.0.3"
   checksum: 10/72576cc1522090fe497337c2b99d9838e320659ac57fa5560fcbdcbafcf5d0216c6b3a0a8a4ee4fdb3b1f5e3420aa4f6223ab57b82fef3578bec3206425c6cf5
+  languageName: node
+  linkType: hard
+
+"@types/trusted-types@npm:^2.0.2":
+  version: 2.0.7
+  resolution: "@types/trusted-types@npm:2.0.7"
+  checksum: 10/8e4202766a65877efcf5d5a41b7dd458480b36195e580a3b1085ad21e948bc417d55d6f8af1fd2a7ad008015d4117d5fdfe432731157da3c68678487174e4ba3
   languageName: node
   linkType: hard
 
@@ -9977,6 +10001,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lit-element@npm:^4.1.0":
+  version: 4.1.1
+  resolution: "lit-element@npm:4.1.1"
+  dependencies:
+    "@lit-labs/ssr-dom-shim": "npm:^1.2.0"
+    "@lit/reactive-element": "npm:^2.0.4"
+    lit-html: "npm:^3.2.0"
+  checksum: 10/5d1576f63fec21ac10247a67232ff7f1640210cd5b10b8082eb692242b1f74ef2a822d05bd0e330baf5eeb6f0f9c8d5a223e11525f4f96ea668e74009f0d0d23
+  languageName: node
+  linkType: hard
+
+"lit-html@npm:^3.2.0":
+  version: 3.2.1
+  resolution: "lit-html@npm:3.2.1"
+  dependencies:
+    "@types/trusted-types": "npm:^2.0.2"
+  checksum: 10/d670a8e49da98d04b83dd13807fec86305d85915b30814c5461e7a34d001ce1efcd8395467897118d0ab5c09d9c224617b25a4eb2b743491f634f6a3bf155753
+  languageName: node
+  linkType: hard
+
+"lit@npm:^3.2.1":
+  version: 3.2.1
+  resolution: "lit@npm:3.2.1"
+  dependencies:
+    "@lit/reactive-element": "npm:^2.0.4"
+    lit-element: "npm:^4.1.0"
+    lit-html: "npm:^3.2.0"
+  checksum: 10/6a2cd0547b3ccff11f41753d1d98d789ed1051aef8fb0865344c7e1e4d77aafcf384f660c6d98125cc81ea0c9f87786528742d359359a52d7af956eefb713fe4
+  languageName: node
+  linkType: hard
+
 "load-json-file@npm:^4.0.0":
   version: 4.0.0
   resolution: "load-json-file@npm:4.0.0"
@@ -13278,7 +13333,7 @@ __metadata:
     "@eslint/compat": "npm:^1.2.1"
     "@eslint/js": "npm:^9.12.0"
     "@paralleldrive/cuid2": "npm:^2.2.2"
-    "@serlo/editor": "npm:0.17.0"
+    "@serlo/editor": "npm:0.19.0"
     "@types/jsonwebtoken": "npm:9.0.7"
     "@types/lodash": "npm:^4"
     "@types/ltijs": "npm:4.0.11"
