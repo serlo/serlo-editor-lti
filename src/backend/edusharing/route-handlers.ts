@@ -24,7 +24,7 @@ const mongoClient = new MongoClient(mongoUri.href)
 let edusharingEmbedNonces: Collection
 let edusharingEmbedSessions: Collection
 
-export async function edusharingInit() {
+export async function init() {
   await mongoClient.connect()
 
   edusharingEmbedNonces = mongoClient.db().collection('edusharing_embed_nonce')
@@ -47,7 +47,7 @@ export async function edusharingInit() {
   )
 }
 
-export async function edusharingStart(_: Request, res: Response) {
+export async function start(_: Request, res: Response) {
   const idToken = res.locals.token as IdToken
   const issWhenEdusharingLaunchedSerloEditor = idToken.iss
 
@@ -108,7 +108,7 @@ export async function edusharingStart(_: Request, res: Response) {
   })
 }
 
-export async function edusharingLogin(req: Request, res: Response) {
+export async function login(req: Request, res: Response) {
   const loginHint = req.query['login_hint']
   if (typeof loginHint !== 'string') {
     res.status(400).send('login_hint is not valid')
@@ -233,14 +233,14 @@ export async function edusharingLogin(req: Request, res: Response) {
     params: { id_token: token, state },
   })
 }
-export async function edusharingKeys(_: Request, res: Response) {
+export async function keys(_: Request, res: Response) {
   createJWKSResponse({
     res,
     keyid: edusharingEmbedKeys.keyId,
     publicKey: edusharingEmbedKeys.publicKey,
   })
 }
-export async function edusharingDone(req: Request, res: Response) {
+export async function done(req: Request, res: Response) {
   if (req.headers['content-type'] !== 'application/x-www-form-urlencoded') {
     res
       .status(400)
@@ -358,7 +358,7 @@ export async function edusharingDone(req: Request, res: Response) {
           `
   )
 }
-export async function edusharingGet(req: Request, res: Response) {
+export async function get(req: Request, res: Response) {
   const idToken = res.locals.token
   if (!idToken) {
     res.json({

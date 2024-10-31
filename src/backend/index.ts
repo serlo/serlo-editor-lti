@@ -8,14 +8,7 @@ import { createAccessToken } from './create-acccess-token'
 import { registerLtiPlatforms } from './register-lti-platforms'
 import urlJoin from 'url-join'
 import config from '../utils/config'
-import {
-  edusharingDone,
-  edusharingGet,
-  edusharingInit,
-  edusharingKeys,
-  edusharingLogin,
-  edusharingStart,
-} from './edusharing/route-handlers'
+import * as edusharing from './edusharing'
 import {
   editorApp,
   editorGetEntity,
@@ -64,7 +57,7 @@ const setup = async () => {
     }
   )
 
-  await edusharingInit().catch((error) => {
+  await edusharing.init().catch((error) => {
     serverLog(`Setup failed: ${error}`)
     throw new Error('Setup failed!')
   })
@@ -107,21 +100,21 @@ const setup = async () => {
 
   // Provide endpoint to start embed flow on edu-sharing
   // Called when user clicks on "embed content from edusharing"
-  app.get('/edusharing-embed/start', edusharingStart)
+  app.get('/edusharing-embed/start', edusharing.start)
 
   // Receives an Authentication Request in payload
   // See: https://www.imsglobal.org/spec/security/v1p0/#step-2-authentication-request
-  app.get('/edusharing-embed/login', edusharingLogin)
+  app.get('/edusharing-embed/login', edusharing.login)
 
-  app.use('/edusharing-embed/keys', edusharingKeys)
+  app.use('/edusharing-embed/keys', edusharing.keys)
 
   // Called after the resource selection on Edusharing (within iframe) when user selected what resource to embed.
   // Receives a LTI Deep Linking Response Message in payload. Contains content_items array that specifies which resource should be embedded.
   // See: https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-message
   // See https://www.imsglobal.org/spec/lti-dl/v2p0#deep-linking-response-example for an example response payload
-  app.post('/edusharing-embed/done', edusharingDone)
+  app.post('/edusharing-embed/done', edusharing.done)
 
-  app.get('/edusharing-embed/get', edusharingGet)
+  app.get('/edusharing-embed/get', edusharing.get)
 
   app.get('/media/presigned-url', mediaPresignedUrl)
   app.use(mediaProxy)
