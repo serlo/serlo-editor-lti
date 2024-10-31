@@ -4,54 +4,76 @@ import { edusharingAsToolConfigs } from './edusharing/get-edusharing-as-tool-con
 import { serverLog } from '../utils/server-log'
 import config from '../utils/config'
 
+async function registerPlatform({
+  url,
+  name,
+  clientId,
+  authenticationEndpoint,
+  accesstokenEndpoint,
+  key,
+}: {
+  url: string
+  name: string
+  clientId: string
+  authenticationEndpoint: string
+  accesstokenEndpoint: string
+  key: string
+}) {
+  const platform = await ltijs.registerPlatform({
+    url,
+    name,
+    clientId,
+    authenticationEndpoint,
+    accesstokenEndpoint,
+    authConfig: {
+      method: 'JWK_SET',
+      key,
+    },
+  })
+  if (platform) {
+    serverLog(`Registered platform: ${name}`)
+    return platform
+  } else {
+    serverLog(`Platform ${name} could not be registered`)
+    return false
+  }
+}
+
 export async function registerLtiPlatforms() {
-  // Register platform: saltire
   if (config.ALLOW_SALTIRE) {
-    await ltijs.registerPlatform({
+    // Register platform: saltire
+    await registerPlatform({
       url: 'https://saltire.lti.app/platform', // LTI iss
       name: 'saltire.lti.app',
       clientId: 'saltire.lti.app',
       authenticationEndpoint: 'https://saltire.lti.app/platform/auth',
       accesstokenEndpoint:
         'https://saltire.lti.app/platform/token/sc24671cd70c6e45554e6c405a2f5d966',
-      authConfig: {
-        method: 'JWK_SET',
-        key: 'https://saltire.lti.app/platform/jwks/sc24671cd70c6e45554e6c405a2f5d966',
-      },
+      key: 'https://saltire.lti.app/platform/jwks/sc24671cd70c6e45554e6c405a2f5d966',
     })
-    serverLog(`Registered platform: saltire`)
   }
 
   if (config.ENVIRONMENT === 'staging') {
     // Register platform: itslearning
-    const itsLearningPlatform = await ltijs.registerPlatform({
+    await registerPlatform({
       url: config.ITSLEARNING_URL, // LTI iss
       name: config.ITSLEARNING_NAME,
       clientId: config.SERLO_EDITOR_CLIENT_ID_ON_ITSLEARNING,
       authenticationEndpoint: config.ITSLEARNING_AUTHENTICATION_ENDPOINT,
       accesstokenEndpoint: config.ITSLEARNING_ACCESS_TOKEN_ENDPOINT,
-      authConfig: {
-        method: 'JWK_SET',
-        key: config.ITSLEARNING_KEYSET_ENDPOINT,
-      },
+      key: config.ITSLEARNING_KEYSET_ENDPOINT,
     })
-    if (itsLearningPlatform) {
-      serverLog('Registered platform: itslearning')
-    }
 
     // Register platform: edu-sharing (RLP)
-    const eduSharingPlatform = await ltijs.registerPlatform({
+    const platform = await registerPlatform({
       url: config.EDUSHARING_RLP_URL, // LTI iss
       name: config.EDUSHARING_RLP_NAME,
       clientId: config.SERLO_EDITOR_CLIENT_ID_ON_EDUSHARING_RLP,
       authenticationEndpoint: config.EDUSHARING_RLP_AUTHENTICATION_ENDPOINT,
       accesstokenEndpoint: config.EDUSHARING_RLP_ACCESS_TOKEN_ENDPOINT,
-      authConfig: {
-        method: 'JWK_SET',
-        key: config.EDUSHARING_RLP_KEYSET_ENDPOINT,
-      },
+      key: config.EDUSHARING_RLP_KEYSET_ENDPOINT,
     })
-    if (eduSharingPlatform) {
+    if (platform) {
       edusharingAsToolConfigs.push({
         issWhenEdusharingLaunchedSerloEditor: config.EDUSHARING_RLP_URL,
         loginEndpoint: config.EDUSHARING_RLP_LOGIN_ENDPOINT,
@@ -64,9 +86,9 @@ export async function registerLtiPlatforms() {
     }
   }
 
-  // Register platform: edusharing mock
   if (config.ALLOW_EDUSHARING_MOCK) {
-    const platform = await ltijs.registerPlatform({
+    // Register platform: edusharing mock
+    const platform = await registerPlatform({
       url: 'http://localhost:8100/edu-sharing', // LTI iss
       name: 'edusharing-mock',
       clientId: 'piQ0JV8O880ZrVt', // The ID for this LTI tool on the LTI platform
@@ -74,47 +96,40 @@ export async function registerLtiPlatforms() {
         'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/auth',
       accesstokenEndpoint:
         'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/token',
-      authConfig: {
-        method: 'JWK_SET',
-        key: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
-      },
-    })
-    edusharingAsToolConfigs.push({
-      issWhenEdusharingLaunchedSerloEditor: 'http://localhost:8100/edu-sharing',
-      loginEndpoint:
-        'http://localhost:8100/edu-sharing/rest/lti/v13/oidc/login_initiations',
-      launchEndpoint: 'http://localhost:8100/edu-sharing/rest/lti/v13/lti13',
-      clientId: edusharingMockClientId,
-      detailsEndpoint: 'http://localhost:8100/edu-sharing/rest/lti/v13/details',
-      keysetEndpoint: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
+      key: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
     })
     if (platform) {
+      edusharingAsToolConfigs.push({
+        issWhenEdusharingLaunchedSerloEditor:
+          'http://localhost:8100/edu-sharing',
+        loginEndpoint:
+          'http://localhost:8100/edu-sharing/rest/lti/v13/oidc/login_initiations',
+        launchEndpoint: 'http://localhost:8100/edu-sharing/rest/lti/v13/lti13',
+        clientId: edusharingMockClientId,
+        detailsEndpoint:
+          'http://localhost:8100/edu-sharing/rest/lti/v13/details',
+        keysetEndpoint: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
+      })
       serverLog(`Registered platform: edusharing-mock`)
     }
   }
 
-  // Register platform: itslearning mock
   if (process.env.ALLOW_ITSLEARNING_MOCK) {
-    const platform = await ltijs.registerPlatform({
+    // Register platform: itslearning mock
+    await registerPlatform({
       url: 'http://localhost:8101/itslearning', // LTI iss
       name: 'itslearning-mock',
       clientId: 'mock-itslearning-id',
       authenticationEndpoint:
         'http://localhost:8101/itslearning/connect/authorize',
       accesstokenEndpoint: 'http://localhost:8101/itslearning/connect/token',
-      authConfig: {
-        method: 'JWK_SET',
-        key: 'http://localhost:8101/itslearning/.well-known/openid-configuration/jwks',
-      },
+      key: 'http://localhost:8101/itslearning/.well-known/openid-configuration/jwks',
     })
-    if (platform) {
-      console.log('Registered platform: itslearning-mock')
-    }
   }
 
   // Register platform: edusharing (local docker)
   // if (config.ALLOW_LOCAL_EDUSHARING) {
-  //   const platform = await ltijs.registerPlatform({
+  //   await registerPlatform({
   //     url: 'http://localhost:8100/edu-sharing', // LTI iss
   //     name: 'Platform', // TODO: Change
   //     clientId: 'aZZDRp40gsj459a', // The ID for this LTI tool on the LTI platform
@@ -129,8 +144,5 @@ export async function registerLtiPlatforms() {
   //       // key: 'http://repository-service:8080/edu-sharing/rest/lti/v13/jwks',
   //     },
   //   })
-  //   if (platform) {
-  //     serverLog(`Registered platform: edusharing-local-docker`)
-  //   }
   // }
 }
