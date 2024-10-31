@@ -87,7 +87,9 @@ export async function registerLtiPlatforms() {
     }
   }
 
-  if (config.ALLOW_EDUSHARING_MOCK) {
+  if (config.ENVIRONMENT === 'local') {
+    await registerSaltire()
+
     // Register platform: edusharing mock
     const platform = await registerPlatform({
       url: 'http://localhost:8100/edu-sharing', // LTI iss
@@ -111,11 +113,9 @@ export async function registerLtiPlatforms() {
           'http://localhost:8100/edu-sharing/rest/lti/v13/details',
         keysetEndpoint: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
       })
-      serverLog(`Registered platform: edusharing-mock`)
+      serverLog(`Registered tool: edusharing-mock`)
     }
-  }
 
-  if (process.env.ALLOW_ITSLEARNING_MOCK) {
     // Register platform: itslearning mock
     await registerPlatform({
       url: 'http://localhost:8101/itslearning', // LTI iss
@@ -126,24 +126,22 @@ export async function registerLtiPlatforms() {
       accesstokenEndpoint: 'http://localhost:8101/itslearning/connect/token',
       key: 'http://localhost:8101/itslearning/.well-known/openid-configuration/jwks',
     })
-  }
 
-  // Register platform: edusharing (local docker)
-  // if (config.ALLOW_LOCAL_EDUSHARING) {
-  //   await registerPlatform({
-  //     url: 'http://localhost:8100/edu-sharing', // LTI iss
-  //     name: 'Platform', // TODO: Change
-  //     clientId: 'aZZDRp40gsj459a', // The ID for this LTI tool on the LTI platform
-  //     authenticationEndpoint:
-  //       'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/auth',
-  //     accesstokenEndpoint:
-  //       'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/token',
-  //     authConfig: {
-  //       method: 'JWK_SET',
-  //       // key: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
-  //       key: 'https://serlo-edusharing_repository-service_1:8080/edu-sharing/rest/lti/v13/jwks',
-  //       // key: 'http://repository-service:8080/edu-sharing/rest/lti/v13/jwks',
-  //     },
-  //   })
-  // }
+    // Register platform: edusharing (local docker)
+    //   await registerPlatform({
+    //     url: 'http://localhost:8100/edu-sharing', // LTI iss
+    //     name: 'Platform', // TODO: Change
+    //     clientId: 'aZZDRp40gsj459a', // The ID for this LTI tool on the LTI platform
+    //     authenticationEndpoint:
+    //       'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/auth',
+    //     accesstokenEndpoint:
+    //       'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/token',
+    //     authConfig: {
+    //       method: 'JWK_SET',
+    //       // key: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
+    //       key: 'https://serlo-edusharing_repository-service_1:8080/edu-sharing/rest/lti/v13/jwks',
+    //       // key: 'http://repository-service:8080/edu-sharing/rest/lti/v13/jwks',
+    //     },
+    //   })
+  }
 }

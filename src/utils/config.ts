@@ -1,22 +1,7 @@
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 
-// Inspiration from https://github.com/gcanti/io-ts-types/blob/master/src/BooleanFromString.ts
-const StringOrUndefinedToBoolean = new t.Type<boolean, string, unknown>(
-  'StringOrUndefinedToBoolean',
-  t.boolean.is,
-  (input, context) => {
-    if (input === 'true') {
-      return t.success(true)
-    }
-    if (!input || input === 'false') {
-      return t.success(false)
-    }
-    return t.failure(input, context)
-  },
-  String
-)
-
+// See https://github.com/gcanti/io-ts-types/blob/master/src/NonEmptyString.ts
 const NonEmptyString = new t.Type<string, string, unknown>(
   'NonEmptyString',
   t.string.is,
@@ -35,8 +20,6 @@ const BaseEnv = {
   LTIJS_KEY: NonEmptyString,
   MYSQL_URI: NonEmptyString,
   MONGODB_URI: NonEmptyString,
-  ALLOW_SALTIRE: StringOrUndefinedToBoolean,
-  ALLOW_EDUSHARING_MOCK: StringOrUndefinedToBoolean,
   S3_ENDPOINT: NonEmptyString,
   BUCKET_NAME: NonEmptyString,
   BUCKET_REGION: NonEmptyString,
