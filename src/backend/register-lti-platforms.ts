@@ -4,60 +4,13 @@ import { edusharingAsToolConfigs } from './edusharing/get-edusharing-as-tool-con
 import { serverLog } from '../utils/server-log'
 import config from '../utils/config'
 
-async function registerPlatform({
-  url,
-  name,
-  clientId,
-  authenticationEndpoint,
-  accesstokenEndpoint,
-  key,
-}: {
-  url: string
-  name: string
-  clientId: string
-  authenticationEndpoint: string
-  accesstokenEndpoint: string
-  key: string
-}) {
-  const platform = await ltijs.registerPlatform({
-    url,
-    name,
-    clientId,
-    authenticationEndpoint,
-    accesstokenEndpoint,
-    authConfig: {
-      method: 'JWK_SET',
-      key,
-    },
-  })
-  if (platform) {
-    serverLog(`Registered platform: ${name}`)
-    return platform
-  } else {
-    serverLog(`Platform ${name} could not be registered`)
-    return false
-  }
-}
-
-async function registerSaltire() {
-  return registerPlatform({
-    url: 'https://saltire.lti.app/platform', // LTI iss
-    name: 'saltire.lti.app',
-    clientId: 'saltire.lti.app',
-    authenticationEndpoint: 'https://saltire.lti.app/platform/auth',
-    accesstokenEndpoint:
-      'https://saltire.lti.app/platform/token/sc24671cd70c6e45554e6c405a2f5d966',
-    key: 'https://saltire.lti.app/platform/jwks/sc24671cd70c6e45554e6c405a2f5d966',
-  })
-}
-
 export async function registerLtiPlatforms() {
   if (config.ENVIRONMENT === 'staging') {
     await registerSaltire()
 
     // Register platform: itslearning
     await registerPlatform({
-      url: config.ITSLEARNING_URL, // LTI iss
+      url: config.ITSLEARNING_URL,
       name: config.ITSLEARNING_NAME,
       clientId: config.SERLO_EDITOR_CLIENT_ID_ON_ITSLEARNING,
       authenticationEndpoint: config.ITSLEARNING_AUTHENTICATION_ENDPOINT,
@@ -67,7 +20,7 @@ export async function registerLtiPlatforms() {
 
     // Register platform: edu-sharing (RLP)
     const platform = await registerPlatform({
-      url: config.EDUSHARING_RLP_URL, // LTI iss
+      url: config.EDUSHARING_RLP_URL,
       name: config.EDUSHARING_RLP_NAME,
       clientId: config.SERLO_EDITOR_CLIENT_ID_ON_EDUSHARING_RLP,
       authenticationEndpoint: config.EDUSHARING_RLP_AUTHENTICATION_ENDPOINT,
@@ -83,7 +36,7 @@ export async function registerLtiPlatforms() {
         detailsEndpoint: config.EDUSHARING_RLP_DETAILS_ENDPOINT,
         keysetEndpoint: config.EDUSHARING_RLP_KEYSET_ENDPOINT,
       })
-      serverLog('Registered platform: edu-sharing (RLP)')
+      serverLog('Registered tool: edu-sharing (RLP)')
     }
   }
 
@@ -92,7 +45,7 @@ export async function registerLtiPlatforms() {
 
     // Register platform: edusharing mock
     const platform = await registerPlatform({
-      url: 'http://localhost:8100/edu-sharing', // LTI iss
+      url: 'http://localhost:8100/edu-sharing',
       name: 'edusharing-mock',
       clientId: 'piQ0JV8O880ZrVt', // The ID for this LTI tool on the LTI platform
       authenticationEndpoint:
@@ -118,7 +71,7 @@ export async function registerLtiPlatforms() {
 
     // Register platform: itslearning mock
     await registerPlatform({
-      url: 'http://localhost:8101/itslearning', // LTI iss
+      url: 'http://localhost:8101/itslearning',
       name: 'itslearning-mock',
       clientId: 'mock-itslearning-id',
       authenticationEndpoint:
@@ -144,4 +97,52 @@ export async function registerLtiPlatforms() {
     //     },
     //   })
   }
+}
+
+async function registerPlatform({
+  url,
+  name,
+  clientId,
+  authenticationEndpoint,
+  accesstokenEndpoint,
+  key,
+}: {
+  url: string
+  name: string
+  clientId: string
+  authenticationEndpoint: string
+  accesstokenEndpoint: string
+  key: string
+}) {
+  const platform = await ltijs.registerPlatform({
+    url, // LTI iss
+    name,
+    clientId,
+    authenticationEndpoint,
+    accesstokenEndpoint,
+    authConfig: {
+      method: 'JWK_SET',
+      key,
+    },
+  })
+  if (platform) {
+    serverLog(`Registered platform: ${name}`)
+    return platform
+  } else {
+    serverLog(`Platform ${name} could not be registered`)
+    return false
+  }
+}
+
+async function registerSaltire() {
+  // Register platform: saltire
+  return registerPlatform({
+    url: 'https://saltire.lti.app/platform',
+    name: 'saltire.lti.app',
+    clientId: 'saltire.lti.app',
+    authenticationEndpoint: 'https://saltire.lti.app/platform/auth',
+    accesstokenEndpoint:
+      'https://saltire.lti.app/platform/token/sc24671cd70c6e45554e6c405a2f5d966',
+    key: 'https://saltire.lti.app/platform/jwks/sc24671cd70c6e45554e6c405a2f5d966',
+  })
 }
