@@ -41,4 +41,4 @@ jobs:
             supervisorctl restart serlo-app
 
       - name: Test deployment successful
-        run: sleep 2 && curl ${{ env.DOMAIN }} | grep NO_LTIK_OR_IDTOKEN_FOUND
+        run: sleep 5 && curl ${{ env.DOMAIN }} | grep NO_LTIK_OR_IDTOKEN_FOUND
