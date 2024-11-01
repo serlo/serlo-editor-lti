@@ -8,7 +8,7 @@ import { edusharingEmbedKeys } from './edusharing-embed-keys'
 import { Collection, MongoClient, ObjectId } from 'mongodb'
 
 import { Request, Response } from 'express'
-import { getEdusharingAsToolConfiguration } from './get-edusharing-as-tool-configuration'
+import { getEdusharingAsToolConfiguration } from './edusharing-as-tool-configuration'
 import config from '../../utils/config'
 
 const editorUrl = config.EDITOR_URL
