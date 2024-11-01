@@ -1,4 +1,4 @@
-import { serverLog } from '../utils/server-log'
+import { serverLog } from '../../utils/server-log'
 import { EdusharingServer } from './server'
 
 const edusharingPort = 8100

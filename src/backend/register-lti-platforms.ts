@@ -1,8 +1,8 @@
 import { Provider as ltijs } from 'ltijs'
-import { edusharingMockClientId } from '../edusharing-mock/server'
 import { edusharingAsToolConfigs } from './edusharing'
 import { serverLog } from '../utils/server-log'
 import config from '../utils/config'
+import { edusharingMockClientId } from '../mocks'
 
 export async function registerLtiPlatforms() {
   // Register platform: saltire
