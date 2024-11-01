@@ -3,8 +3,11 @@ import jwt from 'jsonwebtoken'
 import * as t from 'io-ts'
 import urlJoin from 'url-join'
 import { createAutoFormResponse } from '../util/create-auto-form-response'
-import { verifyJwt, signJwtWithBase64Key } from './jwt-helpers'
-import { edusharingEmbedKeys } from './edusharing-embed-keys'
+import {
+  verifyJwt,
+  signJwtWithBase64Key,
+  edusharingEmbedKeys,
+} from './jwt-helpers'
 import { Collection, MongoClient, ObjectId } from 'mongodb'
 
 import { Request, Response } from 'express'
@@ -218,11 +221,7 @@ export async function login(req: Request, res: Response) {
     },
   }
 
-  const token = signJwtWithBase64Key({
-    payload,
-    keyid: edusharingEmbedKeys.keyId,
-    privateKey: edusharingEmbedKeys.privateKey,
-  })
+  const token = signJwtWithBase64Key(payload)
 
   createAutoFormResponse({
     res,
@@ -409,11 +408,7 @@ export async function get(req: Request, res: Response) {
     },
   }
 
-  const message = signJwtWithBase64Key({
-    payload,
-    keyid: edusharingEmbedKeys.keyId,
-    privateKey: edusharingEmbedKeys.privateKey,
-  })
+  const message = signJwtWithBase64Key(payload)
 
   const url = new URL(
     urlJoin(edusharingAsToolConfig.detailsEndpoint, `${repositoryId}/${nodeId}`)

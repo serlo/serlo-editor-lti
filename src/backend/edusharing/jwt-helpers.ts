@@ -1,6 +1,17 @@
-import { KeyObject } from 'crypto'
 import jwt from 'jsonwebtoken'
 import JWKSClient, { JwksClient } from 'jwks-rsa'
+import { generateKeyPairSync } from 'crypto'
+
+const { privateKey, publicKey } = generateKeyPairSync('rsa', {
+  modulusLength: 2048,
+})
+const keyId = '42' // edu-sharing expects this value
+
+export const edusharingEmbedKeys = {
+  privateKey,
+  publicKey,
+  keyId,
+}
 
 const jwksClients: Record<string, JwksClient | undefined> = {}
 
@@ -78,26 +89,19 @@ export function verifyJwt(args: {
   })
 }
 
-export function signJwtWithBase64Key({
-  payload,
-  keyid,
-  privateKey,
-  expireAfterSeconds,
-}: {
-  payload: Omit<jwt.JwtPayload, 'iat'>
-  keyid: string
-  privateKey: KeyObject
+export function signJwtWithBase64Key(
+  payload: Omit<jwt.JwtPayload, 'iat'>,
   expireAfterSeconds?: number
-}) {
+) {
   const defaultExpireAfterSeconds = 15
 
   return jwt.sign(
     { ...payload, iat: Math.floor(Date.now() / 1000) },
-    privateKey,
+    edusharingEmbedKeys.privateKey,
     {
       algorithm: 'RS256',
       expiresIn: expireAfterSeconds || defaultExpireAfterSeconds,
-      keyid,
+      keyid: edusharingEmbedKeys.keyId,
     }
   )
 }
