@@ -1755,13 +1755,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@dotenvx/dotenvx@npm:^1.20.0":
-  version: 1.20.0
-  resolution: "@dotenvx/dotenvx@npm:1.20.0"
+"@dotenvx/dotenvx@npm:^1.21.1":
+  version: 1.21.1
+  resolution: "@dotenvx/dotenvx@npm:1.21.1"
   dependencies:
     commander: "npm:^11.1.0"
     dotenv: "npm:^16.4.5"
-    eciesjs: "npm:^0.4.6"
+    eciesjs: "npm:^0.4.10"
     execa: "npm:^5.1.1"
     fdir: "npm:^6.2.0"
     ignore: "npm:^5.3.0"
@@ -1771,7 +1771,16 @@ __metadata:
   bin:
     dotenvx: src/cli/dotenvx.js
     git-dotenvx: src/cli/dotenvx.js
-  checksum: 10/6a14aedb6f38fe583c5babbed987413130b804e03383f95684076a1847dbfa8892ad9b27a626825f6c2df9ef23f15b3080809c86457f4711a0927c31f7d51c8a
+  checksum: 10/c17993138309d2f7db064471af3942beefab9d0ac569a0176b8f2a1df7c5dcc845f7ba7414904feebc842b8d7194756260f8f75833b991b9f161442df93b4469
+  languageName: node
+  linkType: hard
+
+"@ecies/ciphers@npm:^0.2.0":
+  version: 0.2.1
+  resolution: "@ecies/ciphers@npm:0.2.1"
+  peerDependencies:
+    "@noble/ciphers": ^1.0.0
+  checksum: 10/4a2012358f79ef842c6a9fdcf3d4e1f7d3d59ad3d025cca52b3e7135f62d5c35d394882cbfe8ad5aa17f707663921bf466707d20712b5027a0af5813a6ad7b08
   languageName: node
   linkType: hard
 
@@ -6835,14 +6844,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eciesjs@npm:^0.4.6":
-  version: 0.4.8
-  resolution: "eciesjs@npm:0.4.8"
+"eciesjs@npm:^0.4.10":
+  version: 0.4.10
+  resolution: "eciesjs@npm:0.4.10"
   dependencies:
+    "@ecies/ciphers": "npm:^0.2.0"
     "@noble/ciphers": "npm:^1.0.0"
     "@noble/curves": "npm:^1.6.0"
     "@noble/hashes": "npm:^1.5.0"
-  checksum: 10/d6c18153c2109a3084211ff05197d64156a240bb03ede056bc590b6458bcf253d64afafc177b8044ee2e2f8beb12f2448e1f1a1720195589e8e96618e3e22d1e
+  checksum: 10/071daa803234523d0f7c92b7acb599cd4fc9cc6c29451ede1f7357a310ce77857dcbe2285dd9f45b5d49970f1f96e618700dfd7a8ca8fe6cbce575a71e92bb26
   languageName: node
   linkType: hard
 
@@ -13329,7 +13339,7 @@ __metadata:
   dependencies:
     "@aws-sdk/client-s3": "npm:^3.674.0"
     "@aws-sdk/s3-request-presigner": "npm:^3.674.0"
-    "@dotenvx/dotenvx": "npm:^1.20.0"
+    "@dotenvx/dotenvx": "npm:^1.21.1"
     "@eslint/compat": "npm:^1.2.1"
     "@eslint/js": "npm:^9.12.0"
     "@paralleldrive/cuid2": "npm:^2.2.2"
