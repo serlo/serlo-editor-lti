@@ -3,14 +3,15 @@ import jwt from 'jsonwebtoken'
 import * as t from 'io-ts'
 import urlJoin from 'url-join'
 import { createAutoFormResponse } from '../util/create-auto-form-response'
-import { verifyJwt } from './verify-jwt'
-import { createJWKSResponse } from './create-jwks-response'
-import { signJwtWithBase64Key } from './sign-jwt'
-import { edusharingEmbedKeys } from './edusharing-embed-keys'
+import {
+  verifyJwt,
+  signJwtWithBase64Key,
+  edusharingEmbedKeys,
+} from './jwt-helpers'
 import { Collection, MongoClient, ObjectId } from 'mongodb'
 
 import { Request, Response } from 'express'
-import { getEdusharingAsToolConfiguration } from './get-edusharing-as-tool-configuration'
+import { getEdusharingAsToolConfiguration } from './edusharing-as-tool-configuration'
 import config from '../../utils/config'
 
 const editorUrl = config.EDITOR_URL
@@ -24,7 +25,7 @@ const mongoClient = new MongoClient(mongoUri.href)
 let edusharingEmbedNonces: Collection
 let edusharingEmbedSessions: Collection
 
-export async function edusharingInit() {
+export async function init() {
   await mongoClient.connect()
 
   edusharingEmbedNonces = mongoClient.db().collection('edusharing_embed_nonce')
@@ -47,7 +48,7 @@ export async function edusharingInit() {
   )
 }
 
-export async function edusharingStart(_: Request, res: Response) {
+export async function start(_: Request, res: Response) {
   const idToken = res.locals.token as IdToken
   const issWhenEdusharingLaunchedSerloEditor = idToken.iss
 
@@ -108,7 +109,7 @@ export async function edusharingStart(_: Request, res: Response) {
   })
 }
 
-export async function edusharingLogin(req: Request, res: Response) {
+export async function login(req: Request, res: Response) {
   const loginHint = req.query['login_hint']
   if (typeof loginHint !== 'string') {
     res.status(400).send('login_hint is not valid')
@@ -220,11 +221,7 @@ export async function edusharingLogin(req: Request, res: Response) {
     },
   }
 
-  const token = signJwtWithBase64Key({
-    payload,
-    keyid: edusharingEmbedKeys.keyId,
-    privateKey: edusharingEmbedKeys.privateKey,
-  })
+  const token = signJwtWithBase64Key(payload)
 
   createAutoFormResponse({
     res,
@@ -233,14 +230,19 @@ export async function edusharingLogin(req: Request, res: Response) {
     params: { id_token: token, state },
   })
 }
-export async function edusharingKeys(_: Request, res: Response) {
-  createJWKSResponse({
-    res,
-    keyid: edusharingEmbedKeys.keyId,
-    publicKey: edusharingEmbedKeys.publicKey,
+export async function keys(_: Request, res: Response) {
+  res.json({
+    keys: [
+      {
+        kid: edusharingEmbedKeys.keyId,
+        alg: 'RS256',
+        use: 'sig',
+        ...edusharingEmbedKeys.publicKey.export({ format: 'jwk' }),
+      },
+    ],
   })
 }
-export async function edusharingDone(req: Request, res: Response) {
+export async function done(req: Request, res: Response) {
   if (req.headers['content-type'] !== 'application/x-www-form-urlencoded') {
     res
       .status(400)
@@ -358,7 +360,7 @@ export async function edusharingDone(req: Request, res: Response) {
           `
   )
 }
-export async function edusharingGet(req: Request, res: Response) {
+export async function get(req: Request, res: Response) {
   const idToken = res.locals.token
   if (!idToken) {
     res.json({
@@ -406,11 +408,7 @@ export async function edusharingGet(req: Request, res: Response) {
     },
   }
 
-  const message = signJwtWithBase64Key({
-    payload,
-    keyid: edusharingEmbedKeys.keyId,
-    privateKey: edusharingEmbedKeys.privateKey,
-  })
+  const message = signJwtWithBase64Key(payload)
 
   const url = new URL(
     urlJoin(edusharingAsToolConfig.detailsEndpoint, `${repositoryId}/${nodeId}`)
