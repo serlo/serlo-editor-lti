@@ -118,12 +118,9 @@ clipboard & allows full screen.
 <!-- Allow for only https://editor.serlo.org and https://editor.serlo-staging.dev -->
 <iframe
   allow="
-   clipboard-read https://editor.serlo.org;
-   clipboard-read https://editor.serlo-staging.dev;
-   clipboard-write https://editor.serlo.org;
-   clipboard-write https://editor.serlo-staging.dev;
-   fullscreen https://editor.serlo.org;
-   fullscreen https://editor.serlo-staging.dev
+   clipboard-read https://editor.serlo.org https://editor.serlo-staging.dev;
+   clipboard-write https://editor.serlo.org https://editor.serlo-staging.dev;
+   fullscreen https://editor.serlo.org https://editor.serlo-staging.dev
   "
 ></iframe>
 ```
