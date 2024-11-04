@@ -6,7 +6,6 @@ import * as t from 'io-ts'
 import { NextFunction, Request, Response } from 'express'
 import { createAccessToken } from './create-acccess-token'
 import { registerLtiPlatforms } from './register-lti-platforms'
-import urlJoin from 'url-join'
 import config from '../utils/config'
 import {
   edusharingDone,
@@ -314,7 +313,7 @@ const setup = async () => {
 
     console.log('entityId: ', entityId)
 
-    const url = new URL(urlJoin(config.EDITOR_URL, '/lti/launch'))
+    const url = new URL('/lti/launch', config.EDITOR_URL)
 
     // https://www.imsglobal.org/spec/lti-dl/v2p0#lti-resource-link
     const items = [

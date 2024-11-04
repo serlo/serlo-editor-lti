@@ -1,7 +1,6 @@
 import express from 'express'
 import { v4 as uuid_v4 } from 'uuid'
 import * as jose from 'jose'
-import urlJoin from 'url-join'
 import { createAutoFormResponse } from '../backend/util/create-auto-form-response'
 import config from '../utils/config'
 
@@ -27,9 +26,9 @@ export class ItslearningServer {
     this.app.get('/', (_req, res) => {
       createAutoFormResponse({
         res,
-        targetUrl: urlJoin(editorUrl, 'lti/login'),
+        targetUrl: new URL('/lti/login', editorUrl).toString(),
         params: {
-          target_link_uri: urlJoin(editorUrl, 'lti/launch'),
+          target_link_uri: new URL('/lti/launch', editorUrl).toString(),
           iss: itslearningMockIssuer,
           login_hint: itslearningMockIssuer,
           lti_message_hint: uuid_v4(),
@@ -69,10 +68,10 @@ export class ItslearningServer {
           title: 'Serlo',
           type: ['http://purl.imsglobal.org/vocab/lis/v2/course#CourseSection'],
         },
-        'https://purl.imsglobal.org/spec/lti/claim/target_link_uri': urlJoin(
-          editorUrl,
-          'lti/launch'
-        ),
+        'https://purl.imsglobal.org/spec/lti/claim/target_link_uri': new URL(
+          '/lti/launch',
+          editorUrl
+        ).toString(),
         'https://purl.imsglobal.org/spec/lti/claim/resource_link': {
           id: '3061:3245',
           title: 'Test Content',
@@ -93,7 +92,7 @@ export class ItslearningServer {
       createAutoFormResponse({
         res,
         method: 'POST',
-        targetUrl: urlJoin(editorUrl, 'lti/launch'),
+        targetUrl: new URL('/lti/launch', editorUrl).toString(),
         params: {
           id_token: idToken,
           state: state.toString(),

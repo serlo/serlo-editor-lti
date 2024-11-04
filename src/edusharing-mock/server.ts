@@ -5,7 +5,6 @@ import { testContent } from './test-content'
 import { imageEmbedJson } from './mocked-embed-json/image'
 import { v4 as uuid_v4 } from 'uuid'
 import * as jose from 'jose'
-import urlJoin from 'url-join'
 import { createAutoFormResponse } from '../backend/util/create-auto-form-response'
 import { serverLog } from '../utils/server-log'
 import config from '../utils/config'
@@ -52,9 +51,9 @@ export class EdusharingServer {
     this.app.get('/', (_req, res) => {
       createAutoFormResponse({
         res,
-        targetUrl: urlJoin(editorUrl, 'lti/login'),
+        targetUrl: new URL('lti/login', editorUrl).toString(),
         params: {
-          target_link_uri: urlJoin(editorUrl, 'lti/launch'),
+          target_link_uri: new URL('lti/launch', editorUrl).toString(),
           iss: 'http://localhost:8100/edu-sharing',
           login_hint: this.loginHint,
           lti_message_hint: uuid_v4(), // TODO: Maybe make this be a fixed value for tests?
@@ -94,10 +93,10 @@ export class EdusharingServer {
           id: this.contextId,
           label: this.custom.user,
         },
-        'https://purl.imsglobal.org/spec/lti/claim/target_link_uri': urlJoin(
-          editorUrl,
-          'lti/launch'
-        ),
+        'https://purl.imsglobal.org/spec/lti/claim/target_link_uri': new URL(
+          'lti/launch',
+          editorUrl
+        ).toString(),
         'https://purl.imsglobal.org/spec/lti/claim/resource_link': {
           id: this.custom.nodeId,
           title: 'Test Content',
@@ -121,7 +120,7 @@ export class EdusharingServer {
       createAutoFormResponse({
         res,
         method: 'POST',
-        targetUrl: urlJoin(editorUrl, 'lti/launch'),
+        targetUrl: new URL('lti/launch', editorUrl).toString(),
         params: {
           id_token: idToken,
           state: state.toString(),
@@ -206,7 +205,7 @@ export class EdusharingServer {
         createAutoFormResponse({
           res,
           method: 'GET',
-          targetUrl: urlJoin(editorUrl, 'edusharing-embed/login'),
+          targetUrl: new URL('edusharing-embed/login', editorUrl).toString(),
           params: {
             scope: 'openid',
             response_type: 'id_token',
@@ -241,7 +240,7 @@ export class EdusharingServer {
       }
 
       const serloEditorJwks = jose.createRemoteJWKSet(
-        new URL(urlJoin(editorUrl, 'edusharing-embed/keys'))
+        new URL('/edusharing-embed/keys', editorUrl)
       )
 
       const verifyResult = await jose.jwtVerify(
