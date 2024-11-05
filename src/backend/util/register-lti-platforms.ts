@@ -128,10 +128,8 @@ async function registerPlatform({
   if (platform) {
     serverLog(`Registered platform: ${name}`)
     return platform
-  } else {
-    serverLog(`Platform ${name} could not be registered`)
-    return false
   }
+  throw new Error(`Platform ${name} could not be registered`)
 }
 
 async function registerSaltire() {
