@@ -1,6 +1,6 @@
 import { Provider as ltijs } from 'ltijs'
 import { edusharingMockClientId } from '../../edusharing-mock/server'
-import { edusharingAsToolConfigs } from '../edusharing/get-edusharing-as-tool-configuration'
+import { edusharingAsToolConfigs } from '../edusharing'
 import { serverLog } from '../../utils/server-log'
 import config from '../../utils/config'
 
