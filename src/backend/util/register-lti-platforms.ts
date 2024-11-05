@@ -135,7 +135,6 @@ async function registerPlatform({
 }
 
 async function registerSaltire() {
-  // Register platform: saltire
   return registerPlatform({
     url: 'https://saltire.lti.app/platform',
     name: 'saltire.lti.app',
