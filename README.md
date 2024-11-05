@@ -104,3 +104,23 @@ $ git add ./docker-entrypoint-initdb.d
 $ git commit
 $ git push
 ```
+
+# Embed Serlo editor in iframe
+
+Iframes can limit access to required functionality (especially for cross-origin
+embedding). Make sure the iframe embedding the Serlo editor allows access to the
+clipboard & allows full screen.
+
+```html
+<!-- Allow for all origins (can be unsave) -->
+<iframe allow="clipboard-read *; clipboard-write *; fullscreen *;"></iframe>
+
+<!-- Allow for only https://editor.serlo.org and https://editor.serlo-staging.dev -->
+<iframe
+  allow="
+   clipboard-read https://editor.serlo.org https://editor.serlo-staging.dev;
+   clipboard-write https://editor.serlo.org https://editor.serlo-staging.dev;
+   fullscreen https://editor.serlo.org https://editor.serlo-staging.dev
+  "
+></iframe>
+```
