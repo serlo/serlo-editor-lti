@@ -89,12 +89,9 @@ export async function registerLtiPlatforms() {
     //       'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/auth',
     //     accesstokenEndpoint:
     //       'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/token',
-    //     authConfig: {
-    //       method: 'JWK_SET',
     //       // key: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
     //       key: 'https://serlo-edusharing_repository-service_1:8080/edu-sharing/rest/lti/v13/jwks',
     //       // key: 'http://repository-service:8080/edu-sharing/rest/lti/v13/jwks',
-    //     },
     //   })
   }
 }
