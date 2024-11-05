@@ -19,7 +19,7 @@ export async function registerLtiPlatforms() {
     })
 
     // Register platform: edu-sharing (RLP)
-    const platform = await registerPlatform({
+    const edusharingPlatform = await registerPlatform({
       url: config.EDUSHARING_RLP_URL,
       name: config.EDUSHARING_RLP_NAME,
       clientId: config.SERLO_EDITOR_CLIENT_ID_ON_EDUSHARING_RLP,
@@ -27,7 +27,7 @@ export async function registerLtiPlatforms() {
       accesstokenEndpoint: config.EDUSHARING_RLP_ACCESS_TOKEN_ENDPOINT,
       key: config.EDUSHARING_RLP_KEYSET_ENDPOINT,
     })
-    if (platform) {
+    if (edusharingPlatform) {
       edusharingAsToolConfigs.push({
         issWhenEdusharingLaunchedSerloEditor: config.EDUSHARING_RLP_URL,
         loginEndpoint: config.EDUSHARING_RLP_LOGIN_ENDPOINT,
@@ -44,7 +44,7 @@ export async function registerLtiPlatforms() {
     await registerSaltire()
 
     // Register platform: edusharing mock
-    const platform = await registerPlatform({
+    const edusharingMockPlatform = await registerPlatform({
       url: 'http://localhost:8100/edu-sharing',
       name: 'edusharing-mock',
       clientId: 'piQ0JV8O880ZrVt', // The ID for this LTI tool on the LTI platform
@@ -54,7 +54,7 @@ export async function registerLtiPlatforms() {
         'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/token',
       key: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
     })
-    if (platform) {
+    if (edusharingMockPlatform) {
       edusharingAsToolConfigs.push({
         issWhenEdusharingLaunchedSerloEditor:
           'http://localhost:8100/edu-sharing',
