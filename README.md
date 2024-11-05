@@ -109,11 +109,13 @@ $ git push
 
 Iframes can limit access to required functionality (especially for cross-origin
 embedding). Make sure the iframe embedding the Serlo editor allows access to the
-clipboard & allows full screen.
+clipboard & allows full screen. Also, if the `sandbox` attribute is present make
+sure to allow `allow-forms`, `allow-modals`, `allow-popups`, `allow-scripts` and
+maybe some more.
 
 ```html
 <!-- Allow for all origins (can be unsave) -->
-<iframe allow="clipboard-read *; clipboard-write *; fullscreen *;"></iframe>
+<iframe allow="clipboard-read *; clipboard-write *; fullscreen *"></iframe>
 
 <!-- Allow for only https://editor.serlo.org and https://editor.serlo-staging.dev -->
 <iframe
