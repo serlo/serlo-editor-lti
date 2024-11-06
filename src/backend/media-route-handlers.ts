@@ -42,7 +42,7 @@ const s3Client = new S3Client({
     secretAccessKey: config.BUCKET_SECRET_ACCESS_KEY,
   },
   endpoint,
-  forcePathStyle: true, // test, maybe only set on dev
+  forcePathStyle: true,
 })
 
 const mimeTypeDecoder = t.union([
@@ -54,32 +54,35 @@ const mimeTypeDecoder = t.union([
 ])
 
 export async function mediaPresignedUrl(req: Request, res: Response) {
-  const mimeType = decodeURIComponent(String(req.query.mimeType))
-  if (!mimeTypeDecoder.is(mimeType)) {
+  if (!mimeTypeDecoder.is(req.query.mimeType)) {
     res.status(400).send('Missing or invalid mimeType')
     return
   }
+  const mimeType = req.query.mimeType
 
-  const editorVariant = decodeURIComponent(String(req.query.editorVariant))
-  if (!t.string.is(req.query.editorVariant)) {
-    // if we have this code in the same monorepo as the editor we can check known editorVariant values
+  if (
+    !t.string.is(req.query.editorVariant) ||
+    req.query.editorVariant.length > 50 ||
+    /^[a-z0-9-]+$/.test(req.query.editorVariant) === false
+  ) {
     res.status(400).send('Missing or invalid editorVariant')
     return
   }
+  const editorVariant = req.query.editorVariant
 
   const editorHost = req.headers.host
   if (!t.string.is(editorHost) || !editorHost.length) {
     res.status(400).send('Missing header: host')
   }
 
-  const fileHash = createId() // cuid since they are shorter and look less frightening
+  const fileHash = createId() // cuid since they are shorter and look less frightening 🙀
 
   const variantFolder = editorVariant === 'unknown' ? 'all' : editorVariant
 
   const [mediaType, mediaSubtype] = mimeType.split('/')
   const fileExtension = mimeType === 'image/svg+xml' ? 'svg' : mediaSubtype
 
-  // Keys with slashes are expected in S3 (rendered as folders in bucket view)
+  // Keys with slashes are expected in S3 (rendered as folders in bucket webview for example)
   const fileName = `${variantFolder}/${fileHash}/${mediaType}.${fileExtension}`
 
   const params: PutObjectCommandInput = {
