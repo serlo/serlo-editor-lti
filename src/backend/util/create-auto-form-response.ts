@@ -1,7 +1,7 @@
 import { Response } from 'express'
 import _ from 'lodash'
 
-export function createAutoFromResponse({
+export function createAutoFormResponse({
   res,
   method = 'GET',
   targetUrl,
@@ -36,5 +36,4 @@ export function createAutoFromResponse({
      </html>
     `.trim()
   )
-  res.end()
 }

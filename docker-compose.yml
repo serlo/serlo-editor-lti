@@ -1,48 +1,15 @@
-# Shared network 'express-mongo-mariadb' makes service 'mongo' & 'mariadb' available to service 'express'. You can connect using the service name in MONGODB_URI like this: mongodb://[SERVICE_NAME]:27017/
-
 services:
-  express:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    env_file: '.env'
-    depends_on:
-      mongo:
-        condition: service_started
-      mariadb:
-        condition: service_healthy
-    networks:
-      - express-mongo-mariadb
-    expose:
-      - 3000
-    ports:
-      - 3000:3000
-    develop:
-      watch:
-        - action: rebuild
-          path: .
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
   mongo:
     image: mongo:6
-    networks:
-      - express-mongo-mariadb
-    expose:
-      - 27017
+    ports:
+      - 27017:27017
   mariadb:
     image: mariadb:10 # Match major version on Uberspace
     environment:
       - MARIADB_DATABASE=serlo
       - MARIADB_PASSWORD=secret
       - MARIADB_ROOT_PASSWORD=secret
-    # https://mariadb.com/kb/en/using-healthcheck-sh/
-    healthcheck:
-      test: ['CMD', 'healthcheck.sh', '--connect', '--innodb_initialized']
-      start_period: 10s
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    networks:
-      - express-mongo-mariadb
-networks:
-  express-mongo-mariadb:
+    volumes:
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306

@@ -6,10 +6,11 @@ import { imageEmbedJson } from './mocked-embed-json/image'
 import { v4 as uuid_v4 } from 'uuid'
 import * as jose from 'jose'
 import urlJoin from 'url-join'
-import { readEnvVariable } from '../backend/read-env-variable'
-import { createAutoFromResponse } from '../backend/create-auto-form-response'
+import { createAutoFormResponse } from '../backend/util/create-auto-form-response'
+import { serverLog } from '../utils/server-log'
+import config from '../utils/config'
 
-export const editorUrl = readEnvVariable('EDITOR_URL')
+export const editorUrl = config.EDITOR_URL
 
 export const edusharingMockClientId = 'edusharing-mock'
 
@@ -33,7 +34,7 @@ export class EdusharingServer {
     postContentApiUrl:
       'http://localhost:8100/edu-sharing/rest/ltiplatform/v13/content',
     appId: 'qsa2DgKBJ2WgoJO1',
-    nodeId: '604f62c1-6463-4206-a571-8c57097a54ae',
+    nodeId: uuid_v4(),
     user: 'admin',
   }
   private user = 'admin'
@@ -49,7 +50,7 @@ export class EdusharingServer {
     this.app.use(express.urlencoded({ extended: true }))
 
     this.app.get('/', (_req, res) => {
-      createAutoFromResponse({
+      createAutoFormResponse({
         res,
         targetUrl: urlJoin(editorUrl, 'lti/login'),
         params: {
@@ -67,7 +68,7 @@ export class EdusharingServer {
     this.app.get('/edu-sharing/rest/ltiplatform/v13/auth', async (req, res) => {
       const state = req.query['state']
       if (!state) {
-        res.sendStatus(400).send('Query parameter state was missing').end()
+        res.sendStatus(400).send('Query parameter state was missing')
         return
       }
 
@@ -98,7 +99,7 @@ export class EdusharingServer {
           'lti/launch'
         ),
         'https://purl.imsglobal.org/spec/lti/claim/resource_link': {
-          id: '604f62c1-6463-4206-a571-8c57097a54ae',
+          id: this.custom.nodeId,
           title: 'Test Content',
         },
         'https://purl.imsglobal.org/spec/lti/claim/launch_presentation': {
@@ -117,7 +118,7 @@ export class EdusharingServer {
         .setIssuedAt()
         .sign((await this.keys).privateKey)
 
-      createAutoFromResponse({
+      createAutoFormResponse({
         res,
         method: 'POST',
         targetUrl: urlJoin(editorUrl, 'lti/launch'),
@@ -130,23 +131,21 @@ export class EdusharingServer {
 
     this.app.get('/edu-sharing/rest/lti/v13/jwks', async (_req, res) => {
       const jwk = await jose.exportJWK((await this.keys).publicKey)
-      res
-        .json({
-          keys: [
-            {
-              kid: this.keyId,
-              alg: 'RS256',
-              use: 'sig',
-              ...jwk,
-            },
-          ],
-        })
-        .end()
+      res.json({
+        keys: [
+          {
+            kid: this.keyId,
+            alg: 'RS256',
+            use: 'sig',
+            ...jwk,
+          },
+        ],
+      })
     })
 
     // Currently unused
     this.app.get('/edu-sharing/rest/ltiplatform/v13/content', (_req, res) => {
-      res.json(this.content).end()
+      res.json(this.content)
     })
 
     const storage = multer.memoryStorage()
@@ -159,14 +158,14 @@ export class EdusharingServer {
       (req, res) => {
         const comment = req.query['versionComment'] ?? null
         if (!req.file) {
-          res.sendStatus(400).send('req.file was missing').end()
+          res.sendStatus(400).send('req.file was missing')
           return
         }
 
         if (VersionComment.is(comment)) {
           this.savedVersions.push({ comment })
           this.content = JSON.parse(req.file.buffer.toString())
-          console.log(
+          serverLog(
             `[${new Date().toISOString()}]: Save registered with comment ${
               req.query['versionComment']
             }`
@@ -184,10 +183,7 @@ export class EdusharingServer {
       '/edu-sharing/rest/lti/v13/oidc/login_initiations',
       (req, res) => {
         if (!req.query['login_hint']) {
-          res
-            .sendStatus(400)
-            .send('Query parameter login_hint was missing')
-            .end()
+          res.sendStatus(400).send('Query parameter login_hint was missing')
           return
         }
 
@@ -195,7 +191,7 @@ export class EdusharingServer {
           iss: editorUrl,
           target_link_uri:
             'http://localhost:8100/edu-sharing/rest/lti/v13/lti13',
-          client_id: 'edusharing-mock',
+          client_id: edusharingMockClientId,
           lti_deployment_id: '1',
         }
 
@@ -207,14 +203,14 @@ export class EdusharingServer {
           }
         }
 
-        createAutoFromResponse({
+        createAutoFormResponse({
           res,
           method: 'GET',
           targetUrl: urlJoin(editorUrl, 'edusharing-embed/login'),
           params: {
             scope: 'openid',
             response_type: 'id_token',
-            client_id: 'edusharing-mock',
+            client_id: edusharingMockClientId,
             login_hint: req.query['login_hint'].toString(),
             state: this.state,
             response_mode: 'form_post',
@@ -240,7 +236,7 @@ export class EdusharingServer {
         return
 
       if (typeof req.body.id_token !== 'string') {
-        res.status(400).send('id_token is undefined').end()
+        res.status(400).send('id_token is undefined')
         return
       }
 
@@ -259,18 +255,27 @@ export class EdusharingServer {
       )
 
       const idToken = verifyResult.payload
+      const idTokenType = t.type({
+        'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings':
+          t.type({
+            data: t.string,
+            deep_link_return_url: t.string,
+          }),
+      })
 
-      const deepLinkingSettingsClaim =
-        idToken[
-          'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings'
-        ]
-      if (!t.type({ data: t.string }).is(deepLinkingSettingsClaim)) {
-        res
-          .status(400)
-          .send('Missing deep_linking_settings claim in id token')
-          .end()
+      if (!idTokenType.is(idToken)) {
+        res.status(400).send('Missing property in id token')
         return
       }
+
+      const deeplinkReturnUrl =
+        idToken[
+          'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings'
+        ].deep_link_return_url
+      const data =
+        idToken[
+          'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings'
+        ].data
 
       const payload = {
         iss: edusharingMockClientId,
@@ -281,8 +286,7 @@ export class EdusharingServer {
         'https://purl.imsglobal.org/spec/lti/claim/message_type':
           'LtiDeepLinkingResponse',
         'https://purl.imsglobal.org/spec/lti/claim/version': '1.3.0',
-        'https://purl.imsglobal.org/spec/lti-dl/claim/data':
-          deepLinkingSettingsClaim.data,
+        'https://purl.imsglobal.org/spec/lti-dl/claim/data': data,
         'https://purl.imsglobal.org/spec/lti-dl/claim/content_items': [
           {
             custom: {
@@ -307,10 +311,10 @@ export class EdusharingServer {
         .setExpirationTime('1h')
         .sign((await this.keys).privateKey)
 
-      createAutoFromResponse({
+      createAutoFormResponse({
         res,
         method: 'POST',
-        targetUrl: urlJoin(editorUrl, 'edusharing-embed/done'),
+        targetUrl: deeplinkReturnUrl,
         params: {
           JWT: jwt,
         },
@@ -318,23 +322,34 @@ export class EdusharingServer {
     })
 
     this.app.get('/edu-sharing/rest/lti/v13/details/*/*', (_req, res) => {
-      res.json(imageEmbedJson).end()
+      res.json(imageEmbedJson)
     })
 
     this.app.all('*', (req, res) => {
-      console.error(`${req.method} call to ${req.url} registered`)
+      serverLog(`${req.method} call to ${req.url} registered`)
       res.sendStatus(404).end()
     })
   }
 
   init() {
     this.savedVersions = []
-    this.custom = { ...this.defaultCustom }
+    this.custom = {
+      ...this.defaultCustom,
+      nodeId: uuid_v4(),
+    }
     this.content = testContent
   }
 
+  removePropertyInCustom(propertyName: string): boolean {
+    if (!(propertyName in this.custom)) {
+      return false
+    }
+
+    return delete this.custom[propertyName as keyof typeof this.custom]
+  }
+
   listen(port: number, callback: () => void) {
-    this.app.listen(port, callback)
+    return this.app.listen(port, callback)
   }
 }
 
@@ -350,14 +365,11 @@ function isEditorValueInvalid(args: {
   if (value === targetValue) {
     return false
   } else {
-    res
-      .status(400)
-      .json({
-        error: `Editor send invalid value '${value}' for '${name}'`,
-        context: 'edusharing-mock-server',
-        location: req.route.path,
-      })
-      .end()
+    res.status(400).json({
+      error: `Editor send invalid value '${value}' for '${name}'`,
+      context: 'edusharing-mock-server',
+      location: req.route.path,
+    })
     return true
   }
 }

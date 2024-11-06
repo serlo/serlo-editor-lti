@@ -6,7 +6,7 @@ setHeadlessWhen(process.env.HEADLESS)
 setCommonPlugins()
 
 export const config: CodeceptJS.MainConfig = {
-  tests: 'e2e/tests/**/*.ts',
+  tests: './tests/**/*.ts',
   output: './output',
   helpers: {
     Playwright: {
@@ -14,9 +14,20 @@ export const config: CodeceptJS.MainConfig = {
       url: 'http://localhost:3000',
       show: true,
     },
+    EdusharingHelper: {
+      require: './helpers/edusharing-helper.ts',
+    },
+    ItslearningHelper: {
+      require: './helpers/itslearning-helper.ts',
+    },
   },
-  include: {
-    I: './e2e/steps_file',
+  plugins: {
+    customLocator: {
+      enabled: true,
+      // Allows data-qa attributes to be selected with $ prefix. E.g
+      // `I.click({ css: '[data-qa=register_button]'})` becomes `I.click('$register_button')`
+      attribute: 'data-qa',
+    },
   },
   name: 'serlo-editor-as-lti-tool',
 }
