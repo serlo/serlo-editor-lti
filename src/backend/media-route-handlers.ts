@@ -9,6 +9,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import type { Request, Response } from 'express'
 import config from '../utils/config'
+import { jwtDecode } from 'jwt-decode'
 
 const endpoint = config.S3_ENDPOINT
 const bucketName = config.BUCKET_NAME
@@ -82,11 +83,16 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
   // Keys with slashes are expected in S3 (rendered as folders in bucket view)
   const fileName = `${variantFolder}/${fileHash}/${mediaType}.${fileExtension}`
 
+  const idToken = jwtDecode(decodeURIComponent(String(req.query.idToken)))
+
   const params: PutObjectCommandInput = {
     Key: fileName,
     Bucket: bucketName,
     ContentType: mimeType,
-    Metadata: { 'Content-Type': mimeType },
+    Metadata: {
+      'Content-Type': mimeType,
+      userId: idToken.sub || '',
+    },
     Tagging: `editorVariant=${editorVariant}&editorHost=${req.headers.host}`,
   }
 
