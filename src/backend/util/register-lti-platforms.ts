@@ -2,7 +2,7 @@ import { Provider as ltijs } from 'ltijs'
 import { edusharingAsToolConfigs } from '../edusharing'
 import { serverLog } from '../../utils/server-log'
 import config from '../../utils/config'
-import { edusharingMockClientId } from '../../mocks'
+import { edusharingMockClientId } from '../../../mocks'
 
 export async function registerLtiPlatforms() {
   if (config.ENVIRONMENT === 'staging') {
