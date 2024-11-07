@@ -15,7 +15,11 @@ import {
   editorPutEntity,
 } from './editor-route-handlers'
 import { getMariaDB } from './mariadb'
-import { mediaPresignedUrl, mediaProxy } from './media-route-handlers'
+import {
+  mediaPresignedUrl,
+  mediaProxy,
+  runTestUpload,
+} from './media-route-handlers'
 import { serverLog } from '../utils/server-log'
 
 const ltijsKey = config.LTIJS_KEY
@@ -117,6 +121,7 @@ const setup = async () => {
   app.get('/edusharing-embed/get', edusharing.get)
 
   app.get('/media/presigned-url', mediaPresignedUrl)
+  app.get('/media/test-upload', runTestUpload)
   app.use(mediaProxy)
 
   // Successful LTI resource link launch
