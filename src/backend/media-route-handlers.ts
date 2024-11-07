@@ -73,7 +73,20 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
   const editorHost = req.headers.host
   if (!t.string.is(editorHost) || !editorHost.length) {
     res.status(400).send('Missing header: host')
+    return
   }
+
+  const userId = req.query.userId
+  if (
+    userId &&
+    (!t.string.is(userId) ||
+      userId.length > 100 ||
+      /^[a-z0-9-]+$/i.test(userId) === false)
+  ) {
+    res.status(400).send('Invalid userId')
+    return
+  }
+  const userIdTag = userId ? `&userId=${userId}` : ''
 
   const fileHash = createId() // cuid since they are shorter and look less frightening 🙀
 
@@ -90,7 +103,8 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
     Bucket: bucketName,
     ContentType: mimeType,
     Metadata: { 'Content-Type': mimeType },
-    Tagging: `editorVariant=${editorVariant}&editorHost=${req.headers.host}`,
+    // saved as tags so we can potentially use it in IAM policies later:
+    Tagging: `editorVariant=${editorVariant}&editorHost=${editorHost}${userIdTag}`,
   }
 
   const command = new PutObjectCommand(params)
