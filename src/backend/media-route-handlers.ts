@@ -107,14 +107,16 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
   // Keys with slashes are expected in S3 (rendered as folders in bucket webview for example)
   const fileName = `${variantFolder}/${fileHash}/${mediaType}.${fileExtension}`
 
+  // saved as tags so we can potentially use it in IAM policies later
+  // also this way userId is not publicly accessible
+  const tagging = `editorVariant=${editorVariant}&parentHost=${parentHost}&requestHost=${requestHost}${userIdTag}`
+
   const params: PutObjectCommandInput = {
     Key: fileName,
     Bucket: bucketName,
     ContentType: mimeType,
-    Metadata: { 'Content-Type': mimeType, requestHost },
-    // saved as tags so we can potentially use it in IAM policies later
-    // also this way userId is not publicly accessible
-    Tagging: `editorVariant=${editorVariant}&parentHost=${parentHost}${userIdTag}`,
+    Metadata: { 'Content-Type': mimeType },
+    Tagging: tagging,
   }
 
   const command = new PutObjectCommand(params)
@@ -133,7 +135,7 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
   const imgUrl = new URL(config.MEDIA_BASE_URL)
   imgUrl.pathname = '/media/' + fileName
 
-  res.json({ signedUrl, imgSrc: imgUrl.href })
+  res.json({ signedUrl, imgSrc: imgUrl.href, tagging })
 }
 
 export async function runTestUpload(_req: Request, res: Response) {
@@ -154,8 +156,7 @@ export async function runTestUpload(_req: Request, res: Response) {
     body: file,
     headers: {
       'Content-Type': file.type,
-      'x-amz-tagging':
-        'editorVariant=test-uploads&parentHost=localhost:3000&userId=test',
+      'x-amz-tagging': data.tagging,
       'Access-Control-Allow-Origin': '*',
     },
   }).catch((e) => {
