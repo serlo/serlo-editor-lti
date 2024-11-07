@@ -2,6 +2,7 @@ import { createId } from '@paralleldrive/cuid2'
 import * as t from 'io-ts'
 import {
   GetObjectTaggingCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   PutObjectCommandInput,
   S3Client,
@@ -72,9 +73,15 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
   }
   const editorVariant = req.query.editorVariant
 
-  const editorHost = req.headers.host
-  if (!t.string.is(editorHost) || !editorHost.length) {
+  const requestHost = req.headers.host
+  if (!t.string.is(requestHost) || !requestHost.length) {
     res.status(400).send('Missing header: host')
+    return
+  }
+
+  const parentHost = req.query.parentHost
+  if (!t.string.is(parentHost) || !parentHost.length) {
+    res.status(400).send('Missing or invalid parentHost')
     return
   }
 
@@ -104,9 +111,10 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
     Key: fileName,
     Bucket: bucketName,
     ContentType: mimeType,
-    Metadata: { 'Content-Type': mimeType },
-    // saved as tags so we can potentially use it in IAM policies later:
-    Tagging: `editorVariant=${editorVariant}&editorHost=${editorHost}${userIdTag}`,
+    Metadata: { 'Content-Type': mimeType, requestHost },
+    // saved as tags so we can potentially use it in IAM policies later
+    // also this way userId is not publicly accessible
+    Tagging: `editorVariant=${editorVariant}&parentHost=${parentHost}${userIdTag}`,
   }
 
   const command = new PutObjectCommand(params)
@@ -130,7 +138,7 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
 
 export async function runTestUpload(_req: Request, res: Response) {
   const presignedResponse = await fetch(
-    'http://localhost:3000/media/presigned-url?mimeType=image/png&editorVariant=test-uploads&userId=test'
+    'http://localhost:3000/media/presigned-url?mimeType=image/png&editorVariant=test-uploads&userId=test&parentHost=localhost:3000'
   )
   const data = await presignedResponse.json()
 
@@ -147,13 +155,15 @@ export async function runTestUpload(_req: Request, res: Response) {
     headers: {
       'Content-Type': file.type,
       'x-amz-tagging':
-        'editorVariant=test-uploads&editorHost=localhost:3000&userId=test',
+        'editorVariant=test-uploads&parentHost=localhost:3000&userId=test',
       'Access-Control-Allow-Origin': '*',
     },
   }).catch((e) => {
     // eslint-disable-next-line no-console
     console.error(e)
   })
+
+  serverLog('src: ' + data.imgSrc)
 
   const checkResponse = await fetch(data.imgSrc)
   const imageData = await checkResponse.blob()
@@ -166,9 +176,13 @@ export async function runTestUpload(_req: Request, res: Response) {
     Bucket: 'editor-media-assets-development',
     Key: key,
   }
-  const command = new GetObjectTaggingCommand(inputValues)
-  const s3response = await s3Client.send(command)
-  serverLog(s3response.TagSet)
+  const taggingCommand = new GetObjectTaggingCommand(inputValues)
+  const taggingResponse = await s3Client.send(taggingCommand)
+  serverLog(taggingResponse.TagSet)
+
+  const headCommand = new HeadObjectCommand(inputValues)
+  const metaResponse = await s3Client.send(headCommand)
+  serverLog(metaResponse.Metadata)
 
   res.end('Done testing, check server logs for results')
 }
