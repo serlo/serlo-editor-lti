@@ -1,6 +1,7 @@
 import { createId } from '@paralleldrive/cuid2'
 import * as t from 'io-ts'
 import {
+  GetObjectTaggingCommand,
   PutObjectCommand,
   PutObjectCommandInput,
   S3Client,
@@ -9,6 +10,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import type { Request, Response } from 'express'
 import config from '../utils/config'
+import { serverLog } from '../utils/server-log'
 
 const endpoint = config.S3_ENDPOINT
 const bucketName = config.BUCKET_NAME
@@ -119,4 +121,47 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
   imgUrl.pathname = '/media/' + fileName
 
   res.json({ signedUrl, imgSrc: imgUrl.href })
+}
+
+export async function runTestUpload(_req: Request, res: Response) {
+  const presignedResponse = await fetch(
+    'http://localhost:3000/media/presigned-url?mimeType=image/png&editorVariant=test-uploads&userId=test'
+  )
+  const data = await presignedResponse.json()
+
+  // 1x1 pixel png
+  const base64Data =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADUlEQVR42mP8z/C/HwAF/gL+Tf7XNQAAAABJRU5ErkJggg=='
+  const binaryData = atob(base64Data)
+  const byteArray = Uint8Array.from(binaryData, (char) => char.charCodeAt(0))
+  const file = new File([byteArray], '1x1.png', { type: 'image/png' })
+
+  await fetch(data.signedUrl, {
+    method: 'PUT',
+    body: file,
+    headers: {
+      'Content-Type': file.type,
+      'Access-Control-Allow-Origin': '*',
+    },
+  }).catch((e) => {
+    // eslint-disable-next-line no-console
+    console.error(e)
+  })
+
+  const checkResponse = await fetch(data.imgSrc)
+  const imageData = await checkResponse.blob()
+  serverLog('type: ' + imageData.type)
+  serverLog('size: ' + imageData.size)
+
+  const key = data.imgSrc.replace(config.MEDIA_BASE_URL + '/media/', '')
+
+  const inputValues = {
+    Bucket: 'editor-media-assets-development',
+    Key: key,
+  }
+  const command = new GetObjectTaggingCommand(inputValues)
+  const s3response = await s3Client.send(command)
+  serverLog(String(s3response.TagSet))
+
+  res.end('Done testing, check server logs for results')
 }
