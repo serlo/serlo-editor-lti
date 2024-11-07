@@ -168,7 +168,7 @@ export async function runTestUpload(_req: Request, res: Response) {
   }
   const command = new GetObjectTaggingCommand(inputValues)
   const s3response = await s3Client.send(command)
-  serverLog(String(s3response.TagSet))
+  serverLog(s3response.TagSet)
 
   res.end('Done testing, check server logs for results')
 }
