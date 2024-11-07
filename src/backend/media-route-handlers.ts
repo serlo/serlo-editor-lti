@@ -110,7 +110,12 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
   }
 
   const command = new PutObjectCommand(params)
-  const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 })
+  const unhoistableHeaders: Set<string> = new Set(['x-amz-tagging'])
+
+  const signedUrl = await getSignedUrl(s3Client, command, {
+    expiresIn: 3600,
+    unhoistableHeaders,
+  })
 
   if (!signedUrl) {
     res.status(500).send('Could not generate signed URL')
@@ -141,6 +146,8 @@ export async function runTestUpload(_req: Request, res: Response) {
     body: file,
     headers: {
       'Content-Type': file.type,
+      'x-amz-tagging':
+        'editorVariant=test-uploads&editorHost=localhost:3000&userId=test',
       'Access-Control-Allow-Origin': '*',
     },
   }).catch((e) => {
