@@ -1,5 +1,4 @@
 import {
-  DeleteObjectsCommand,
   GetObjectTaggingCommand,
   HeadObjectCommand,
   S3Client,
@@ -87,13 +86,3 @@ Scenario(
     )
   }
 )
-
-AfterSuite(async ({ I }) => {
-  I.say(`Deleting ${uploadedKeys.length} objects from bucket`)
-  const inputValues = {
-    Bucket: 'editor-media-assets-development',
-    Delete: { Objects: uploadedKeys.map((key) => ({ Key: key })) },
-  }
-  const deleteCommand = new DeleteObjectsCommand(inputValues)
-  await s3Client.send(deleteCommand)
-})
