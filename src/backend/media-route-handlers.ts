@@ -22,7 +22,7 @@ target.pathname = bucketName
 /**
  * Minimal proxy implementation for media assets.
  * Requests to editor.{domain}/media/… are proxied to the bucket for the current environment.
- * We do this so the urls of the image don't need to change if we change our bucket.
+ * We do this so the urls of the files don't need to change if we change our bucket.
  * It could also allow us to setup additional restictions in the future.
  */
 export const mediaProxy = createProxyMiddleware({
@@ -54,6 +54,8 @@ const mimeTypeDecoder = t.union([
   t.literal('image/png'),
   t.literal('image/svg+xml'),
   t.literal('image/webp'),
+  t.literal('video/webm'),
+  t.literal('video/mp4'),
 ])
 
 export async function mediaPresignedUrl(req: Request, res: Response) {
@@ -132,10 +134,10 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
     return
   }
 
-  const imgUrl = new URL(config.MEDIA_BASE_URL)
-  imgUrl.pathname = '/media/' + fileName
+  const publicUrl = new URL(config.MEDIA_BASE_URL)
+  publicUrl.pathname = '/media/' + fileName
 
-  res.json({ signedUrl, imgSrc: imgUrl.href, tagging })
+  res.json({ signedUrl, fileUrl: publicUrl.href, tagging })
 }
 
 export async function runTestUpload(_req: Request, res: Response) {
@@ -164,14 +166,14 @@ export async function runTestUpload(_req: Request, res: Response) {
     console.error(e)
   })
 
-  serverLog('src: ' + data.imgSrc)
+  serverLog('src: ' + data.fileUrl)
 
-  const checkResponse = await fetch(data.imgSrc)
+  const checkResponse = await fetch(data.fileUrl)
   const imageData = await checkResponse.blob()
   serverLog('type: ' + imageData.type)
   serverLog('size: ' + imageData.size)
 
-  const key = data.imgSrc.replace(config.MEDIA_BASE_URL + '/media/', '')
+  const key = data.fileUrl.replace(config.MEDIA_BASE_URL + '/media/', '')
 
   const inputValues = {
     Bucket: 'editor-media-assets-development',
