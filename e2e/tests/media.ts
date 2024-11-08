@@ -1,5 +1,5 @@
 import {
-  DeleteObjectCommand,
+  DeleteObjectsCommand,
   GetObjectTaggingCommand,
   HeadObjectCommand,
   S3Client,
@@ -7,6 +7,18 @@ import {
 import config from '../../src/utils/config'
 
 Feature('Media upload and proxy')
+
+const s3Client = new S3Client({
+  region: config.BUCKET_REGION,
+  credentials: {
+    accessKeyId: config.BUCKET_ACCESS_KEY_ID,
+    secretAccessKey: config.BUCKET_SECRET_ACCESS_KEY,
+  },
+  endpoint: config.S3_ENDPOINT,
+  forcePathStyle: true,
+})
+
+const uploadedKeys: string[] = []
 
 Scenario('Requesting media proxy with example image works', ({ I }) => {
   I.sendGetRequest('http://localhost:3000/media/four-byte-burger.png')
@@ -55,17 +67,9 @@ Scenario(
     I.sendGetRequest(data.fileUrl)
     I.seeResponseCodeIsSuccessful()
 
-    const s3Client = new S3Client({
-      region: config.BUCKET_REGION,
-      credentials: {
-        accessKeyId: config.BUCKET_ACCESS_KEY_ID,
-        secretAccessKey: config.BUCKET_SECRET_ACCESS_KEY,
-      },
-      endpoint: config.S3_ENDPOINT,
-      forcePathStyle: true,
-    })
-
     const key = data.fileUrl.replace(config.MEDIA_BASE_URL + '/media/', '')
+
+    uploadedKeys.push(key)
 
     const inputValues = { Bucket: 'editor-media-assets-development', Key: key }
     const taggingCommand = new GetObjectTaggingCommand(inputValues)
@@ -81,8 +85,15 @@ Scenario(
       JSON.stringify(metaResponse.Metadata),
       '{"content-type":"image/png"}'
     )
-
-    const deleteCommand = new DeleteObjectCommand(inputValues)
-    await s3Client.send(deleteCommand)
   }
 )
+
+AfterSuite(async ({ I }) => {
+  I.say(`Deleting ${uploadedKeys.length} objects from bucket`)
+  const inputValues = {
+    Bucket: 'editor-media-assets-development',
+    Delete: { Objects: uploadedKeys.map((key) => ({ Key: key })) },
+  }
+  const deleteCommand = new DeleteObjectsCommand(inputValues)
+  await s3Client.send(deleteCommand)
+})
