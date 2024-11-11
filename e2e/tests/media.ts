@@ -54,13 +54,13 @@ Scenario(
       body: file,
       headers: {
         'Access-Control-Allow-Origin': '*',
+        'X-Amz-Tagging': data.tagging,
         'Content-Type': file.type,
-        'x-amz-tagging': data.tagging,
       },
     })
       .then((value) => {
         console.log(value.status)
-        value?.json().then((result) => {
+        value?.text().then((result) => {
           console.log(result)
         })
       })
