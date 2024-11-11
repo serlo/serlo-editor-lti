@@ -53,6 +53,7 @@ Scenario(
       method: 'PUT',
       body: file,
       headers: {
+        'Access-Control-Allow-Origin': '*',
         'X-Amz-Tagging': data.tagging,
         'Content-Type': file.type,
       },
