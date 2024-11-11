@@ -66,7 +66,10 @@ Scenario(
       const res = uploadResponse as Response
       console.log(res.headers)
       console.log(res.status)
-      console.log(res.body)
+      const text = await res.text()
+      const json = await res.json()
+      console.log(text)
+      console.log(json)
       I.assertFalse(true) // fail test
     }
 
