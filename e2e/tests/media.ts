@@ -49,7 +49,7 @@ Scenario(
     const byteArray = Uint8Array.from(binaryData, (char) => char.charCodeAt(0))
     const file = new File([byteArray], '1x1.png', { type: 'image/png' })
 
-    await fetch(data.signedUrl, {
+    const uploadResponse = await fetch(data.signedUrl, {
       method: 'PUT',
       body: file,
       headers: {
@@ -57,11 +57,19 @@ Scenario(
         'x-amz-tagging': data.tagging,
         'Access-Control-Allow-Origin': '*',
       },
-    }).catch((e) => {
-      I.assertFalse(true) // fail test
-      // eslint-disable-next-line no-console
-      console.error(e)
     })
+      .then((value) => {
+        console.log(value.status)
+        uploadResponse?.json().then((result) => {
+          console.log(result)
+        })
+      })
+      .catch((e) => {
+        I.assertFalse(true) // fail test
+        // eslint-disable-next-line no-console
+        console.error(e)
+        return undefined
+      })
 
     I.sendGetRequest(data.fileUrl)
     I.seeResponseCodeIsSuccessful()
