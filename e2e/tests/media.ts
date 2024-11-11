@@ -60,7 +60,7 @@ Scenario(
     })
       .then((value) => {
         console.log(value.status)
-        uploadResponse?.json().then((result) => {
+        value?.json().then((result) => {
           console.log(result)
         })
       })
