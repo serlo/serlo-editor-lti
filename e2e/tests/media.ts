@@ -49,13 +49,13 @@ Scenario(
     const byteArray = Uint8Array.from(binaryData, (char) => char.charCodeAt(0))
     const file = new File([byteArray], '1x1.png', { type: 'image/png' })
 
-    const uploadResponse = await fetch(data.signedUrl, {
+    await fetch(data.signedUrl, {
       method: 'PUT',
       body: file,
       headers: {
+        'Access-Control-Allow-Origin': '*',
         'Content-Type': file.type,
         'x-amz-tagging': data.tagging,
-        'Access-Control-Allow-Origin': '*',
       },
     })
       .then((value) => {
