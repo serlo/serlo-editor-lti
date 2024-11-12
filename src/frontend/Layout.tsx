@@ -9,6 +9,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         backgroundColor: 'white',
         // Make horizontal scroll bar appear on small width. Plugin menu, plugin toolbar, ... need some space.
         minWidth: '40rem',
+        overflowX: 'scroll',
       }}
     >
       <aside style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }}></aside>
