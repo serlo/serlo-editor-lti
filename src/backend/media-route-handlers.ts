@@ -19,7 +19,7 @@ target.pathname = bucketName
 /**
  * Minimal proxy implementation for media assets.
  * Requests to editor.{domain}/media/… are proxied to the bucket for the current environment.
- * We do this so the urls of the image don't need to change if we change our bucket.
+ * We do this so the urls of the files don't need to change if we change our bucket.
  * It could also allow us to setup additional restictions in the future.
  */
 export const mediaProxy = createProxyMiddleware({
@@ -51,6 +51,8 @@ const mimeTypeDecoder = t.union([
   t.literal('image/png'),
   t.literal('image/svg+xml'),
   t.literal('image/webp'),
+  t.literal('video/webm'),
+  t.literal('video/mp4'),
 ])
 
 export async function mediaPresignedUrl(req: Request, res: Response) {
@@ -70,9 +72,27 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
   }
   const editorVariant = req.query.editorVariant
 
-  const editorHost = req.headers.host
-  if (!t.string.is(editorHost) || !editorHost.length) {
+  const requestHost = req.headers.host
+  if (!t.string.is(requestHost) || !requestHost.length) {
     res.status(400).send('Missing header: host')
+    return
+  }
+
+  const parentHost = req.query.parentHost
+  if (!t.string.is(parentHost) || !parentHost.length) {
+    res.status(400).send('Missing or invalid parentHost')
+    return
+  }
+
+  const userId = req.query.userId
+  if (
+    userId &&
+    (!t.string.is(userId) ||
+      userId.length > 100 ||
+      /^[a-z0-9-]+$/i.test(userId) === false)
+  ) {
+    res.status(400).send('Invalid userId')
+    return
   }
 
   const fileHash = createId() // cuid since they are shorter and look less frightening 🙀
@@ -89,20 +109,28 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
     Key: fileName,
     Bucket: bucketName,
     ContentType: mimeType,
-    Metadata: { 'Content-Type': mimeType },
-    Tagging: `editorVariant=${editorVariant}&editorHost=${req.headers.host}`,
+    Metadata: {
+      'Content-Type': mimeType,
+      editorVariant,
+      parentHost,
+      requestHost,
+      ...(userId ? { userId } : {}),
+    },
   }
 
   const command = new PutObjectCommand(params)
-  const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 })
+
+  const signedUrl = await getSignedUrl(s3Client, command, {
+    expiresIn: 3600,
+  })
 
   if (!signedUrl) {
     res.status(500).send('Could not generate signed URL')
     return
   }
 
-  const imgUrl = new URL(config.MEDIA_BASE_URL)
-  imgUrl.pathname = '/media/' + fileName
+  const publicUrl = new URL(config.MEDIA_BASE_URL)
+  publicUrl.pathname = '/media/' + fileName
 
-  res.json({ signedUrl, imgSrc: imgUrl.href })
+  res.json({ signedUrl, fileUrl: publicUrl.href })
 }

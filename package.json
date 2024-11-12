@@ -63,6 +63,7 @@
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react-swc": "^3.7.1",
     "codeceptjs": "^3.6.7",
+    "codeceptjs-chai": "^2.3.5",
     "esbuild": "^0.24.0",
     "eslint": "^9.13.0",
     "eslint-plugin-react": "^7.37.2",
