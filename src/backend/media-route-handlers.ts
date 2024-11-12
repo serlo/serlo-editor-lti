@@ -111,7 +111,8 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
 
   // saved as tags so we can potentially use it in IAM policies later
   // also this way userId is not publicly accessible
-  const tagging = `editorVariant=${editorVariant}&parentHost=${parentHost}&requestHost=${requestHost}${userIdTag}`
+  const tagging = `editorVariant=${editorVariant}`
+  //&parentHost=${parentHost}&requestHost=${requestHost}${userIdTag}
 
   const params: PutObjectCommandInput = {
     Key: fileName,
