@@ -119,7 +119,7 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
     Bucket: bucketName,
     ContentType: mimeType,
     Metadata: { 'Content-Type': mimeType },
-    Tagging: tagging,
+    // Tagging: tagging,
   }
 
   const command = new PutObjectCommand(params)
