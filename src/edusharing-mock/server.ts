@@ -223,6 +223,93 @@ export class EdusharingServer {
       }
     )
 
+    this.app.get(
+      '/edu-sharing/rest/lti/v13/generateDeepLinkingResponse',
+      async (req, res) => {
+        const idToken = req.query.id_token
+        if (typeof idToken !== 'string') {
+          res.status(400).send('id_token is undefined')
+          return
+        }
+
+        const serloEditorJwks = jose.createRemoteJWKSet(
+          new URL(urlJoin(editorUrl, 'edusharing-embed/keys'))
+        )
+
+        const verifyResult = await jose.jwtVerify(idToken, serloEditorJwks, {
+          audience: edusharingMockClientId,
+          issuer: editorUrl,
+          subject: this.user,
+        })
+
+        const idTokenDecoded = verifyResult.payload
+        const idTokenType = t.type({
+          'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings':
+            t.type({
+              data: t.string,
+              deep_link_return_url: t.string,
+            }),
+        })
+
+        if (!idTokenType.is(idTokenDecoded)) {
+          res.status(400).send('Missing property in id token')
+          return
+        }
+
+        const deeplinkReturnUrl =
+          idTokenDecoded[
+            'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings'
+          ].deep_link_return_url
+        const data =
+          idTokenDecoded[
+            'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings'
+          ].data
+
+        const payload = {
+          iss: edusharingMockClientId,
+          aud: editorUrl,
+          nonce: this.nonce,
+          azp: editorUrl,
+          'https://purl.imsglobal.org/spec/lti/claim/deployment_id': '2',
+          'https://purl.imsglobal.org/spec/lti/claim/message_type':
+            'LtiDeepLinkingResponse',
+          'https://purl.imsglobal.org/spec/lti/claim/version': '1.3.0',
+          'https://purl.imsglobal.org/spec/lti-dl/claim/data': data,
+          'https://purl.imsglobal.org/spec/lti-dl/claim/content_items': [
+            {
+              custom: {
+                repositoryId: 'serlo-edusharing',
+                nodeId: '960c48d0-5e01-45ca-aaf6-d648269f0db2',
+              },
+              icon: {
+                width: 'null',
+                url: 'http://localhost:8100/edu-sharing/themes/default/images/common/mime-types/svg/file-image.svg',
+                height: 'null',
+              },
+              type: 'ltiResourceLink',
+              title: 'Test Image',
+              url: 'http://localhost:8100/edu-sharing/rest/lti/v13/lti13/960c48d0-5e01-45ca-aaf6-d648269f0db2',
+            },
+          ],
+        }
+
+        const jwt = await new jose.SignJWT(payload)
+          .setIssuedAt()
+          .setProtectedHeader({ alg: 'RS256', kid: this.keyId, typ: 'JWT' })
+          .setExpirationTime('1h')
+          .sign((await this.keys).privateKey)
+
+        createAutoFormResponse({
+          res,
+          method: 'POST',
+          targetUrl: deeplinkReturnUrl,
+          params: {
+            JWT: jwt,
+          },
+        })
+      }
+    )
+
     this.app.post('/edu-sharing/rest/lti/v13/lti13', async (req, res) => {
       if (
         isEditorValueInvalid({
@@ -235,90 +322,28 @@ export class EdusharingServer {
       )
         return
 
-      if (typeof req.body.id_token !== 'string') {
-        res.status(400).send('id_token is undefined')
-        return
-      }
+      const searchParams = new URLSearchParams()
+      searchParams.append('id_token', req.body.id_token)
 
-      const serloEditorJwks = jose.createRemoteJWKSet(
-        new URL(urlJoin(editorUrl, 'edusharing-embed/keys'))
+      res.setHeader('Content-Type', 'text/html')
+      res.send(
+        `<!DOCTYPE html>
+        <html>
+          <body>
+            <p>Select type of embed</p>
+            <div>
+              <a href="/edu-sharing/rest/lti/v13/generateDeepLinkingResponse?${searchParams}">Image</a>
+            </div>
+            <br>
+            <br>
+            <p style="color: lightgrey; font-size: 5rem">Content to fill up iframe: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam finibus sollicitudin nunc sed ultrices. Nulla orci mauris, gravida ac accumsan non, varius convallis augue. Aliquam metus lacus, tempor in molestie vel, ornare ut ex. Sed suscipit mollis orci, ac porttitor magna iaculis vel. Quisque mattis rutrum sodales. Cras sodales eros lorem, sodales consequat est feugiat nec. Duis pellentesque vel felis sit amet accumsan. Mauris a volutpat metus, ac dignissim justo.
+
+            Duis commodo mi elit, tristique pharetra tortor vulputate ultricies. Vestibulum at semper mi, vitae accumsan felis. Duis dictum erat eu mi rutrum dapibus. Donec rutrum orci et velit faucibus, sed laoreet eros malesuada. Phasellus quis rutrum quam. Vivamus nec sagittis nisl, eu eleifend justo. Morbi at quam ipsum. Praesent vestibulum consectetur velit quis condimentum. Mauris tempus interdum justo ac vestibulum. Duis finibus malesuada tempor. Aliquam sit amet orci quis nibh vulputate egestas. Nam sagittis hendrerit lectus, porta fringilla nulla euismod ut. Morbi in quam dapibus, aliquet tellus id, ornare velit. Vivamus sed euismod urna. Suspendisse bibendum malesuada nisl sed fringilla.
+            </p>
+          </body>
+        </html>
+        `.trim()
       )
-
-      const verifyResult = await jose.jwtVerify(
-        req.body.id_token,
-        serloEditorJwks,
-        {
-          audience: edusharingMockClientId,
-          issuer: editorUrl,
-          subject: this.user,
-        }
-      )
-
-      const idToken = verifyResult.payload
-      const idTokenType = t.type({
-        'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings':
-          t.type({
-            data: t.string,
-            deep_link_return_url: t.string,
-          }),
-      })
-
-      if (!idTokenType.is(idToken)) {
-        res.status(400).send('Missing property in id token')
-        return
-      }
-
-      const deeplinkReturnUrl =
-        idToken[
-          'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings'
-        ].deep_link_return_url
-      const data =
-        idToken[
-          'https://purl.imsglobal.org/spec/lti-dl/claim/deep_linking_settings'
-        ].data
-
-      const payload = {
-        iss: edusharingMockClientId,
-        aud: editorUrl,
-        nonce: this.nonce,
-        azp: editorUrl,
-        'https://purl.imsglobal.org/spec/lti/claim/deployment_id': '2',
-        'https://purl.imsglobal.org/spec/lti/claim/message_type':
-          'LtiDeepLinkingResponse',
-        'https://purl.imsglobal.org/spec/lti/claim/version': '1.3.0',
-        'https://purl.imsglobal.org/spec/lti-dl/claim/data': data,
-        'https://purl.imsglobal.org/spec/lti-dl/claim/content_items': [
-          {
-            custom: {
-              repositoryId: 'serlo-edusharing',
-              nodeId: '960c48d0-5e01-45ca-aaf6-d648269f0db2',
-            },
-            icon: {
-              width: 'null',
-              url: 'http://localhost:8100/edu-sharing/themes/default/images/common/mime-types/svg/file-image.svg',
-              height: 'null',
-            },
-            type: 'ltiResourceLink',
-            title: 'Test Image',
-            url: 'http://localhost:8100/edu-sharing/rest/lti/v13/lti13/960c48d0-5e01-45ca-aaf6-d648269f0db2',
-          },
-        ],
-      }
-
-      const jwt = await new jose.SignJWT(payload)
-        .setIssuedAt()
-        .setProtectedHeader({ alg: 'RS256', kid: this.keyId, typ: 'JWT' })
-        .setExpirationTime('1h')
-        .sign((await this.keys).privateKey)
-
-      createAutoFormResponse({
-        res,
-        method: 'POST',
-        targetUrl: deeplinkReturnUrl,
-        params: {
-          JWT: jwt,
-        },
-      })
     })
 
     this.app.get('/edu-sharing/rest/lti/v13/details/*/*', (_req, res) => {
