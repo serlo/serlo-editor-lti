@@ -97,7 +97,7 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
     res.status(400).send('Invalid userId')
     return
   }
-  const userIdTag = userId ? `&userId=${userId}` : ''
+  // const userIdTag = userId ? `&userId=${userId}` : ''
 
   const fileHash = createId() // cuid since they are shorter and look less frightening 🙀
 
@@ -123,11 +123,11 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
   }
 
   const command = new PutObjectCommand(params)
-  const unhoistableHeaders: Set<string> = new Set(['x-amz-tagging'])
+  // const unhoistableHeaders: Set<string> = new Set(['x-amz-tagging'])
 
   const signedUrl = await getSignedUrl(s3Client, command, {
     expiresIn: 3600,
-    unhoistableHeaders,
+    // unhoistableHeaders,
   })
 
   if (!signedUrl) {
