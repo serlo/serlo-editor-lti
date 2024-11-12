@@ -118,8 +118,6 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
     },
   }
 
-  console.log(params)
-
   const command = new PutObjectCommand(params)
 
   const signedUrl = await getSignedUrl(s3Client, command, {

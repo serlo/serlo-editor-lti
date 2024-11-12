@@ -46,6 +46,8 @@ Scenario(
     const byteArray = Uint8Array.from(binaryData, (char) => char.charCodeAt(0))
     const file = new File([byteArray], '1x1.png', { type: 'image/png' })
 
+    console.log(data.signedUrl)
+
     const uploadResponse = await fetch(data.signedUrl, {
       method: 'PUT',
       body: file,
