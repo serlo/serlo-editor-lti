@@ -111,10 +111,10 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
     ContentType: mimeType,
     Metadata: {
       'Content-Type': mimeType,
-      // editorVariant,
-      // parentHost,
-      // requestHost,
-      // ...(userId ? { userId } : {}),
+      editorVariant,
+      parentHost,
+      requestHost,
+      ...(userId ? { userId } : {}),
     },
   }
 
