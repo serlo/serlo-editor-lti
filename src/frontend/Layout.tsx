@@ -7,6 +7,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         display: 'flex',
         flexDirection: 'row',
         backgroundColor: 'white',
+        // Make horizontal scroll bar appear on small width. Plugin menu, plugin toolbar, ... need some space.
+        minWidth: '40rem',
       }}
     >
       <aside style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }}></aside>
@@ -16,8 +18,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           flexShrink: 1,
           flexBasis: maxContentWidth,
           maxWidth: `min(100%, ${maxContentWidth})`,
-          // Make horizontal scroll bar appear on small width. Plugin menu, plugin toolbar, ... need some space.
-          minWidth: '40rem',
           // Leave some space for editor UI that extends beyond (plugin toolbar, drag handle, ...)
           padding: '3rem',
         }}
