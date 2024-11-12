@@ -1,8 +1,5 @@
-import {
-  GetObjectTaggingCommand,
-  HeadObjectCommand,
-  S3Client,
-} from '@aws-sdk/client-s3'
+/* eslint-disable no-console */
+import { HeadObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import config from '../../src/utils/config'
 
 Feature('Media upload and proxy')
@@ -54,11 +51,9 @@ Scenario(
       body: file,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'X-Amz-Tagging': data.tagging,
         'Content-Type': file.type,
       },
     }).catch((e) => {
-      // eslint-disable-next-line no-console
       console.error(e)
       I.assertFalse(true) // fail test
     })
@@ -82,18 +77,11 @@ Scenario(
     uploadedKeys.push(key)
 
     const inputValues = { Bucket: 'editor-media-assets-development', Key: key }
-    const taggingCommand = new GetObjectTaggingCommand(inputValues)
-    const taggingResponse = await s3Client.send(taggingCommand)
-    I.assertEqual(
-      JSON.stringify(taggingResponse.TagSet),
-      '[{"Key":"editorVariant","Value":"test-uploads"},{"Key":"parentHost","Value":"localhost:3000"},{"Key":"requestHost","Value":"localhost:3000"},{"Key":"userId","Value":"test"}]'
-    )
-
     const headCommand = new HeadObjectCommand(inputValues)
     const metaResponse = await s3Client.send(headCommand)
     I.assertEqual(
       JSON.stringify(metaResponse.Metadata),
-      '{"content-type":"image/png"}'
+      '{"content-type":"image/png","editorvariant":"test-uploads","parenthost":"localhost:3000","requesthost":"localhost:3000","userid":"test"}'
     )
   }
 )

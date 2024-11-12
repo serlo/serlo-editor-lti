@@ -94,7 +94,6 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
     res.status(400).send('Invalid userId')
     return
   }
-  const userIdTag = userId ? `&userId=${userId}` : ''
 
   const fileHash = createId() // cuid since they are shorter and look less frightening 🙀
 
@@ -106,24 +105,23 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
   // Keys with slashes are expected in S3 (rendered as folders in bucket webview for example)
   const fileName = `${variantFolder}/${fileHash}/${mediaType}.${fileExtension}`
 
-  // saved as tags so we can potentially use it in IAM policies later
-  // also this way userId is not publicly accessible
-  const tagging = `editorVariant=${editorVariant}&parentHost=${parentHost}&requestHost=${requestHost}${userIdTag}`
-
   const params: PutObjectCommandInput = {
     Key: fileName,
     Bucket: bucketName,
     ContentType: mimeType,
-    Metadata: { 'Content-Type': mimeType },
-    Tagging: tagging,
+    Metadata: {
+      'Content-Type': mimeType,
+      editorVariant,
+      parentHost,
+      requestHost,
+      ...(userId ? { userId } : {}),
+    },
   }
 
   const command = new PutObjectCommand(params)
-  const unhoistableHeaders: Set<string> = new Set(['x-amz-tagging'])
 
   const signedUrl = await getSignedUrl(s3Client, command, {
     expiresIn: 3600,
-    unhoistableHeaders,
   })
 
   if (!signedUrl) {
@@ -134,5 +132,5 @@ export async function mediaPresignedUrl(req: Request, res: Response) {
   const publicUrl = new URL(config.MEDIA_BASE_URL)
   publicUrl.pathname = '/media/' + fileName
 
-  res.json({ signedUrl, fileUrl: publicUrl.href, tagging })
+  res.json({ signedUrl, fileUrl: publicUrl.href })
 }
