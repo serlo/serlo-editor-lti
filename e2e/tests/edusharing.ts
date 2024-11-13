@@ -96,6 +96,9 @@ function embedEdusharingAsset(I: CodeceptJS.I) {
   I.click('$add-new-plugin-row-button')
   I.click('Edu-sharing Inhalt')
   I.click('$plugin-edusharing-select-content-button')
+  I.switchTo('iframe') // switch to first iframe
+  I.click('#edusharing-embed-image-select')
+  I.switchTo() // switch back to main page
 }
 
 function openSerloEditorWithLTI(I: CodeceptJS.I) {

@@ -332,7 +332,7 @@ export class EdusharingServer {
           <body>
             <p>Select type of embed</p>
             <div>
-              <a href="/edu-sharing/rest/lti/v13/generateDeepLinkingResponse?${searchParams}">Image</a>
+              <a id="edusharing-embed-image-select" href="/edu-sharing/rest/lti/v13/generateDeepLinkingResponse?${searchParams}">Image</a>
             </div>
             <br>
             <br>
