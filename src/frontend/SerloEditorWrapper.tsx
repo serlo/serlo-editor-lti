@@ -71,33 +71,15 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
   function getPlugins(ltik: string) {
     const { platformUrl } = jwtDecode(ltik) as Ltik
     const onEdusharing = platformUrl.includes('edu-sharing')
-    if (!onEdusharing) {
-      return defaultPlugins
-    }
-
-    // Customize available plugins when launched by edu-sharing
-    const origin = window.location.origin
-    const isDevEnv =
-      origin.includes('editor.serlo.dev') || origin.includes('localhost')
-    if (isDevEnv) {
+    if (onEdusharing) {
       return [
         ...defaultPlugins,
         EditorPluginType.EdusharingAsset,
         EditorPluginType.SerloInjection,
       ]
-    } else {
-      return [
-        ...defaultPlugins.filter(
-          (plugin) =>
-            plugin !== EditorPluginType.Image &&
-            plugin !== EditorPluginType.DropzoneImage &&
-            plugin !== EditorPluginType.ImageGallery &&
-            plugin !== EditorPluginType.Video
-        ),
-        EditorPluginType.EdusharingAsset,
-        EditorPluginType.SerloInjection,
-      ]
     }
+
+    return defaultPlugins
   }
 
   return (
