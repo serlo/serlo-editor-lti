@@ -221,7 +221,7 @@ const setup = async () => {
     // @ts-expect-error @types/ltijs
     const resourceLinkId: string = idToken.platformContext.resource.id
 
-    console.log('ltijs.onConnect -> idToken: ', idToken)
+    logger.info('ltijs.onConnect -> idToken: ', idToken)
 
     const mariaDB = getMariaDB()
 
@@ -305,7 +305,7 @@ const setup = async () => {
       [ltiCustomClaimId, JSON.stringify(idToken)]
     )
 
-    console.log('entityId: ', entityId)
+    logger.info('entityId: ', entityId)
 
     const url = new URL(urlJoin(config.EDITOR_URL, '/lti/launch'))
 
