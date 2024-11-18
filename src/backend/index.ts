@@ -9,13 +9,9 @@ import { registerLtiPlatforms } from './util/register-lti-platforms'
 import urlJoin from 'url-join'
 import config from '../utils/config'
 import * as edusharing from './edusharing'
-import {
-  editorApp,
-  editorGetEntity,
-  editorPutEntity,
-} from './editor-route-handlers'
+import * as editor from './editor-route-handlers'
 import { getMariaDB } from './mariadb'
-import { mediaPresignedUrl, mediaProxy } from './media-route-handlers'
+import * as media from './media-route-handlers'
 import { logger } from '../utils/logger'
 
 const ltijsKey = config.LTIJS_KEY
@@ -90,13 +86,13 @@ const setup = async () => {
   })
 
   // Opens Serlo editor
-  app.get('/app', editorApp)
+  app.get('/app', editor.app)
 
   // Endpoint to get content
-  app.get('/entity', editorGetEntity)
+  app.get('/entity', editor.getEntity)
 
   // Endpoint to save content
-  app.put('/entity', editorPutEntity)
+  app.put('/entity', editor.putEntity)
 
   // Provide endpoint to start embed flow on edu-sharing
   // Called when user clicks on "embed content from edusharing"
@@ -116,8 +112,8 @@ const setup = async () => {
 
   app.get('/edusharing-embed/get', edusharing.get)
 
-  app.get('/media/presigned-url', mediaPresignedUrl)
-  app.use(mediaProxy)
+  app.get('/media/presigned-url', media.presignedUrl)
+  app.use(media.proxyMiddleware)
 
   // Successful LTI resource link launch
   // @ts-expect-error @types/ltijs
