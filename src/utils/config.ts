@@ -23,10 +23,8 @@ const BaseEnv = {
   S3_ENDPOINT: NonEmptyString,
   BUCKET_NAME: NonEmptyString,
   BUCKET_REGION: NonEmptyString,
-  // fallback to '' for now so it does not fail in CI
-  BUCKET_ACCESS_KEY_ID: t.string,
-  // fallback to '' for now so it does not fail in CI
-  BUCKET_SECRET_ACCESS_KEY: t.string,
+  BUCKET_ACCESS_KEY_ID: NonEmptyString,
+  BUCKET_SECRET_ACCESS_KEY: NonEmptyString,
   MEDIA_BASE_URL: NonEmptyString,
 }
 
