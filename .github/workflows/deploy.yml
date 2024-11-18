@@ -26,7 +26,7 @@ jobs:
           echo "DOMAIN=https://editor.serlo-staging.dev/" >> $GITHUB_ENV
 
       - name: Deploy to Server
-        uses: appleboy/ssh-action@v1.1.0
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{  env.REMOTE_HOST }}
           username: ${{ env.REMOTE_USER }}
