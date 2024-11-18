@@ -16,7 +16,7 @@ import {
 } from './editor-route-handlers'
 import { getMariaDB } from './mariadb'
 import { mediaPresignedUrl, mediaProxy } from './media-route-handlers'
-import { serverLog } from '../utils/server-log'
+import { logger } from '../utils/logger'
 
 const ltijsKey = config.LTIJS_KEY
 
@@ -58,7 +58,7 @@ const setup = async () => {
   )
 
   await edusharing.init().catch((error) => {
-    serverLog(`Setup failed: ${error}`)
+    logger.error(`Setup failed: ${error}`)
     throw new Error('Setup failed!')
   })
 

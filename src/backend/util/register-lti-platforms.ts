@@ -1,6 +1,6 @@
 import { Provider as ltijs } from 'ltijs'
 import { edusharingAsToolConfigs } from '../edusharing'
-import { serverLog } from '../../utils/server-log'
+import { logger } from '../../utils/logger'
 import config from '../../utils/config'
 import { edusharingMockClientId } from '../../../mocks'
 
@@ -36,7 +36,7 @@ export async function registerLtiPlatforms() {
         detailsEndpoint: config.EDUSHARING_RLP_DETAILS_ENDPOINT,
         keysetEndpoint: config.EDUSHARING_RLP_KEYSET_ENDPOINT,
       })
-      serverLog('Registered tool: edu-sharing (RLP)')
+      logger.info('Registered tool: edu-sharing (RLP)')
     }
   }
 
@@ -66,7 +66,7 @@ export async function registerLtiPlatforms() {
           'http://localhost:8100/edu-sharing/rest/lti/v13/details',
         keysetEndpoint: 'http://localhost:8100/edu-sharing/rest/lti/v13/jwks',
       })
-      serverLog(`Registered tool: edusharing-mock`)
+      logger.info(`Registered tool: edusharing-mock`)
     }
 
     // Register platform: itslearning mock
@@ -123,7 +123,7 @@ async function registerPlatform({
     },
   })
   if (platform) {
-    serverLog(`Registered platform: ${name}`)
+    logger.info(`Registered platform: ${name}`)
     return platform
   }
   throw new Error(`Platform ${name} could not be registered`)

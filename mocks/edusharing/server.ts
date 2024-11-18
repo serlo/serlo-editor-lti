@@ -7,7 +7,7 @@ import { v4 as uuid_v4 } from 'uuid'
 import * as jose from 'jose'
 import urlJoin from 'url-join'
 import { createAutoFormResponse } from '../../src/backend/util/create-auto-form-response'
-import { serverLog } from '../../src/utils/server-log'
+import { logger } from '../../src/utils/logger'
 import config from '../../src/utils/config'
 
 export const editorUrl = config.EDITOR_URL
@@ -165,7 +165,7 @@ export class EdusharingServer {
         if (VersionComment.is(comment)) {
           this.savedVersions.push({ comment })
           this.content = JSON.parse(req.file.buffer.toString())
-          serverLog(
+          logger.info(
             `[${new Date().toISOString()}]: Save registered with comment ${
               req.query['versionComment']
             }`
@@ -351,7 +351,7 @@ export class EdusharingServer {
     })
 
     this.app.all('*', (req, res) => {
-      serverLog(`${req.method} call to ${req.url} registered`)
+      logger.info(`${req.method} call to ${req.url} registered`)
       res.sendStatus(404).end()
     })
   }
