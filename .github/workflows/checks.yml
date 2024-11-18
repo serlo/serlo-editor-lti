@@ -38,8 +38,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      BUCKET_ACCESS_KEY_ID: ${{ vars.BUCKET_ACCESS_KEY_ID }}
-      BUCKET_SECRET_ACCESS_KEY: ${{ vars.BUCKET_SECRET_ACCESS_KEY }}
+      BUCKET_ACCESS_KEY_ID: ${{ secrets.BUCKET_ACCESS_KEY_ID }}
+      BUCKET_SECRET_ACCESS_KEY: ${{ secrets.BUCKET_SECRET_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-node
