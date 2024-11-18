@@ -27,7 +27,7 @@ Scenario('Requesting media proxy with invalid url returns 400', ({ I }) => {
 })
 
 Scenario(
-  'Media: Uploading image works and Tags and Metadata is written as expected',
+  'Media: Uploading image works and Metadata is written as expected',
   async ({ I }) => {
     I.amOnPage('http://localhost:3000')
 
