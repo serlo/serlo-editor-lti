@@ -83,28 +83,21 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
   }
 
   return (
-    <div
-      style={{ padding: '3rem', backgroundColor: 'white', minWidth: '600px' }}
+    <MemoSerloEditor
+      initialState={initialState}
+      onChange={(newState) => {
+        editorStateRef.current = JSON.stringify(newState)
+        setEditorState(editorStateRef.current)
+        setSavePending(true)
+      }}
+      editorVariant="lti-tool"
+      _testingSecret={testingSecret}
+      plugins={plugins}
+      _ltik={ltik}
     >
-      {/* <div style={{ color: 'grey' }}>
-        {savePending ? 'Ungespeicherte Änderungen' : 'Gespeichert'}
-      </div> */}
-      <MemoSerloEditor
-        initialState={initialState}
-        onChange={(newState) => {
-          editorStateRef.current = JSON.stringify(newState)
-          setEditorState(editorStateRef.current)
-          setSavePending(true)
-        }}
-        editorVariant="lti-tool"
-        _testingSecret={testingSecret}
-        plugins={plugins}
-        _ltik={ltik}
-      >
-        {(editor) => {
-          return <>{editor.element}</>
-        }}
-      </MemoSerloEditor>
-    </div>
+      {(editor) => {
+        return <>{editor.element}</>
+      }}
+    </MemoSerloEditor>
   )
 }
