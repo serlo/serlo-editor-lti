@@ -80,16 +80,17 @@ function App() {
           return
         }
 
-        if (resourceLinkIdFromDb !== resourceLinkIdFromUrl) {
-          setAppState({
-            type: 'error',
-            // In German because we expect the user to see it
-            message:
-              'Auf itslearning wurde eine Kopie erstellt. Leider ist dies aus technischen Gründen noch nicht möglich. Du kannst allerdings einen neuen Serlo Editor Inhalt auf itslearning erstellen und die gewünschten Inhalte per "Plugin in die Zwischenablage kopieren" & Strg-V dorthin übernehmen.',
-            imageURL: copyPluginToClipboardImage,
-          })
-          return
-        }
+        // @@@
+        // if (resourceLinkIdFromDb !== resourceLinkIdFromUrl) {
+        //   setAppState({
+        //     type: 'error',
+        //     // In German because we expect the user to see it
+        //     message:
+        //       'Auf itslearning wurde eine Kopie erstellt. Leider ist dies aus technischen Gründen noch nicht möglich. Du kannst allerdings einen neuen Serlo Editor Inhalt auf itslearning erstellen und die gewünschten Inhalte per "Plugin in die Zwischenablage kopieren" & Strg-V dorthin übernehmen.',
+        //     imageURL: copyPluginToClipboardImage,
+        //   })
+        //   return
+        // }
 
         const content = JSON.parse(entity.content)
         // console.log('content: ', content)
