@@ -1,6 +1,6 @@
 // Centered & max-width content layout
 export function Layout({ children }: { children: React.ReactNode }) {
-  const maxContentWidth = '56rem'
+  const maxContentWidth = '60rem'
   return (
     <div
       style={{
