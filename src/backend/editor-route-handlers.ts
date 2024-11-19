@@ -59,7 +59,8 @@ export async function editorGetEntity(req: Request, res: Response) {
 
 async function edusharingGetEntity(req: Request, res: Response) {
   const idToken = res.locals.token as IdToken
-  const platform = await Provider.getPlatform(idToken.iss)
+  // @ts-expect-error @types/ltijs
+  const platform = await Provider.getPlatform(idToken.iss, idToken.clientId)
   if (!platform) throw new Error('Platform was null')
   const privateKey = await platform.platformPrivateKey()
   const keyId = await platform.platformKid()
@@ -81,20 +82,23 @@ async function edusharingGetEntity(req: Request, res: Response) {
     ...(version != null ? { version } : {}),
     dataToken,
   }
-  const message = jwt.sign(payload, privateKey, { keyid: keyId })
+  const message = jwt.sign(payload, privateKey, {
+    keyid: keyId,
+    algorithm: 'RS256',
+  })
 
   const url = new URL(getContentApiUrl)
   url.searchParams.append('jwt', message)
 
   const edusharingResponse = await fetch(url.href)
 
-  const edusharingResponseJson = await edusharingResponse.json()
+  const edusharingResponseText = await edusharingResponse.text()
 
   const response = {
     id: '1',
     resource_link_id: '1',
     custom_claim_id: '1',
-    content: edusharingResponseJson,
+    content: edusharingResponseText,
   }
 
   return res.json(response)
@@ -138,7 +142,8 @@ export async function editorPutEntity(req: Request, res: Response) {
 async function edusharingPutEntity(req: Request, res: Response) {
   const editorState = req.body.editorState
   const idToken = res.locals.token as IdToken
-  const platform = await Provider.getPlatform(idToken.iss)
+  // @ts-expect-error @types/ltijs
+  const platform = await Provider.getPlatform(idToken.iss, idToken.clientId)
   if (!platform) throw new Error('Platform was null')
   const privateKey = await platform.platformPrivateKey()
   const keyId = await platform.platformKid()
@@ -158,7 +163,10 @@ async function edusharingPutEntity(req: Request, res: Response) {
     user,
     dataToken,
   }
-  const message = jwt.sign(payload, privateKey, { keyid: keyId })
+  const message = jwt.sign(payload, privateKey, {
+    keyid: keyId,
+    algorithm: 'RS256',
+  })
 
   const url = new URL(postContentApiUrl)
   url.searchParams.append('jwt', message)
