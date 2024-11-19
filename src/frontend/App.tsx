@@ -92,11 +92,10 @@ function App() {
         //   return
         // }
 
-        const content = JSON.parse(entity.content)
         // console.log('content: ', content)
         setAppState({
           type: mode === 'write' ? 'editor' : 'static-renderer',
-          content,
+          content: entity.content ? JSON.parse(entity.content) : null,
         })
       })
       .catch(() => {
