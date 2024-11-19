@@ -92,13 +92,16 @@ async function edusharingGetEntity(req: Request, res: Response) {
 
   const edusharingResponse = await fetch(url.href)
 
-  const edusharingResponseText = await edusharingResponse.text()
+  // For some reason this is double stringified even though we save it only stringified once
+  const doubleStringifiedDocumentState = await edusharingResponse.text()
+
+  const stringifiedDocumentState = JSON.parse(doubleStringifiedDocumentState)
 
   const response = {
     id: '1',
     resource_link_id: '1',
     custom_claim_id: '1',
-    content: edusharingResponseText,
+    content: stringifiedDocumentState,
   }
 
   return res.json(response)
