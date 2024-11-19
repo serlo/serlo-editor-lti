@@ -140,7 +140,7 @@ export async function editorPutEntity(req: Request, res: Response) {
 }
 
 async function edusharingPutEntity(req: Request, res: Response) {
-  const editorStateString = req.body.editorState as string
+  const editorStateString = JSON.stringify(req.body.editorState)
   const idToken = res.locals.token as IdToken
   // @ts-expect-error @types/ltijs
   const platform = await Provider.getPlatform(idToken.iss, idToken.clientId)
