@@ -92,10 +92,7 @@ async function edusharingGetEntity(req: Request, res: Response) {
 
   const edusharingResponse = await fetch(url.href)
 
-  // For some reason this is double stringified even though we save it only stringified once
-  const doubleStringifiedDocumentState = await edusharingResponse.text()
-
-  const stringifiedDocumentState = JSON.parse(doubleStringifiedDocumentState)
+  const stringifiedDocumentState = await edusharingResponse.text()
 
   const response = {
     id: '1',
@@ -143,7 +140,7 @@ export async function editorPutEntity(req: Request, res: Response) {
 }
 
 async function edusharingPutEntity(req: Request, res: Response) {
-  const editorState = req.body.editorState
+  const editorStateString = req.body.editorState as string
   const idToken = res.locals.token as IdToken
   // @ts-expect-error @types/ltijs
   const platform = await Provider.getPlatform(idToken.iss, idToken.clientId)
@@ -176,7 +173,7 @@ async function edusharingPutEntity(req: Request, res: Response) {
   url.searchParams.append('mimetype', 'application/json')
   url.searchParams.append('versionComment', 'Automatische Speicherung')
 
-  const blob = new Blob([JSON.stringify(editorState)], {
+  const blob = new Blob([editorStateString], {
     type: 'application/json',
   })
 
