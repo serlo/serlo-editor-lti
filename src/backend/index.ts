@@ -9,14 +9,10 @@ import { registerLtiPlatforms } from './util/register-lti-platforms'
 import urlJoin from 'url-join'
 import config from '../utils/config'
 import * as edusharing from './edusharing'
-import {
-  editorApp,
-  editorGetEntity,
-  editorPutEntity,
-} from './editor-route-handlers'
+import * as editor from './editor-route-handlers'
 import { getMariaDB } from './mariadb'
-import { mediaPresignedUrl, mediaProxy } from './media-route-handlers'
-import { serverLog } from '../utils/server-log'
+import * as media from './media-route-handlers'
+import { logger } from '../utils/logger'
 
 const ltijsKey = config.LTIJS_KEY
 
@@ -58,7 +54,7 @@ const setup = async () => {
   )
 
   await edusharing.init().catch((error) => {
-    serverLog(`Setup failed: ${error}`)
+    logger.error(`Setup failed: ${error}`)
     throw new Error('Setup failed!')
   })
 
@@ -90,13 +86,13 @@ const setup = async () => {
   })
 
   // Opens Serlo editor
-  app.get('/app', editorApp)
+  app.get('/app', editor.app)
 
   // Endpoint to get content
-  app.get('/entity', editorGetEntity)
+  app.get('/entity', editor.getEntity)
 
   // Endpoint to save content
-  app.put('/entity', editorPutEntity)
+  app.put('/entity', editor.putEntity)
 
   // Provide endpoint to start embed flow on edu-sharing
   // Called when user clicks on "embed content from edusharing"
@@ -116,8 +112,8 @@ const setup = async () => {
 
   app.get('/edusharing-embed/get', edusharing.get)
 
-  app.get('/media/presigned-url', mediaPresignedUrl)
-  app.use(mediaProxy)
+  app.get('/media/presigned-url', media.presignedUrl)
+  app.use(media.proxyMiddleware)
 
   // Successful LTI resource link launch
   // @ts-expect-error @types/ltijs
@@ -221,7 +217,7 @@ const setup = async () => {
     // @ts-expect-error @types/ltijs
     const resourceLinkId: string = idToken.platformContext.resource.id
 
-    console.log('ltijs.onConnect -> idToken: ', idToken)
+    logger.info('ltijs.onConnect -> idToken: ', idToken)
 
     const mariaDB = getMariaDB()
 
@@ -305,7 +301,7 @@ const setup = async () => {
       [ltiCustomClaimId, JSON.stringify(idToken)]
     )
 
-    console.log('entityId: ', entityId)
+    logger.info('entityId: ', entityId)
 
     const url = new URL(urlJoin(config.EDITOR_URL, '/lti/launch'))
 

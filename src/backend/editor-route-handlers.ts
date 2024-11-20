@@ -5,14 +5,15 @@ import path from 'path'
 import { AccessToken, Entity } from '.'
 import { getMariaDB } from './mariadb'
 import config from '../utils/config'
+import { logger } from '../utils/logger'
 
 const ltijsKey = config.LTIJS_KEY
 
-export async function editorApp(_: Request, res: Response) {
+export async function app(_: Request, res: Response) {
   return res.sendFile(path.join(__dirname, '../../dist/frontend/index.html'))
 }
 
-export async function editorGetEntity(req: Request, res: Response) {
+export async function getEntity(req: Request, res: Response) {
   const database = getMariaDB()
 
   const accessToken = req.query.accessToken
@@ -24,7 +25,7 @@ export async function editorGetEntity(req: Request, res: Response) {
   try {
     decodedAccessToken = jwt.verify(accessToken, ltijsKey) as AccessToken
   } catch (error) {
-    console.error(error)
+    logger.error(error)
     return res.json({ content: 'Invalid access token' })
   }
 
@@ -44,12 +45,12 @@ export async function editorGetEntity(req: Request, res: Response) {
     [String(decodedAccessToken.entityId)]
   )
 
-  console.log('entity: ', entity)
+  logger.info('entity: ', entity)
 
   res.json(entity)
 }
 
-export async function editorPutEntity(req: Request, res: Response) {
+export async function putEntity(req: Request, res: Response) {
   const database = getMariaDB()
 
   const accessToken = req.body.accessToken
@@ -68,7 +69,7 @@ export async function editorPutEntity(req: Request, res: Response) {
     req.body.editorState,
     decodedAccessToken.entityId,
   ])
-  console.log(
+  logger.info(
     `Entity ${
       decodedAccessToken.entityId
     } modified in database. New state:\n${req.body.editorState}`

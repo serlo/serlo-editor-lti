@@ -22,7 +22,7 @@ target.pathname = bucketName
  * We do this so the urls of the files don't need to change if we change our bucket.
  * It could also allow us to setup additional restictions in the future.
  */
-export const mediaProxy = createProxyMiddleware({
+export const proxyMiddleware = createProxyMiddleware({
   target: target.href,
   changeOrigin: true,
   pathFilter: (path) => path.startsWith('/media'),
@@ -55,7 +55,7 @@ const mimeTypeDecoder = t.union([
   t.literal('video/mp4'),
 ])
 
-export async function mediaPresignedUrl(req: Request, res: Response) {
+export async function presignedUrl(req: Request, res: Response) {
   if (!mimeTypeDecoder.is(req.query.mimeType)) {
     res.status(400).send('Missing or invalid mimeType')
     return
