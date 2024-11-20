@@ -36,6 +36,12 @@ const LocalEnvType = t.type({
 const DevelopmentEnvType = t.type({
   ...BaseEnv,
   ENVIRONMENT: t.literal('development'),
+  MOODLE_NAME: NonEmptyString,
+  MOODLE_URL: NonEmptyString,
+  MOODLE_AUTHENTICATION_ENDPOINT: NonEmptyString,
+  MOODLE_ACCESS_TOKEN_ENDPOINT: NonEmptyString,
+  MOODLE_KEYSET_ENDPOINT: NonEmptyString,
+  SERLO_EDITOR_CLIENT_ID_ON_MOODLE: NonEmptyString,
 })
 
 const StagingEnvType = t.type({
