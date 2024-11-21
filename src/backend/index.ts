@@ -10,6 +10,7 @@ import urlJoin from 'url-join'
 import config from '../utils/config'
 import * as edusharing from './edusharing'
 import * as editor from './editor-route-handlers'
+import * as ai from './ai-route-handlers'
 import { getMariaDB } from './mariadb'
 import * as media from './media-route-handlers'
 import { logger } from '../utils/logger'
@@ -114,6 +115,8 @@ const setup = async () => {
 
   app.get('/media/presigned-url', media.presignedUrl)
   app.use(media.proxyMiddleware)
+
+  app.post('/ai/generate', ai.generate)
 
   // Successful LTI resource link launch
   ltijs.onConnect((idToken, req, res) => {
