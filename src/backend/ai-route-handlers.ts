@@ -35,6 +35,7 @@ export async function generate(req: Request, res: Response) {
   if (hasEmptyMessage) {
     return res.status(400).send('Missing prompt within a message')
   }
+
   try {
     const openai = new OpenAI({
       apiKey: config.OPENAI_API_KEY,
@@ -70,7 +71,7 @@ export async function generate(req: Request, res: Response) {
   } catch (error) {
     if (error instanceof APIError) {
       const detailedMessage = [
-        'OpenAI API error when executing prompt.',
+        'OpenAI API error while executing prompt.',
         `Status: ${error.status}`,
         `Type: ${error.type}`,
         `Code: ${error.code}`,
@@ -80,9 +81,10 @@ export async function generate(req: Request, res: Response) {
 
       logger.error(detailedMessage)
     } else if (error instanceof Error) {
-      logger.error(`Error when executing prompt: ${error.message}`)
+      logger.error(`Error while executing prompt: ${error.message}`)
     } else {
-      logger.error('Unknown error occurred in executing prompt')
+      logger.error('Unknown error occurred while executing prompt')
     }
+    return res.status(500).send('Error occurred while executing prompt')
   }
 }
