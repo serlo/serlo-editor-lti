@@ -117,11 +117,7 @@ const setup = async () => {
 
   // Successful LTI resource link launch
   ltijs.onConnect((idToken, req, res) => {
-    if (
-      (config.ENVIRONMENT === 'staging' &&
-        idToken.iss === config.EDUSHARING_RLP_URL) ||
-      idToken.iss === 'http://localhost:8100/edu-sharing'
-    ) {
+    if (idToken.iss.includes('edu-sharing')) {
       void onConnectEdusharing(idToken, req, res)
     } else {
       void onConnectDefault(idToken, req, res)
