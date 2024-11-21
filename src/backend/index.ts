@@ -116,16 +116,15 @@ const setup = async () => {
   app.use(media.proxyMiddleware)
 
   // Successful LTI resource link launch
-  // @ts-expect-error @types/ltijs
-  ltijs.onConnect(async (idToken, req, res) => {
+  ltijs.onConnect((idToken, req, res) => {
     if (
       idToken.iss ===
         'https://repository.staging.cloud.schulcampus-rlp.de/edu-sharing' ||
       idToken.iss === 'http://localhost:8100/edu-sharing'
     ) {
-      await onConnectEdusharing(idToken, req, res)
+      void onConnectEdusharing(idToken, req, res)
     } else {
-      onConnectDefault(idToken, req, res)
+      void onConnectDefault(idToken, req, res)
     }
   }, {})
 
