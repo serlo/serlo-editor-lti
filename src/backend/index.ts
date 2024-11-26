@@ -159,20 +159,15 @@ const setup = async () => {
       return
     }
 
-    const entityId = await getEntityId(custom.nodeId)
-    async function getEntityId(edusharingNodeId: string) {
+    const edusharingNodeId = custom.nodeId
+
+    const entityId = await getEntityId()
+    async function getEntityId() {
       const mariaDB = getMariaDB()
-      // Check if there is already a database entry with edusharing_node_id
+      // Check if there is already a database entry with resource_link_id
       const existingEntity = await mariaDB.fetchOptional<Entity | null>(
-        `
-      SELECT
-          id
-          FROM
-          lti_entity
-        WHERE
-        edusharing_node_id = ?
-        `,
-        [String(edusharingNodeId)]
+        'SELECT id FROM lti_entity WHERE resource_link_id = ?',
+        [resourceLinkId]
       )
       if (existingEntity) {
         return existingEntity.id
