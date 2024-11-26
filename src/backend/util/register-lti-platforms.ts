@@ -94,6 +94,20 @@ export async function registerLtiPlatforms() {
     //       // key: 'http://repository-service:8080/edu-sharing/rest/lti/v13/jwks',
     //   })
   }
+
+  if (config.ENVIRONMENT === 'development') {
+    await registerSaltire()
+
+    // Register platform: moodle test
+    await registerPlatform({
+      url: config.MOODLE_URL,
+      name: config.MOODLE_NAME,
+      clientId: config.SERLO_EDITOR_CLIENT_ID_ON_MOODLE,
+      authenticationEndpoint: config.MOODLE_AUTHENTICATION_ENDPOINT,
+      accesstokenEndpoint: config.MOODLE_ACCESS_TOKEN_ENDPOINT,
+      key: config.MOODLE_KEYSET_ENDPOINT,
+    })
+  }
 }
 
 async function registerPlatform({
