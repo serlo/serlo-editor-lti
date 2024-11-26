@@ -25,7 +25,7 @@
     "lint:tsc": "tsc --noEmit",
     "start": "yarn && yarn build && dotenvx run -- node dist/backend/index.cjs",
     "test": "dotenvx run -- codeceptjs run --config e2e/codecept.conf.ts",
-    "wait-for-server": "timeout 120 bash -c 'until curl http://localhost:3000/lti/keys; do sleep 3; done'"
+    "wait-for-server": "./scripts/wait_for_server.sh"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.699.0",
