@@ -4,87 +4,143 @@ import * as t from 'io-ts'
 import config from '../utils/config'
 import OpenAI, { APIError } from 'openai'
 import { logger } from '../utils/logger'
+import * as jsonSchema from './ai/content-type.json'
+import { mergeTextPluginsRecur } from './ai/merge-text-plugins-recur'
+import {
+  generateBeforeAfterPrompt,
+  generateSystemPrompt,
+} from './ai/generate-prompts'
+import { changePrompt, changeSystemPrompt } from './ai/change-prompts'
 
-const ChatCompletionMessageParamType = t.type({
-  // Restricts role to 'user' or 'system'. Right now, we don't want to allow
-  // assistant-, tool-, or function calls. See
-  // https://github.com/openai/openai-node/blob/a048174c0e53269a01993a573a10f96c4c9ec79e/src/resources/chat/completions.ts#L405
-  role: t.union([t.literal('user'), t.literal('system')]),
-  content: t.string,
+const GenerateQuery = t.type({
+  prompt: t.string,
+  before: t.string,
+  after: t.string,
 })
 
-const ExecutePromptRequestType = t.array(ChatCompletionMessageParamType)
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-export async function generate(req: Request, res: Response) {
+export async function generateContent(req: Request, res: Response) {
   if (config.ENVIRONMENT !== 'staging') {
     return res.status(400).send('You cannot use this route in this environment')
   }
-  const messages = req.body?.messages
-  if (!messages) {
-    return res.status(400).send('Missing messages in body')
+  if (req.method !== 'POST') {
+    return res.status(405).end()
   }
 
-  if (!ExecutePromptRequestType.is(messages)) {
-    return res.status(400).send('Messages field(s) are invalid')
+  if (!GenerateQuery.is(req.query)) {
+    return res.status(400).send('Input vars are invalid')
   }
 
-  const hasEmptyMessage = messages.some(
-    ({ content }) => typeof content === 'string' && content.trim() === ''
-  )
-
-  if (hasEmptyMessage) {
-    return res.status(400).send('Missing prompt within a message')
+  if (req.query.prompt.trim() === '') {
+    return res.status(400).send('Missing prompt')
   }
 
   try {
-    const openai = new OpenAI({
-      apiKey: config.OPENAI_API_KEY,
-    })
-
-    const response = await openai.chat.completions.create({
+    const openAIResponse = await openai.chat.completions.create({
       model: 'gpt-4o',
-      messages,
-      temperature: 0.4,
-      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: generateSystemPrompt },
+        {
+          role: 'system',
+          content: generateBeforeAfterPrompt
+            .replace('{{before}}', req.query.before)
+            .replace('{{after}}', req.query.after),
+        },
+        {
+          role: 'user',
+          content: `Fulfill the following prompt of the user: ${req.query.prompt}`,
+        },
+      ],
+      temperature: 0.25,
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          schema: jsonSchema,
+          name: 'serlo-editor-content-format',
+        },
+      },
     })
 
-    const stringMessage = response.choices[0].message.content
-
-    if (!stringMessage) {
+    const result = openAIResponse.choices[0]?.message?.content
+    if (!result) {
       return res.status(500).send('No content received from LLM!')
     }
 
-    // As we now have the response_format defined as json_object, we shouldn't
-    // need to call JSON.parse on the stringMessage. However, right now the OpenAI
-    // types seem to be broken (thinking the API is returning a string or null).
-    // Instead of fighting the types, we can simply adjust this in the next
-    // version.
-    const message = JSON.parse(stringMessage) as unknown
-
-    if (!t.UnknownRecord.is(message)) {
-      return res
-        .status(500)
-        .send('Invalid JSON format of content-generation-service')
-    }
-
-    return message
+    res.status(200).json(mergeTextPluginsRecur(JSON.parse(result)))
   } catch (error) {
-    if (error instanceof APIError) {
-      const detailedMessage = [
-        'OpenAI API error while executing prompt.',
-        `Status: ${error.status}`,
-        `Type: ${error.type}`,
-        `Code: ${error.code}`,
-        `Param: ${error.param}`,
-        `Message: ${error.message}`,
-      ].join('\n')
-
-      logger.error(detailedMessage)
-    } else if (error instanceof Error) {
-      logger.error(`Error while executing prompt: ${error.message}`)
-    } else {
-      logger.error('Unknown error occurred while executing prompt')
-    }
-    return res.status(500).send('Error occurred while executing prompt')
+    handleError(error, res)
   }
+}
+
+const ChangeQuery = t.type({
+  prompt: t.string,
+  content: t.string,
+})
+
+export async function changeContent(req: Request, res: Response) {
+  if (config.ENVIRONMENT !== 'staging') {
+    return res.status(400).send('You cannot use this route in this environment')
+  }
+  if (req.method !== 'POST') {
+    return res.status(405).end()
+  }
+
+  if (!ChangeQuery.is(req.query)) {
+    return res.status(400).send('Input vars are invalid')
+  }
+
+  if (req.query.prompt.trim() === '') {
+    return res.status(400).send('Missing prompt')
+  }
+
+  try {
+    const openAIResponse = await openai.chat.completions.create({
+      model: 'gpt-4o-2024-08-06',
+      messages: [
+        { role: 'system', content: changeSystemPrompt },
+        {
+          role: 'system',
+          content: changePrompt.replace('{{content}}', req.query.content),
+        },
+        {
+          role: 'user',
+          content: `Use the following prompt for the change: ${req.query.prompt}`,
+        },
+      ],
+      temperature: 0.25,
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          schema: jsonSchema,
+          name: 'serlo-editor-content-format',
+        },
+      },
+    })
+
+    // TODO: Check content of openAIResponse for errors
+    res.status(200).send(openAIResponse.choices[0]?.message?.content)
+  } catch (error) {
+    handleError(error, res)
+  }
+}
+
+function handleError(error: unknown, res: Response) {
+  if (error instanceof APIError) {
+    const detailedMessage = [
+      'OpenAI API error while executing prompt.',
+      `Status: ${error.status}`,
+      `Type: ${error.type}`,
+      `Code: ${error.code}`,
+      `Param: ${error.param}`,
+      `Message: ${error.message}`,
+    ].join('\n')
+
+    logger.error(detailedMessage)
+  } else if (error instanceof Error) {
+    logger.error(`Error while executing prompt: ${error.message}`)
+  } else {
+    logger.error('Unknown error occurred while executing prompt')
+  }
+  return res.status(500).send('Error occurred while executing prompt')
 }

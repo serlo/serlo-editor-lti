@@ -116,7 +116,8 @@ const setup = async () => {
   app.get('/media/presigned-url', media.presignedUrl)
   app.use(media.proxyMiddleware)
 
-  app.post('/ai/generate', ai.generate)
+  app.post('/ai/generate-content', ai.generateContent)
+  app.post('/ai/change-content', ai.changeContent)
 
   // Successful LTI resource link launch
   ltijs.onConnect((idToken, req, res) => {
