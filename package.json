@@ -25,11 +25,11 @@
     "lint:tsc": "tsc --noEmit",
     "start": "yarn && yarn build && dotenvx run -- node dist/backend/index.cjs",
     "test": "dotenvx run -- codeceptjs run --config e2e/codecept.conf.ts",
-    "wait-for-server": "timeout 120 bash -c 'until curl http://localhost:3000/lti/keys; do sleep 3; done'"
+    "wait-for-server": "./scripts/wait_for_server.sh"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.685.0",
-    "@aws-sdk/s3-request-presigner": "^3.674.0",
+    "@aws-sdk/client-s3": "^3.699.0",
+    "@aws-sdk/s3-request-presigner": "^3.705.0",
     "@dotenvx/dotenvx": "^1.22.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "@serlo/editor": "0.19.0",
@@ -65,7 +65,7 @@
     "codeceptjs": "^3.6.7",
     "codeceptjs-chai": "^2.3.5",
     "esbuild": "^0.24.0",
-    "eslint": "^9.13.0",
+    "eslint": "^9.14.0",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.14",
@@ -76,12 +76,12 @@
     "npm-run-all": "^4.1.5",
     "playwright": "^1.48.2",
     "prettier": "3.3.3",
-    "prettier-plugin-packagejson": "^2.5.3",
+    "prettier-plugin-packagejson": "^2.5.6",
     "ts-node": "^10.9.2",
-    "tsx": "4.19.1",
-    "typescript": "^5.6.3",
-    "typescript-eslint": "^8.14.0",
-    "vite": "^5.4.3"
+    "tsx": "4.19.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.16.0",
+    "vite": "^6.0.3"
   },
   "packageManager": "yarn@4.2.2"
 }

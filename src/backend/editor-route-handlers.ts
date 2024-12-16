@@ -66,7 +66,7 @@ export async function putEntity(req: Request, res: Response) {
 
   // Modify entity with decodedAccessToken.entityId in database
   await database.mutate('UPDATE lti_entity SET content = ? WHERE id = ?', [
-    req.body.editorState,
+    JSON.stringify(req.body.editorState),
     decodedAccessToken.entityId,
   ])
   logger.info(
