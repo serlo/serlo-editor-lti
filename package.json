@@ -32,7 +32,7 @@
     "@aws-sdk/s3-request-presigner": "^3.705.0",
     "@dotenvx/dotenvx": "^1.22.0",
     "@paralleldrive/cuid2": "^2.2.2",
-    "@serlo/editor": "0.19.0",
+    "@serlo/editor": "0.20.1",
     "express": "^4.19.2",
     "fp-ts": "2.16.9",
     "http-proxy-middleware": "^3.0.3",
