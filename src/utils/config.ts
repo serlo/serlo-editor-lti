@@ -63,6 +63,8 @@ const StagingEnvType = t.type({
   EDUSHARING_RLP_LAUNCH_ENDPOINT: NonEmptyString,
   EDUSHARING_RLP_DETAILS_ENDPOINT: NonEmptyString,
   EDUSHARING_RLP_CLIENT_ID_ON_SERLO_EDITOR: NonEmptyString,
+  // currently only for staging, in the future also or only for production
+  OPENAI_API_KEY: NonEmptyString,
 })
 
 const ProductionEnvType = t.type({
