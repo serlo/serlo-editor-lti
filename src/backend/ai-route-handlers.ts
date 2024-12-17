@@ -21,7 +21,7 @@ const GenerateQuery = t.type({
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 export async function generateContent(req: Request, res: Response) {
-  if (config.ENVIRONMENT !== 'staging') {
+  if (config.ENVIRONMENT === 'production') {
     return res.status(400).send('You cannot use this route in this environment')
   }
   if (req.method !== 'POST') {
@@ -79,7 +79,7 @@ const ChangeQuery = t.type({
 })
 
 export async function changeContent(req: Request, res: Response) {
-  if (config.ENVIRONMENT !== 'staging') {
+  if (config.ENVIRONMENT === 'production') {
     return res.status(400).send('You cannot use this route in this environment')
   }
   if (req.method !== 'POST') {
