@@ -63,7 +63,9 @@ const setup = async () => {
   ltijs.whitelist(
     '/edusharing-embed/login',
     '/edusharing-embed/done',
-    '/edusharing-embed/keys'
+    '/edusharing-embed/keys',
+    '/ai/generate-content',
+    '/ai/change-content'
   )
 
   // since whitelist is not allowing wildcards we ignore the invalidToken event for selected routes
