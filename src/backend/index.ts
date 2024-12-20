@@ -64,6 +64,7 @@ const setup = async () => {
     '/edusharing-embed/login',
     '/edusharing-embed/done',
     '/edusharing-embed/keys',
+    // disage ai to make it easier to develop, revert afterwards
     '/ai/generate-content',
     '/ai/change-content'
   )
