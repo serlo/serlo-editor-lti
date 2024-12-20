@@ -12,7 +12,7 @@ import {
 } from './ai/generate-prompts'
 import { changePrompt, changeSystemPrompt } from './ai/change-prompts'
 
-const GenerateQuery = t.type({
+const GenerateBody = t.type({
   prompt: t.string,
   before: t.string,
   after: t.string,
@@ -28,11 +28,11 @@ export async function generateContent(req: Request, res: Response) {
     return res.status(405).end()
   }
 
-  if (!GenerateQuery.is(req.query)) {
+  if (!GenerateBody.is(req.body)) {
     return res.status(400).send('Input vars are invalid')
   }
 
-  if (req.query.prompt.trim() === '') {
+  if (req.body.prompt.trim() === '') {
     return res.status(400).send('Missing prompt')
   }
 
@@ -44,12 +44,12 @@ export async function generateContent(req: Request, res: Response) {
         {
           role: 'system',
           content: generateBeforeAfterPrompt
-            .replace('{{before}}', req.query.before)
-            .replace('{{after}}', req.query.after),
+            .replace('{{before}}', req.body.before)
+            .replace('{{after}}', req.body.after),
         },
         {
           role: 'user',
-          content: `Fulfill the following prompt of the user: ${req.query.prompt}`,
+          content: `Fulfill the following prompt of the user: ${req.body.prompt}`,
         },
       ],
       temperature: 0.25,
@@ -73,7 +73,7 @@ export async function generateContent(req: Request, res: Response) {
   }
 }
 
-const ChangeQuery = t.type({
+const ChangeBody = t.type({
   prompt: t.string,
   content: t.string,
 })
@@ -86,11 +86,11 @@ export async function changeContent(req: Request, res: Response) {
     return res.status(405).end()
   }
 
-  if (!ChangeQuery.is(req.query)) {
+  if (!ChangeBody.is(req.body)) {
     return res.status(400).send('Input vars are invalid')
   }
 
-  if (req.query.prompt.trim() === '') {
+  if (req.body.prompt.trim() === '') {
     return res.status(400).send('Missing prompt')
   }
 
@@ -101,11 +101,11 @@ export async function changeContent(req: Request, res: Response) {
         { role: 'system', content: changeSystemPrompt },
         {
           role: 'system',
-          content: changePrompt.replace('{{content}}', req.query.content),
+          content: changePrompt.replace('{{content}}', req.body.content),
         },
         {
           role: 'user',
-          content: `Use the following prompt for the change: ${req.query.prompt}`,
+          content: `Use the following prompt for the change: ${req.body.prompt}`,
         },
       ],
       temperature: 0.25,
