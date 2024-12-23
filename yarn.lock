@@ -9018,12 +9018,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"io-ts@npm:^2.2.21":
-  version: 2.2.21
-  resolution: "io-ts@npm:2.2.21"
+"io-ts@npm:^2.2.22":
+  version: 2.2.22
+  resolution: "io-ts@npm:2.2.22"
   peerDependencies:
     fp-ts: ^2.5.0
-  checksum: 10/b917d1ca82e6cde0a7decc7cd08f0fcccf2bb7e1d326c12a7372cadc86e6bf409989a3b85be855f98edcadb6ddf97a0e8d9837812988cffdb5f90cfe9eb1f862
+  checksum: 10/c5eb8ca848f6e9586b5430773c62c8577902a6ca621349339e4d238c9ac4aba8df8de3e4d4317ff6593dcf38eb804445e0a5ba87afd7a2b8d29344ea9b6dc151
   languageName: node
   linkType: hard
 
@@ -13449,7 +13449,7 @@ __metadata:
     fp-ts: "npm:2.16.9"
     globals: "npm:^15.12.0"
     http-proxy-middleware: "npm:^3.0.3"
-    io-ts: "npm:^2.2.21"
+    io-ts: "npm:^2.2.22"
     json-web-key: "npm:^0.4.0"
     jsonwebtoken: "npm:9.0.2"
     jwks-rsa: "npm:^3.1.0"
