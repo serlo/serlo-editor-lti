@@ -340,7 +340,7 @@ export class EdusharingServer {
               ${embedTypes
                 .map(
                   (embedType) =>
-                    `<a href="/edu-sharing/rest/lti/v13/generateDeepLinkingResponse?id_token=${req.body.id_token}&embed-type=${embedType}">${embedType}</a>`
+                    `<a id="edusharing-embed-${embedType}-select" href="/edu-sharing/rest/lti/v13/generateDeepLinkingResponse?id_token=${req.body.id_token}&embed-type=${embedType}">${embedType}</a>`
                 )
                 .join(' | ')}
             </div>
