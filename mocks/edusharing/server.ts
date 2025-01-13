@@ -9,6 +9,7 @@ import urlJoin from 'url-join'
 import { createAutoFormResponse } from '../../src/backend/util/create-auto-form-response'
 import { logger } from '../../src/utils/logger'
 import config from '../../src/utils/config'
+import { wordEmbedJson } from './mocked-embed-json/word'
 
 export const editorUrl = config.EDITOR_URL
 
@@ -232,6 +233,8 @@ export class EdusharingServer {
           return
         }
 
+        const embedType = req.query['embed-type']
+
         const serloEditorJwks = jose.createRemoteJWKSet(
           new URL(urlJoin(editorUrl, 'edusharing-embed/keys'))
         )
@@ -279,16 +282,18 @@ export class EdusharingServer {
             {
               custom: {
                 repositoryId: 'serlo-edusharing',
-                nodeId: '960c48d0-5e01-45ca-aaf6-d648269f0db2',
+                nodeId: '960c48d0-5e01-45ca-aaf6-d648269f0db2' + embedType,
               },
               icon: {
                 width: 'null',
-                url: 'http://localhost:8100/edu-sharing/themes/default/images/common/mime-types/svg/file-image.svg',
+                url: `https://repository.staging.cloud.schulcampus-rlp.de/edu-sharing/themes/default/images/common/mime-types/svg/file-${embedType}.svg`,
                 height: 'null',
               },
               type: 'ltiResourceLink',
-              title: 'Test Image',
-              url: 'http://localhost:8100/edu-sharing/rest/lti/v13/lti13/960c48d0-5e01-45ca-aaf6-d648269f0db2',
+              title: 'Test ' + embedType,
+              url:
+                'http://localhost:8100/edu-sharing/rest/lti/v13/lti13/960c48d0-5e01-45ca-aaf6-d648269f0db2' +
+                embedType,
             },
           ],
         }
@@ -321,7 +326,7 @@ export class EdusharingServer {
         })
       )
         return
-
+      const embedTypes = ['image', 'word']
       const searchParams = new URLSearchParams()
       searchParams.append('id_token', req.body.id_token)
 
@@ -332,7 +337,12 @@ export class EdusharingServer {
           <body>
             <p>Select type of embed</p>
             <div>
-              <a id="edusharing-embed-image-select" href="/edu-sharing/rest/lti/v13/generateDeepLinkingResponse?${searchParams}">Image</a>
+              ${embedTypes
+                .map(
+                  (embedType) =>
+                    `<a href="/edu-sharing/rest/lti/v13/generateDeepLinkingResponse?id_token=${req.body.id_token}&embed-type=${embedType}">${embedType}</a>`
+                )
+                .join(' | ')}
             </div>
             <br>
             <br>
@@ -346,8 +356,11 @@ export class EdusharingServer {
       )
     })
 
-    this.app.get('/edu-sharing/rest/lti/v13/details/*/*', (_req, res) => {
-      res.json(imageEmbedJson)
+    this.app.get('/edu-sharing/rest/lti/v13/details/*/*', (req, res) => {
+      const embedData = req.url.includes('image?')
+        ? imageEmbedJson
+        : wordEmbedJson
+      res.json(embedData)
     })
 
     this.app.all('*', (req, res) => {
