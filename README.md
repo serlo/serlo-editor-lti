@@ -30,7 +30,7 @@ restart and the frontend will be rebuilt.
 ## Launch through mocked services
 
 1. `yarn dev-mocks` to start the edu-sharing/itslearning mocks
-2. Open `http://localhost:8100` (edu-sharing) or `http://localhost:8100`
+2. Open `http://localhost:8100` (edu-sharing) or `http://localhost:8101`
    (itslearning)
 
 # Technical details
