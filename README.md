@@ -27,10 +27,11 @@ restart and the frontend will be rebuilt.
    flow of opening an existing Serlo Editor element as Learner (non-editable).
 2. Click "Connect"
 
-## Launch through edu-sharing mock
+## Launch through mocked services
 
-1. `yarn dev-edusharing` to start the edu-sharing mock
-2. Open `http://localhost:8100`
+1. `yarn dev-mocks` to start the edu-sharing/itslearning mocks
+2. Open `http://localhost:8100` (edu-sharing) or `http://localhost:8101`
+   (itslearning)
 
 # Technical details
 
