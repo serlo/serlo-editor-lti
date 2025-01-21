@@ -1,12 +1,10 @@
 import { IdToken, Provider as ltijs } from 'ltijs'
 import path from 'path'
 
-import { v4 as uuid_v4 } from 'uuid'
 import * as t from 'io-ts'
 import { NextFunction, Request, Response } from 'express'
 import { createAccessToken } from './util/create-acccess-token'
 import { registerLtiPlatforms } from './util/register-lti-platforms'
-import urlJoin from 'url-join'
 import config from '../utils/config'
 import * as edusharing from './edusharing'
 import * as editor from './editor-route-handlers'
@@ -91,6 +89,8 @@ const setup = async () => {
 
   // Opens Serlo editor
   app.get('/app', editor.app)
+
+  app.get('/deeplinking-done', editor.deeplinkingDone)
 
   // Endpoint to get content
   app.get('/entity', editor.getEntity)
@@ -287,59 +287,7 @@ const setup = async () => {
 
   // Successful LTI deep linking launch
   // @ts-expect-error @types/ltijs
-  ltijs.onDeepLinking(async (idToken, __, res) => {
-    const mariaDB = getMariaDB()
-
-    const ltiCustomClaimId = uuid_v4()
-
-    // Create new entity in database
-    const { insertId: entityId } = await mariaDB.mutate(
-      'INSERT INTO lti_entity (custom_claim_id, id_token_on_creation) values (?, ?)',
-      [ltiCustomClaimId, JSON.stringify(idToken)]
-    )
-
-    logger.info('entityId: ', entityId)
-
-    const url = new URL(urlJoin(config.EDITOR_URL, '/lti/launch'))
-
-    // https://www.imsglobal.org/spec/lti-dl/v2p0#lti-resource-link
-    const items = [
-      {
-        type: 'ltiResourceLink',
-        url: url.href,
-        title: `Serlo Editor Content`,
-        text: 'Placeholder description',
-        // icon:
-        // thumbnail:
-        // window:
-        // iframe: {
-        //   width: 400,
-        //   height: 300,
-        // },
-        custom: {
-          // Important: Only use lowercase letters in key. When I used uppercase letters they were changed to lowercase letters in the LTI Resource Link launch.
-          id: ltiCustomClaimId,
-        },
-        // lineItem:
-        // available:
-        // submission:
-
-        // Custom properties
-        // presentation: {
-        //   documentTarget: "iframe",
-        // },
-      },
-    ]
-
-    // Creates the deep linking request form
-    const form = await ltijs.DeepLinking.createDeepLinkingForm(
-      idToken,
-      items,
-      {}
-    )
-
-    return res.send(form)
-  })
+  ltijs.onDeepLinking(editor.selectContentType)
 
   await ltijs.deploy()
 
