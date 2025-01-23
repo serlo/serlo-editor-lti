@@ -55,7 +55,11 @@ export async function deeplinkingDone(req: Request, res: Response) {
       url: url.href,
       title: `Serlo Editor Content`,
       text: 'Placeholder description',
-      // icon:
+      icon: {
+        url: 'https://editor.serlo.dev/media/serlo-org/skkwa1vksa3v2yc7bj9z0bni/image.png',
+        width: 500,
+        height: 500,
+      },
       // thumbnail:
       // window:
       // iframe: {
