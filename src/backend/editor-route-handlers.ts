@@ -24,8 +24,27 @@ export async function selectContentType(
   res: Response
 ) {
   return res.send(`
-    <h2>Welchen Inhalt würdest du gerne erstellen?</h2>
-    <a href="/deeplinking-done?type=serlo-editor&ltik=${res.locals.ltik}">Serlo Editor</a>
+    <!doctype html>
+    <html lang="de">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Serlo Editor</title>
+      <style>
+        #clicktarget {
+          display: block; width: 760px; height: 568px;
+          background: url('https://editor.serlo.dev/media/serlo-org/fzinqkwqekgnx9jhgrazvfe4/image.svg')
+            no-repeat center center;
+          background-size: contain;
+        }
+          /* hide visually */
+        #clicktarget span {
+          border: 0; clip: rect(0 0 0 0); clip-path: inset(50%); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; white-space: nowrap; width: 1px;
+        }
+      </style>
+    </head>
+    <body style="margin:0; padding:0"><a id="clicktarget" href="/deeplinking-done?type=serlo-editor&ltik=${res.locals.ltik}"><span>Serlo Editor Inhalt (ohne Vorlage)</span></a></body>
+  </html>
   `)
 }
 
