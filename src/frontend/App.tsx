@@ -28,11 +28,9 @@ export type AppStateError = {
 function App() {
   // for moodle: resize iframe on content change
   const { ref: wrapperRef } = useResizeObserver<HTMLDivElement>({
-    onResize: ({ height }) => {
-      const data = JSON.stringify({
-        subject: 'lti.frameResize',
-        height: Math.max(height ?? 0, 1000),
-      })
+    onResize: ({ height: wrapperHeight }) => {
+      const height = Math.max((wrapperHeight ?? 0) + 200, 500)
+      const data = JSON.stringify({ subject: 'lti.frameResize', height })
       window.parent?.postMessage(data, '*')
     },
   })
