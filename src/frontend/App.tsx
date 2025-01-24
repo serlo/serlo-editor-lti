@@ -11,6 +11,7 @@ import copyPluginToClipboardImage from './assets/copy-plugin-to-clipboard.png'
 import Error from './Error'
 
 import '@serlo/editor/dist/style.css'
+import useResizeObserver from 'use-resize-observer'
 
 export type AppState =
   | { type: 'fetching-content' }
@@ -25,6 +26,17 @@ export type AppStateError = {
 }
 
 function App() {
+  // for moodle: resize iframe on content change
+  const { ref: wrapperRef } = useResizeObserver<HTMLDivElement>({
+    onResize: ({ height }) => {
+      const data = JSON.stringify({
+        subject: 'lti.frameResize',
+        height: Math.max(height ?? 0, 1000),
+      })
+      window.parent?.postMessage(data, '*')
+    },
+  })
+
   const queryString = window.location.search
   const urlParams = new URLSearchParams(queryString)
   const accessToken = urlParams.get('accessToken')
@@ -36,6 +48,12 @@ function App() {
   })
 
   useEffect(() => {
+    // for moodle: remove iframe border on init
+    window.parent?.postMessage(
+      JSON.stringify({ subject: 'lti.removeBorder' }),
+      '*'
+    )
+
     if (!accessToken) {
       setAppState({
         type: 'error',
@@ -136,6 +154,7 @@ function App() {
   if (appState.type === 'static-renderer') {
     return (
       <div
+        ref={wrapperRef}
         style={{ padding: '1rem', backgroundColor: 'white', minWidth: '600px' }}
       >
         <SerloRenderer
@@ -148,10 +167,12 @@ function App() {
   }
   if (appState.type === 'editor') {
     return (
-      <SerloEditorWrapper
-        initialState={appState.content}
-        ltik={ltik as string}
-      />
+      <div ref={wrapperRef}>
+        <SerloEditorWrapper
+          initialState={appState.content}
+          ltik={ltik as string}
+        />
+      </div>
     )
   }
 
