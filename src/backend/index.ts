@@ -51,7 +51,7 @@ const setup = async () => {
         secure: config.ENVIRONMENT !== 'local', // Set secure to true if the testing platform is in a different domain and https is being used
         sameSite: config.ENVIRONMENT === 'local' ? '' : 'None', // Set sameSite to 'None' if the testing platform is in a different domain and https is being used
       },
-      // Disables cookie verification. Temporary hack to make it work if third-party cookies are blocked. Later, use newer ltijs version that should solve this without requiring devMode. 
+      // Disables cookie verification. Temporary hack to make it work if third-party cookies are blocked. Later, use newer ltijs version that should solve this without requiring devMode.
       devMode:
         config.ENVIRONMENT === 'local' ||
         config.ENVIRONMENT === 'development' ||
