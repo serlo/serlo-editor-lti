@@ -1,10 +1,8 @@
 import {
   defaultPlugins,
-  EditorPluginType,
   SerloEditor,
   type SerloEditorProps,
 } from '@serlo/editor'
-import { jwtDecode } from 'jwt-decode'
 import React, { useCallback, useRef } from 'react'
 
 interface SerloContentProps {
@@ -12,16 +10,17 @@ interface SerloContentProps {
   ltik: string
 }
 
-interface Ltik {
-  platformUrl: string
-  clientId: string
-  deploymentId: string
-  platformCode: string
-  contextId: string
-  user: string
-  s: string
-  iat: number
-}
+// @@@
+// interface Ltik {
+//   platformUrl: string
+//   clientId: string
+//   deploymentId: string
+//   platformCode: string
+//   contextId: string
+//   user: string
+//   s: string
+//   iat: number
+// }
 
 // HACK: Skip rerendering SerloEditor. It leads to slate error (not finding DOM node) and resets the cursor position. But, I don't think we need to support rerendering currently. There is probably a better way to do this but the way `initialState` and `onChange` works makes it tricky.
 const MemoSerloEditor = React.memo(SerloEditor, () => true)
@@ -74,20 +73,22 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
     [save]
   )
 
-  const plugins = getPlugins(ltik)
-  function getPlugins(ltik: string) {
-    const { platformUrl } = jwtDecode(ltik) as Ltik
-    const onEdusharing = platformUrl.includes('edu-sharing')
-    if (onEdusharing) {
-      return [
-        ...defaultPlugins,
-        EditorPluginType.EdusharingAsset,
-        EditorPluginType.SerloInjection,
-      ]
-    }
+  // @@@ 
+  const plugins = defaultPlugins
+  // const plugins = getPlugins(ltik)
+  // function getPlugins(ltik: string) {
+  //   const { platformUrl } = jwtDecode(ltik) as Ltik
+  //   const onEdusharing = platformUrl.includes('edu-sharing')
+  //   if (onEdusharing) {
+  //     return [
+  //       ...defaultPlugins,
+  //       EditorPluginType.EdusharingAsset,
+  //       EditorPluginType.SerloInjection,
+  //     ]
+  //   }
 
-    return defaultPlugins
-  }
+  //   return defaultPlugins
+  // }
 
   return (
     <MemoSerloEditor
