@@ -69,7 +69,7 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
       }
       savePendingRef.current = true
       // Save after three seconds
-      saveTimeoutRef.current = window.setTimeout(() => save(newState), 2000)
+      saveTimeoutRef.current = window.setTimeout(() => save(newState), 500)
     },
     [save]
   )
