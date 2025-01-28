@@ -40,6 +40,8 @@ export default [
     },
   },
 
+  { ignores: ['dist/**'] },
+
   // Our custom rules
   ourCustomConfig,
 ]

@@ -1,32 +1,45 @@
-import { BaseEditor, SerloEditor, type SerloEditorProps } from '@serlo/editor'
-import { useEffect, useRef, useState } from 'react'
-import { createPluginsConfig } from './plugins-config'
+import {
+  defaultPlugins,
+  EditorPluginType,
+  SerloEditor,
+  type SerloEditorProps,
+} from '@serlo/editor'
+import { jwtDecode } from 'jwt-decode'
+import React, { useCallback, useRef } from 'react'
 
 interface SerloContentProps {
   initialState: SerloEditorProps['initialState']
+  ltik: string
 }
 
+interface Ltik {
+  platformUrl: string
+  clientId: string
+  deploymentId: string
+  platformCode: string
+  contextId: string
+  user: string
+  s: string
+  iat: number
+}
+
+// HACK: Skip rerendering SerloEditor. It leads to slate error (not finding DOM node) and resets the cursor position. But, I don't think we need to support rerendering currently. There is probably a better way to do this but the way `initialState` and `onChange` works makes it tricky.
+const MemoSerloEditor = React.memo(SerloEditor, () => true)
+
 export default function SerloEditorWrapper(props: SerloContentProps) {
-  const { initialState } = props
+  const { initialState, ltik } = props
   const queryString = window.location.search
   const urlParams = new URLSearchParams(queryString)
   const testingSecret = urlParams.get('testingSecret')
   const accessToken = urlParams.get('accessToken')
-  const ltik = urlParams.get('ltik')
 
-  const [editorState, setEditorState] = useState<string>(
-    JSON.stringify(props.initialState)
-  )
-  const [savePending, setSavePending] = useState<boolean>(false)
+  const savePendingRef = useRef<boolean>(false)
 
-  const editorStateRef = useRef(editorState)
+  const saveTimeoutRef = useRef<number | undefined>(undefined)
 
-  // Save content if there are unsaved changed
-  useEffect(() => {
-    if (!savePending) return
-
-    setTimeout(saveContent, 1000)
-    function saveContent() {
+  const save = useCallback(
+    (newState: unknown) => {
+      savePendingRef.current = false
       fetch('/entity', {
         method: 'PUT',
         headers: {
@@ -35,54 +48,58 @@ export default function SerloEditorWrapper(props: SerloContentProps) {
         },
         body: JSON.stringify({
           accessToken,
-          editorState: editorStateRef.current,
+          editorState: newState,
         }),
       }).then((res) => {
         if (res.status === 200) {
-          setSavePending(false)
+          // TODO: Show user content was saved successfully
         } else {
           // TODO: Handle failure
         }
       })
+    },
+    [accessToken, ltik]
+  )
+
+  const handleOnChange = useCallback(
+    (newState: unknown) => {
+      // If save already scheduled, cancel it
+      if (savePendingRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+      savePendingRef.current = true
+      saveTimeoutRef.current = window.setTimeout(() => save(newState), 500)
+    },
+    [save]
+  )
+
+  const plugins = getPlugins(ltik)
+  function getPlugins(ltik: string) {
+    const { platformUrl } = jwtDecode(ltik) as Ltik
+    const onEdusharing = platformUrl.includes('edu-sharing')
+    if (onEdusharing) {
+      return [
+        ...defaultPlugins,
+        EditorPluginType.EdusharingAsset,
+        EditorPluginType.SerloInjection,
+      ]
     }
-  }, [savePending])
+
+    return defaultPlugins
+  }
 
   return (
-    <div
-      style={{ padding: '3rem', backgroundColor: 'white', minWidth: '600px' }}
+    <MemoSerloEditor
+      initialState={initialState}
+      onChange={handleOnChange}
+      editorVariant="lti-tool"
+      _testingSecret={testingSecret}
+      plugins={plugins}
+      _ltik={ltik}
     >
-      {/* <div style={{ color: 'grey' }}>
-        {savePending ? 'Ungespeicherte Änderungen' : 'Gespeichert'}
-      </div> */}
-      <SerloEditor
-        initialState={initialState}
-        onChange={({ changed, getDocument }) => {
-          if (!changed) return
-          const newState = getDocument()
-          if (!newState) return
-          editorStateRef.current = JSON.stringify(newState)
-          setEditorState(editorStateRef.current)
-          setSavePending(true)
-        }}
-        pluginsConfig={createPluginsConfig(testingSecret)}
-      >
-        {(editor) => {
-          customizeEditorStrings(editor.i18n)
-          return <>{editor.element}</>
-        }}
-      </SerloEditor>
-      {/* <h2>Debug info</h2>
-      <h3>Access token:</h3>
-      <div>{accessToken}</div>
-      <h3>ltik:</h3>
-      <div>{ltik}</div> */}
-    </div>
+      {(editor) => {
+        return <>{editor.element}</>
+      }}
+    </MemoSerloEditor>
   )
-}
-
-function customizeEditorStrings(languageData: BaseEditor['i18n']) {
-  languageData.loggedInData.strings.editor.plugins.text.linkOverlay.placeholder =
-    'https://example.com/'
-  languageData.loggedInData.strings.editor.plugins.text.linkOverlay.inputLabel =
-    "Gib eine URL inklusive 'https://' ein"
 }

@@ -3,7 +3,18 @@ import {
   type PoolConnection,
   type RowDataPacket,
   type ResultSetHeader,
+  createPool,
 } from 'mysql2/promise'
+import config from '../utils/config'
+
+let database: Database | null = null
+
+export function getMariaDB() {
+  if (database === null) {
+    database = new Database(createPool(config.MYSQL_URI))
+  }
+  return database
+}
 
 export class Database {
   private state: DatabaseState
@@ -142,15 +153,26 @@ export class Database {
     sql: string,
     params?: unknown[]
   ): Promise<T> {
-    if (this.state.type === 'OutsideOfTransaction') {
-      const [rows] = await this.pool.execute<T>(sql, params)
+    const numberOfTries = 10
+    const waitTime = 1000
+    for (let i = 0; i < numberOfTries; i++) {
+      try {
+        if (this.state.type === 'OutsideOfTransaction') {
+          const [rows] = await this.pool.execute<T>(sql, params)
 
-      return rows
-    } else {
-      const [rows] = await this.state.transaction.execute<T>(sql, params)
+          return rows
+        } else {
+          const [rows] = await this.state.transaction.execute<T>(sql, params)
 
-      return rows
+          return rows
+        }
+      } catch {
+        await new Promise((res) => setTimeout(res, waitTime))
+      }
     }
+    throw new Error(
+      `Failed to execute command in mariadb database after ${numberOfTries} tries.`
+    )
   }
 }
 
