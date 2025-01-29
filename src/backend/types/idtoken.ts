@@ -7,6 +7,7 @@ export interface IdToken {
     }
     resource: {
       id: string
+      title: string
     }
     roles?: string[]
     context: {

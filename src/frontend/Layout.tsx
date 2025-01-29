@@ -1,13 +1,8 @@
-import Header, { type HeaderContent } from './Header'
+import Header from './Header'
 
 // Centered & max-width content layout
 export function Layout({ children }: { children: React.ReactNode }) {
   const showHeader = !inIframe()
-  const queryString = window.location.search
-  const urlParams = new URLSearchParams(queryString)
-  const headerContent: HeaderContent = {
-    title: urlParams.get('title') ?? 'Inhalt',
-  }
 
   const maxContentWidth = '60rem'
   // Leave some space for editor UI that extends beyond (plugin toolbar, drag handle, ...)
@@ -34,7 +29,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           paddingRight: paddingAroundContent,
         }}
       >
-        {showHeader ? <Header content={headerContent} /> : null}
+        {showHeader ? <Header /> : null}
         <div
           style={{
             paddingTop: paddingAroundContent,

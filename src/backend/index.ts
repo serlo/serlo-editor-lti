@@ -297,7 +297,8 @@ const setup = async () => {
     searchParams.append('resourceLinkId', idToken.platformContext.resource.id)
     searchParams.append('testingSecret', config.SERLO_EDITOR_TESTING_SECRET)
     searchParams.append('ltik', ltik)
-    searchParams.append('title', idToken.platformContext.context.title)
+    searchParams.append('contextTitle', idToken.platformContext.context.title)
+    searchParams.append('title', idToken.platformContext.resource.title)
 
     return searchParams
   }
