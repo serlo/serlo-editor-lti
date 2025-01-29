@@ -94,6 +94,7 @@ export class EdusharingServer {
         'https://purl.imsglobal.org/spec/lti/claim/context': {
           id: this.contextId,
           label: this.custom.user,
+          title: 'Test title',
         },
         'https://purl.imsglobal.org/spec/lti/claim/target_link_uri': urlJoin(
           editorUrl,

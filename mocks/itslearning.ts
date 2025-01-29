@@ -66,7 +66,7 @@ export class ItslearningServer {
         'https://purl.imsglobal.org/spec/lti/claim/roles': this.roles,
         'https://purl.imsglobal.org/spec/lti/claim/context': {
           id: itslearningMockContextId,
-          title: 'Serlo',
+          title: 'Test Title',
           type: ['http://purl.imsglobal.org/vocab/lis/v2/course#CourseSection'],
         },
         'https://purl.imsglobal.org/spec/lti/claim/target_link_uri': urlJoin(
