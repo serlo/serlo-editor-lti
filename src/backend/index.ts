@@ -13,6 +13,7 @@ import { getMariaDB } from './mariadb'
 import * as media from './media-route-handlers'
 import { logger } from '../utils/logger'
 import { IdToken } from './types/idtoken'
+import { errorMessageToUser } from './error-message-to-user'
 
 const ltijsKey = config.LTIJS_KEY
 
@@ -142,9 +143,7 @@ const setup = async () => {
     _: Request,
     res: Response
   ) {
-    const resourceLinkId: string = idToken.platformContext.resource.id
-    const custom: unknown = idToken.platformContext.custom
-
+    const custom: unknown = idToken.platformContext?.custom
     const expectedCustomType = t.intersection([
       t.type({
         getContentApiUrl: t.string,
@@ -160,13 +159,20 @@ const setup = async () => {
         version: t.string,
       }),
     ])
-
     if (!expectedCustomType.is(custom)) {
       res
         .status(400)
         .send(
-          `Unexpected type of LTI 'custom' claim. Got ${JSON.stringify(custom)}`
+          errorMessageToUser(
+            `Unexpected type of LTI 'custom' claim. Got ${JSON.stringify(custom)}`
+          )
         )
+      return
+    }
+
+    const resourceLinkId = idToken.platformContext?.resource?.id
+    if (!resourceLinkId) {
+      res.status(400).send(errorMessageToUser('resource link id missing'))
       return
     }
 
@@ -196,23 +202,32 @@ const setup = async () => {
     const accessToken = createAccessToken(editorMode, entityId, ltijsKey)
 
     const ltik = res.locals.ltik
+    const title = idToken.platformContext?.resource?.title
+    const contextTitle = idToken.platformContext?.context?.title
 
-    const searchParams = createSearchParams({ ltik, accessToken, idToken })
+    const searchParams = createSearchParams({
+      ltik,
+      accessToken,
+      resourceLinkId,
+      title,
+      contextTitle,
+    })
 
     return ltijs.redirect(res, `/app?${searchParams.toString()}`)
   }
 
-  async function onConnectDefault(
-    idToken: IdToken,
-    req: Request,
-    res: Response
-  ) {
-    // Get customId from lti custom claim or alternatively search query parameters
-    // Using search query params is suggested by ltijs, see: https://github.com/Cvmcosta/ltijs/issues/100#issuecomment-832284300
-    const customId = idToken.platformContext.custom.id ?? req.query.id
-    if (!customId) return res.send('Missing customId!')
+  async function onConnectDefault(idToken: IdToken, _: Request, res: Response) {
+    const customId = idToken.platformContext?.custom?.id
+    if (!customId) {
+      res.status(400).send(errorMessageToUser('custom id missing'))
+      return
+    }
 
-    const resourceLinkId: string = idToken.platformContext.resource.id
+    const resourceLinkId = idToken.platformContext?.resource?.id
+    if (!resourceLinkId) {
+      res.status(400).send(errorMessageToUser('resource link id missing'))
+      return
+    }
 
     logger.info('ltijs.onConnect -> idToken: ', idToken)
 
@@ -235,7 +250,7 @@ const setup = async () => {
     )
 
     if (!entity) {
-      res.send('<div>Dieser Inhalt wurde nicht gefunden.</div>')
+      res.send(errorMessageToUser('Content not found in database'))
       return
     }
 
@@ -255,7 +270,7 @@ const setup = async () => {
       // This role is sent in the itslearning library and we disallow editing there for now
       // 'membership#Member',
     ]
-    const courseMembershipRole = idToken.platformContext.roles?.find((role) =>
+    const courseMembershipRole = idToken.platformContext?.roles?.find((role) =>
       role.includes('membership#')
     )
     const editorMode =
@@ -277,8 +292,16 @@ const setup = async () => {
     }
 
     const ltik = res.locals.ltik
+    const title = idToken.platformContext?.resource?.title
+    const contextTitle = idToken.platformContext?.context?.title
 
-    const searchParams = createSearchParams({ ltik, accessToken, idToken })
+    const searchParams = createSearchParams({
+      ltik,
+      accessToken,
+      resourceLinkId,
+      contextTitle,
+      title,
+    })
 
     return ltijs.redirect(res, `/app?${searchParams.toString()}`)
   }
@@ -286,19 +309,23 @@ const setup = async () => {
   function createSearchParams({
     ltik,
     accessToken,
-    idToken,
+    resourceLinkId,
+    contextTitle,
+    title,
   }: {
     ltik: string
     accessToken: string
-    idToken: IdToken
+    resourceLinkId: string
+    contextTitle?: string
+    title?: string
   }) {
     const searchParams = new URLSearchParams()
     searchParams.append('accessToken', accessToken)
-    searchParams.append('resourceLinkId', idToken.platformContext.resource.id)
+    searchParams.append('resourceLinkId', resourceLinkId)
     searchParams.append('testingSecret', config.SERLO_EDITOR_TESTING_SECRET)
     searchParams.append('ltik', ltik)
-    searchParams.append('contextTitle', idToken.platformContext.context.title)
-    searchParams.append('title', idToken.platformContext.resource.title)
+    searchParams.append('contextTitle', contextTitle ?? '')
+    searchParams.append('title', title ?? '')
 
     return searchParams
   }
