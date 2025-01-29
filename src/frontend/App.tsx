@@ -153,7 +153,7 @@ function App() {
     return (
       <div
         ref={wrapperRef}
-        style={{ padding: '1rem', backgroundColor: 'white', minWidth: '600px' }}
+        className="eaas:min-w-[600px] eaas:bg-white eaas:p-4"
       >
         <SerloRenderer
           state={appState.content}

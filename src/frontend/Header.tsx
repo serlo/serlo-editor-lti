@@ -4,26 +4,16 @@ export default function Header() {
   const title = urlParams.get('title') ?? 'Inhalt'
   const contextTitle = urlParams.get('contextTitle')
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-        paddingTop: '1rem',
-        alignItems: 'center',
-        gap: '1rem',
-      }}
-    >
+    <div className="eaas:flex eaas:items-center eaas:gap-4 eaas:pt-4">
       <img
-        style={{ width: '2.8rem', height: '2.8rem' }}
-        src="https://editor.serlo.dev/media/serlo-org/skkwa1vksa3v2yc7bj9z0bni/image.png"
+        className="eaas:h-[2.8rem] eaas:w-[2.8rem]"
+        src="/assets/serlo-editor-file-logo.png"
       />
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div>
         {contextTitle ? (
-          <div style={{ color: '#666666', fontSize: '0.9rem' }}>
-            {contextTitle}
-          </div>
+          <div className="eaas:text-sm eaas:text-gray-500">{contextTitle}</div>
         ) : null}
-        <h2 style={{ fontSize: '1.25rem' }}>{title}</h2>
+        <h2 className="eaas:!text-xl">{title}</h2>
       </div>
     </div>
   )

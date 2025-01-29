@@ -4,42 +4,12 @@ import Header from './Header'
 export function Layout({ children }: { children: React.ReactNode }) {
   const showHeader = !inIframe()
 
-  const maxContentWidth = '60rem'
-  // Leave some space for editor UI that extends beyond (plugin toolbar, drag handle, ...)
-  const paddingAroundContent = '3rem'
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-        backgroundColor: 'white',
-        // Make horizontal scroll bar appear on small width. Plugin menu, plugin toolbar, ... need some space.
-        minWidth: '40rem',
-        overflowX: 'auto',
-      }}
-    >
-      <aside style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }}></aside>
-      <main
-        style={{
-          flexGrow: 1,
-          flexShrink: 1,
-          flexBasis: maxContentWidth,
-          maxWidth: `min(100%, ${maxContentWidth})`,
-          paddingLeft: paddingAroundContent,
-          paddingRight: paddingAroundContent,
-        }}
-      >
+    <div className="eaas:flex eaas:min-w-[40rem] eaas:overflow-x-auto eaas:bg-white">
+      <main className="eaas:mx-auto eaas:w-full eaas:max-w-[60rem] eaas:pr-12 eaas:pl-12">
         {showHeader ? <Header /> : null}
-        <div
-          style={{
-            paddingTop: paddingAroundContent,
-            paddingBottom: paddingAroundContent,
-          }}
-        >
-          {children}
-        </div>
+        <div className="eaas:pt-12 eaas:pb-12">{children}</div>
       </main>
-      <aside style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }}></aside>
     </div>
   )
 }

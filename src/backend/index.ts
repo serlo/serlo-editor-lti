@@ -1,5 +1,6 @@
 import { Provider as ltijs } from 'ltijs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 import * as t from 'io-ts'
 import { NextFunction, Request, Response } from 'express'
@@ -29,6 +30,9 @@ export interface Entity {
   edusharing_node_id?: string
   id_token_on_creation: string
 }
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const setup = async () => {
   ltijs.setup(

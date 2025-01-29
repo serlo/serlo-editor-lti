@@ -11,8 +11,12 @@ import urljoin from 'url-join'
 import { v4 as uuid_v4 } from 'uuid'
 
 import { Provider as ltijs } from 'ltijs'
+import { fileURLToPath } from 'url'
 
 const ltijsKey = config.LTIJS_KEY
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 export async function app(_: Request, res: Response) {
   return res.sendFile(path.join(__dirname, '../../dist/frontend/index.html'))

@@ -6,22 +6,12 @@ interface ErrorProps {
 
 export default function Error({ appState }: ErrorProps) {
   return (
-    <div style={{ backgroundColor: 'white', padding: '1rem' }}>
-      <div
-        style={{
-          borderColor: 'red',
-          borderWidth: '5px',
-          borderRadius: '10px',
-          padding: '1rem',
-        }}
-      >
+    <div className="eaas:bg-white eaas:p-4">
+      <div className="eaas:rounded-lg eaas:border-4 eaas:border-red-500 eaas:p-4">
         {appState.message}
       </div>
       {appState.imageURL ? (
-        <img
-          style={{ marginTop: '2rem', maxWidth: '350px' }}
-          src={appState.imageURL}
-        />
+        <img className="eaas:mt-8 eaas:max-w-[350px]" src={appState.imageURL} />
       ) : null}
     </div>
   )
