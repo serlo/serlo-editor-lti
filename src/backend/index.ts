@@ -1,7 +1,9 @@
+import './util/sentry.js'
 import { Provider as ltijs } from 'ltijs'
 import path from 'path'
 
 import * as t from 'io-ts'
+import * as Sentry from '@sentry/node'
 import { NextFunction, Request, Response } from 'express'
 import { createAccessToken } from './util/create-acccess-token'
 import { registerLtiPlatforms } from './util/register-lti-platforms'
@@ -128,6 +130,13 @@ const setup = async () => {
 
   app.post('/ai/generate-content', ai.generateContent)
   app.post('/ai/change-content', ai.changeContent)
+
+  // Test route to check if Sentry is working
+  app.get('/debug-sentry', function mainHandler() {
+    throw new Error('My first Sentry error!')
+  })
+
+  Sentry.setupExpressErrorHandler(app)
 
   // Successful LTI resource link launch
   ltijs.onConnect((idToken, req, res) => {
