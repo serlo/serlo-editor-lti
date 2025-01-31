@@ -66,7 +66,7 @@ export class ItslearningServer {
         'https://purl.imsglobal.org/spec/lti/claim/roles': this.roles,
         'https://purl.imsglobal.org/spec/lti/claim/context': {
           id: itslearningMockContextId,
-          title: 'Serlo',
+          title: 'Example course name',
           type: ['http://purl.imsglobal.org/vocab/lis/v2/course#CourseSection'],
         },
         'https://purl.imsglobal.org/spec/lti/claim/target_link_uri': urlJoin(
@@ -75,7 +75,7 @@ export class ItslearningServer {
         ),
         'https://purl.imsglobal.org/spec/lti/claim/resource_link': {
           id: '3061:3245',
-          title: 'Test Content',
+          title: 'Example content name',
         },
         'https://purl.imsglobal.org/spec/lti/claim/message_type':
           'LtiResourceLinkRequest',

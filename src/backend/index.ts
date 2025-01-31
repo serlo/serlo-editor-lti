@@ -1,4 +1,4 @@
-import { IdToken, Provider as ltijs } from 'ltijs'
+import { Provider as ltijs } from 'ltijs'
 import path from 'path'
 
 import * as t from 'io-ts'
@@ -12,6 +12,8 @@ import * as ai from './ai-route-handlers'
 import { getMariaDB } from './mariadb'
 import * as media from './media-route-handlers'
 import { logger } from '../utils/logger'
+import { IdToken } from './types/idtoken'
+import { errorMessageToUser } from './error-message-to-user'
 
 const ltijsKey = config.LTIJS_KEY
 
@@ -130,9 +132,9 @@ const setup = async () => {
   // Successful LTI resource link launch
   ltijs.onConnect((idToken, req, res) => {
     if (idToken.iss.includes('edu-sharing')) {
-      void onConnectEdusharing(idToken, req, res)
+      void onConnectEdusharing(idToken as unknown as IdToken, req, res)
     } else {
-      void onConnectDefault(idToken, req, res)
+      void onConnectDefault(idToken as unknown as IdToken, req, res)
     }
   }, {})
 
@@ -141,11 +143,7 @@ const setup = async () => {
     _: Request,
     res: Response
   ) {
-    // @ts-expect-error @types/ltijs
-    const resourceLinkId: string = idToken.platformContext.resource.id
-    // @ts-expect-error @types/ltijs
-    const custom: unknown = idToken.platformContext.custom
-
+    const custom: unknown = idToken.platformContext?.custom
     const expectedCustomType = t.intersection([
       t.type({
         getContentApiUrl: t.string,
@@ -161,13 +159,20 @@ const setup = async () => {
         version: t.string,
       }),
     ])
-
     if (!expectedCustomType.is(custom)) {
       res
         .status(400)
         .send(
-          `Unexpected type of LTI 'custom' claim. Got ${JSON.stringify(custom)}`
+          errorMessageToUser(
+            `Unexpected type of LTI 'custom' claim. Got ${JSON.stringify(custom)}`
+          )
         )
+      return
+    }
+
+    const resourceLinkId = idToken.platformContext?.resource?.id
+    if (!resourceLinkId) {
+      res.status(400).send(errorMessageToUser('resource link id missing'))
       return
     }
 
@@ -196,28 +201,33 @@ const setup = async () => {
       typeof custom.postContentApiUrl === 'string' ? 'write' : 'read'
     const accessToken = createAccessToken(editorMode, entityId, ltijsKey)
 
-    const searchParams = new URLSearchParams()
-    searchParams.append('accessToken', accessToken)
-    searchParams.append('resourceLinkId', resourceLinkId)
-    searchParams.append('ltik', res.locals.ltik)
-    searchParams.append('testingSecret', config.SERLO_EDITOR_TESTING_SECRET)
+    const ltik = res.locals.ltik
+    const title = idToken.platformContext?.resource?.title
+    const contextTitle = idToken.platformContext?.context?.title
 
-    return ltijs.redirect(res, `/app?${searchParams}`)
+    const searchParams = createSearchParams({
+      ltik,
+      accessToken,
+      resourceLinkId,
+      title,
+      contextTitle,
+    })
+
+    return ltijs.redirect(res, `/app?${searchParams.toString()}`)
   }
 
-  async function onConnectDefault(
-    idToken: IdToken,
-    req: Request,
-    res: Response
-  ) {
-    // Get customId from lti custom claim or alternatively search query parameters
-    // Using search query params is suggested by ltijs, see: https://github.com/Cvmcosta/ltijs/issues/100#issuecomment-832284300
-    // @ts-expect-error @types/ltijs
-    const customId = idToken.platformContext.custom.id ?? req.query.id
-    if (!customId) return res.send('Missing customId!')
+  async function onConnectDefault(idToken: IdToken, _: Request, res: Response) {
+    const customId = idToken.platformContext?.custom?.id
+    if (!customId) {
+      res.status(400).send(errorMessageToUser('custom id missing'))
+      return
+    }
 
-    // @ts-expect-error @types/ltijs
-    const resourceLinkId: string = idToken.platformContext.resource.id
+    const resourceLinkId = idToken.platformContext?.resource?.id
+    if (!resourceLinkId) {
+      res.status(400).send(errorMessageToUser('resource link id missing'))
+      return
+    }
 
     logger.info('ltijs.onConnect -> idToken: ', idToken)
 
@@ -240,7 +250,7 @@ const setup = async () => {
     )
 
     if (!entity) {
-      res.send('<div>Dieser Inhalt wurde nicht gefunden.</div>')
+      res.send(errorMessageToUser('Content not found in database'))
       return
     }
 
@@ -260,8 +270,7 @@ const setup = async () => {
       // This role is sent in the itslearning library and we disallow editing there for now
       // 'membership#Member',
     ]
-    // @ts-expect-error @types/ltijs
-    const courseMembershipRole = idToken.platformContext.roles?.find((role) =>
+    const courseMembershipRole = idToken.platformContext?.roles?.find((role) =>
       role.includes('membership#')
     )
     const editorMode =
@@ -282,12 +291,43 @@ const setup = async () => {
       )
     }
 
+    const ltik = res.locals.ltik
+    const title = idToken.platformContext?.resource?.title
+    const contextTitle = idToken.platformContext?.context?.title
+
+    const searchParams = createSearchParams({
+      ltik,
+      accessToken,
+      resourceLinkId,
+      contextTitle,
+      title,
+    })
+
+    return ltijs.redirect(res, `/app?${searchParams.toString()}`)
+  }
+
+  function createSearchParams({
+    ltik,
+    accessToken,
+    resourceLinkId,
+    contextTitle,
+    title,
+  }: {
+    ltik: string
+    accessToken: string
+    resourceLinkId: string
+    contextTitle?: string
+    title?: string
+  }) {
     const searchParams = new URLSearchParams()
     searchParams.append('accessToken', accessToken)
     searchParams.append('resourceLinkId', resourceLinkId)
     searchParams.append('testingSecret', config.SERLO_EDITOR_TESTING_SECRET)
+    searchParams.append('ltik', ltik)
+    searchParams.append('contextTitle', contextTitle ?? '')
+    searchParams.append('title', title ?? '')
 
-    return ltijs.redirect(res, `/app?${searchParams}`)
+    return searchParams
   }
 
   // Successful LTI deep linking launch
