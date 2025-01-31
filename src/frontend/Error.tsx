@@ -1,4 +1,4 @@
-import { type AppStateError } from './App'
+import { AppStateError } from './hooks/use-app-state'
 
 interface ErrorProps {
   appState: AppStateError
