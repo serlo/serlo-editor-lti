@@ -10,11 +10,14 @@ import { type AccessToken, type Entity } from '../backend'
 import copyPluginToClipboardImage from './assets/copy-plugin-to-clipboard.png'
 import Error from './Error'
 
+import '@serlo/editor/dist/style.css'
+import useResizeObserver from 'use-resize-observer'
+
 export type AppState =
   | { type: 'fetching-content' }
   | AppStateError
   | { type: 'editor'; content: SerloEditorProps['initialState'] }
-  | { type: 'static-renderer'; content: SerloRendererProps['document'] }
+  | { type: 'static-renderer'; content: SerloRendererProps['state'] }
 
 export type AppStateError = {
   type: 'error'
@@ -23,6 +26,15 @@ export type AppStateError = {
 }
 
 function App() {
+  // for moodle: resize iframe on content change
+  const { ref: wrapperRef } = useResizeObserver<HTMLDivElement>({
+    onResize: ({ height: wrapperHeight }) => {
+      const height = Math.max((wrapperHeight ?? 0) + 200, 500)
+      const data = JSON.stringify({ subject: 'lti.frameResize', height })
+      window.parent?.postMessage(data, '*')
+    },
+  })
+
   const queryString = window.location.search
   const urlParams = new URLSearchParams(queryString)
   const accessToken = urlParams.get('accessToken')
@@ -34,6 +46,12 @@ function App() {
   })
 
   useEffect(() => {
+    // for moodle: remove iframe border on init
+    window.parent?.postMessage(
+      JSON.stringify({ subject: 'lti.removeBorder' }),
+      '*'
+    )
+
     if (!accessToken) {
       setAppState({
         type: 'error',
@@ -61,6 +79,14 @@ function App() {
 
     fetchEntity(accessToken, ltik)
       .then((entity) => {
+        if (entity.content === 'Invalid access token') {
+          setAppState({
+            type: 'error',
+            message: 'Fehler: Bitte öffne den Inhalt erneut.',
+          })
+          return
+        }
+
         const resourceLinkIdFromDb = entity.resource_link_id
         if (!resourceLinkIdFromDb || !resourceLinkIdFromUrl) {
           setAppState({
@@ -82,7 +108,7 @@ function App() {
         }
 
         const content = JSON.parse(entity.content)
-        console.log('content: ', content)
+        // console.log('content: ', content)
         setAppState({
           type: mode === 'write' ? 'editor' : 'static-renderer',
           content,
@@ -110,7 +136,7 @@ function App() {
             if (res.status !== 200) reject()
 
             const entity = (await res.json()) as Entity
-            console.log('entity: ', entity)
+            // console.log('entity: ', entity)
             resolve(entity)
           })
           .catch(() => {
@@ -118,6 +144,7 @@ function App() {
           })
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   if (appState.type === 'fetching-content') return null
@@ -125,14 +152,26 @@ function App() {
   if (appState.type === 'static-renderer') {
     return (
       <div
+        ref={wrapperRef}
         style={{ padding: '1rem', backgroundColor: 'white', minWidth: '600px' }}
       >
-        <SerloRenderer document={appState.content} />
+        <SerloRenderer
+          state={appState.content}
+          editorVariant="lti-tool"
+          _ltik={ltik as string}
+        />
       </div>
     )
   }
   if (appState.type === 'editor') {
-    return <SerloEditorWrapper initialState={appState.content} />
+    return (
+      <div ref={wrapperRef}>
+        <SerloEditorWrapper
+          initialState={appState.content}
+          ltik={ltik as string}
+        />
+      </div>
+    )
   }
 
   return <div>Invalid app state: {appState}</div>

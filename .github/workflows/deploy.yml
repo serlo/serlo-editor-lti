@@ -1,0 +1,56 @@
+name: Deploy to Uberspace
+
+on:
+  push:
+    branches:
+      - production
+      - staging
+      - development
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set environment variables for development
+        if: ${{ github.ref_name == 'development' }}
+        run: |
+          echo "REMOTE_HOST=${{ secrets.REMOTE_HOST_DEV }}" >> $GITHUB_ENV
+          echo "REMOTE_USER=${{ secrets.REMOTE_USER_DEV }}" >> $GITHUB_ENV
+          echo "DOMAIN=https://editor.serlo.dev/" >> $GITHUB_ENV
+
+      - name: Set environment variables for staging
+        if: ${{ github.ref_name == 'staging' }}
+        run: |
+          echo "REMOTE_HOST=${{ secrets.REMOTE_HOST_STAGING }}" >> $GITHUB_ENV
+          echo "REMOTE_USER=${{ secrets.REMOTE_USER_STAGING }}" >> $GITHUB_ENV
+          echo "DOMAIN=https://editor.serlo-staging.dev/" >> $GITHUB_ENV
+
+      - name: Set environment variables for production
+        if: ${{ github.ref_name == 'staging' }}
+        run: |
+          echo "REMOTE_HOST=${{ secrets.REMOTE_HOST_PRODUCTION }}" >> $GITHUB_ENV
+          echo "REMOTE_USER=${{ secrets.REMOTE_USER_PRODUCTION }}" >> $GITHUB_ENV
+          echo "DOMAIN=https://editor.serlo.org/" >> $GITHUB_ENV
+
+      # Maybe split ssh key between production and others
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{  env.REMOTE_HOST }}
+          username: ${{ env.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/${{ env.REMOTE_USER }}/serlo-editor-as-lti-tool/
+            git checkout --force ${{ github.ref_name }}
+            git pull
+            yarn
+            yarn build
+            s3cmd get s3://edtr-env/${{ env.REMOTE_USER }}/.env . --force
+            supervisorctl restart serlo-app
+
+      - name: Test deployment successful
+        run:
+          for ((i=0; i<30; i++)); do curl ${{ env.DOMAIN }} | grep -q
+          "NO_LTIK_OR_IDTOKEN_FOUND" && exit 0; sleep 1; done; echo "Server not
+          ready within 30 seconds." && exit 1
