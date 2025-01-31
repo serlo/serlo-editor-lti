@@ -22,10 +22,13 @@ if ! s3cmd get s3://edtr-env/${USER}/.env .; then
 fi
 
 # Pull env into current shell
+set -a
 source .env
+set +a
 
-echo 'Setting up initial data for MariaDB'
-mariadb < docker-entrypoint-initdb.d/001-init.sql
+echo "Hopefully you have sett up initial data for MariaDB using the command at docker-entrypoint-initdb.d/001-init.sql change serlo for $USER"
+# mariadb < docker-entrypoint-initdb.d/001-init.sql doesn't work, find another way
+
 
 # Set up MongoDB
 if ! $(uberspace tools version show mongodb | grep -q '6.0'); then
