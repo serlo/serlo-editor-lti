@@ -94,6 +94,7 @@ export class EdusharingServer {
         'https://purl.imsglobal.org/spec/lti/claim/context': {
           id: this.contextId,
           label: this.custom.user,
+          title: 'Example course name',
         },
         'https://purl.imsglobal.org/spec/lti/claim/target_link_uri': urlJoin(
           editorUrl,
@@ -101,7 +102,7 @@ export class EdusharingServer {
         ),
         'https://purl.imsglobal.org/spec/lti/claim/resource_link': {
           id: this.custom.nodeId,
-          title: 'Test Content',
+          title: 'Example content name',
         },
         'https://purl.imsglobal.org/spec/lti/claim/launch_presentation': {
           document_target: 'window',

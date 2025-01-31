@@ -1,31 +1,19 @@
+import Header from './Header'
+import { isInIframe } from './utils/is-in-iframe'
+
 // Centered & max-width content layout
 export function Layout({ children }: { children: React.ReactNode }) {
-  const maxContentWidth = '60rem'
+  const showHeader = !isInIframe
+
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-        backgroundColor: 'white',
-        // Make horizontal scroll bar appear on small width. Plugin menu, plugin toolbar, ... need some space.
-        minWidth: '40rem',
-        overflowX: 'auto',
-      }}
-    >
-      <aside style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }}></aside>
-      <main
-        style={{
-          flexGrow: 1,
-          flexShrink: 1,
-          flexBasis: maxContentWidth,
-          maxWidth: `min(100%, ${maxContentWidth})`,
-          // Leave some space for editor UI that extends beyond (plugin toolbar, drag handle, ...)
-          padding: '3rem',
-        }}
-      >
-        {children}
-      </main>
-      <aside style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }}></aside>
-    </div>
+    <>
+      {showHeader ? <Header /> : null}
+
+      <div className="flex min-w-[40rem] overflow-x-auto bg-white">
+        <main className="mx-auto max-w-[60rem] px-12">
+          <div className="py-12">{children}</div>
+        </main>
+      </div>
+    </>
   )
 }
