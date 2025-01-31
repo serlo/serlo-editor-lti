@@ -1,8 +1,9 @@
 import Header from './Header'
+import { isInIframe } from './utils/is-in-iframe'
 
 // Centered & max-width content layout
 export function Layout({ children }: { children: React.ReactNode }) {
-  const showHeader = !inIframe()
+  const showHeader = !isInIframe
 
   const maxContentWidth = '60rem'
   // Leave some space for editor UI that extends beyond (plugin toolbar, drag handle, ...)
@@ -42,13 +43,4 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <aside style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }}></aside>
     </div>
   )
-}
-
-// https://stackoverflow.com/a/326076
-function inIframe() {
-  try {
-    return window.self !== window.top
-  } catch {
-    return true
-  }
 }
