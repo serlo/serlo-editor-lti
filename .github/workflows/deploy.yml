@@ -32,7 +32,7 @@ jobs:
           echo "REMOTE_HOST=${{ secrets.REMOTE_HOST_PRODUCTION }}" >> $GITHUB_ENV
           echo "REMOTE_USER=${{ secrets.REMOTE_USER_PRODUCTION }}" >> $GITHUB_ENV
           echo "DOMAIN=https://editor.serlo.org/" >> $GITHUB_ENV
-      
+
       # Maybe split ssh key between production and others
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.2.0
