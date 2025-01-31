@@ -27,7 +27,7 @@ jobs:
           echo "DOMAIN=https://editor.serlo-staging.dev/" >> $GITHUB_ENV
 
       - name: Set environment variables for production
-        if: ${{ github.ref_name == 'staging' }}
+        if: ${{ github.ref_name == 'production' }}
         run: |
           echo "REMOTE_HOST=${{ secrets.REMOTE_HOST_PRODUCTION }}" >> $GITHUB_ENV
           echo "REMOTE_USER=${{ secrets.REMOTE_USER_PRODUCTION }}" >> $GITHUB_ENV
