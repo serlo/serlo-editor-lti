@@ -12,6 +12,7 @@ import Error from './Error'
 
 import '@serlo/editor/dist/style.css'
 import useResizeObserver from 'use-resize-observer'
+import { Layout } from './Layout'
 
 export type AppState =
   | { type: 'fetching-content' }
@@ -151,26 +152,34 @@ function App() {
   if (appState.type === 'error') return <Error appState={appState} />
   if (appState.type === 'static-renderer') {
     return (
-      <div
-        ref={wrapperRef}
-        style={{ padding: '1rem', backgroundColor: 'white', minWidth: '600px' }}
-      >
-        <SerloRenderer
-          state={appState.content}
-          editorVariant="lti-tool"
-          _ltik={ltik as string}
-        />
-      </div>
+      <Layout>
+        <div
+          ref={wrapperRef}
+          style={{
+            padding: '1rem',
+            backgroundColor: 'white',
+            minWidth: '600px',
+          }}
+        >
+          <SerloRenderer
+            state={appState.content}
+            editorVariant="lti-tool"
+            _ltik={ltik as string}
+          />
+        </div>
+      </Layout>
     )
   }
   if (appState.type === 'editor') {
     return (
-      <div ref={wrapperRef}>
-        <SerloEditorWrapper
-          initialState={appState.content}
-          ltik={ltik as string}
-        />
-      </div>
+      <Layout>
+        <div ref={wrapperRef}>
+          <SerloEditorWrapper
+            initialState={appState.content}
+            ltik={ltik as string}
+          />
+        </div>
+      </Layout>
     )
   }
 
