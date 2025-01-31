@@ -11,8 +11,8 @@ import copyPluginToClipboardImage from './assets/copy-plugin-to-clipboard.png'
 import Error from './Error'
 
 import '@serlo/editor/dist/style.css'
-import useResizeObserver from 'use-resize-observer'
 import { Layout } from './Layout'
+import { useMoodleResize } from './hooks/use-moodle-resize'
 
 export type AppState =
   | { type: 'fetching-content' }
@@ -27,14 +27,7 @@ export type AppStateError = {
 }
 
 function App() {
-  // for moodle: resize iframe on content change
-  const { ref: wrapperRef } = useResizeObserver<HTMLDivElement>({
-    onResize: ({ height: wrapperHeight }) => {
-      const height = Math.max((wrapperHeight ?? 0) + 200, 500)
-      const data = JSON.stringify({ subject: 'lti.frameResize', height })
-      window.parent?.postMessage(data, '*')
-    },
-  })
+  const wrapperRef = useMoodleResize()
 
   const queryString = window.location.search
   const urlParams = new URLSearchParams(queryString)
@@ -47,12 +40,6 @@ function App() {
   })
 
   useEffect(() => {
-    // for moodle: remove iframe border on init
-    window.parent?.postMessage(
-      JSON.stringify({ subject: 'lti.removeBorder' }),
-      '*'
-    )
-
     if (!accessToken) {
       setAppState({
         type: 'error',
