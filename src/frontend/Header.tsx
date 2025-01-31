@@ -6,36 +6,23 @@ export default function Header() {
   const title = urlParams.get('title') ?? 'Inhalt'
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        padding: '1rem',
-        alignItems: 'center',
-        gap: '1rem',
-        boxShadow: '0px 0px 10px 0px rgba(0,0,0,.22)',
-        marginBottom: '0.5rem',
-      }}
-    >
-      <img
-        style={{ width: '3.5rem', height: '3.5rem' }}
-        src={EditorLogoLight}
-      />
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <div className="flex items-center p-4 shadow-md mb-2 gap-4">
+      <img className="w-14 h-14" src={EditorLogoLight} />
+      <div>
         <div>
           <a
             onClick={() => history.go(-1)}
-            style={{ color: '#007EC1', fontSize: '0.9rem', cursor: 'pointer' }}
+            className="text-sky-600 text-sm cursor-pointer"
           >
-            <span style={{ rotate: '180deg', display: 'inline-block' }}>⮕</span>{' '}
-            Zurück zu Moodle
+            <span className="rotate-180 inline-block">⮕</span> Zurück zu Moodle
           </a>{' '}
           {/* {contextTitle ? (
-            <span style={{ color: '#666', fontSize: '0.9rem' }}>
+            <span className="text-sm text-gray-500">
               ({contextTitle})
             </span>
           ) : null} */}
         </div>
-        <h2 style={{ fontSize: '1.25rem' }}>{title}</h2>
+        <h2 className="text-xl">{title}</h2>
       </div>
     </div>
   )

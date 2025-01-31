@@ -18,14 +18,7 @@ function App() {
   if (appState.type === 'static-renderer') {
     return (
       <Layout>
-        <div
-          ref={wrapperRef}
-          style={{
-            padding: '1rem',
-            backgroundColor: 'white',
-            minWidth: '600px',
-          }}
-        >
+        <div ref={wrapperRef} className="p-4 bg-white min-w-[600px]">
           <SerloRenderer
             state={appState.content}
             editorVariant="lti-tool"
